@@ -1,4 +1,4 @@
-/* $Id: FvwmCommandS.c,v 1.1 1998/10/14 00:03:27 tibbs Exp $
+/* $Id: FvwmCommandS.c,v 1.1.1.1 1998/10/14 00:03:27 tibbs Exp $
  * $Source: /home/cvs/fvwm/fvwm/extras/FvwmCommand/Attic/FvwmCommandS.c,v $
  *
  * Fvwm command input interface.

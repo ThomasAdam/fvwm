@@ -16,7 +16,7 @@ static int fd_width;
 static char *VERSION = "1.3";
 
 static char const rcsid[] =
-  "$Id: FvwmIconMan.c,v 1.1 1998/10/14 00:03:23 tibbs Exp $";
+  "$Id: FvwmIconMan.c,v 1.1.1.1 1998/10/14 00:03:23 tibbs Exp $";
 
 char *copy_string (char **target, char *src)
 {
