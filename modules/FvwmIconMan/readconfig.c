@@ -25,7 +25,7 @@
 #include <libs/Module.h>
 
 static char const rcsid[] =
-  "$Id: readconfig.c,v 1.38.2.1 2002/04/22 22:01:41 migo Exp $";
+  "$Id: readconfig.c,v 1.38.2.2 2002/06/11 01:01:12 migo Exp $";
 
 /************************************************************************
  *
@@ -1417,16 +1417,19 @@ void read_in_resources (char *file)
        SET_MANAGER (manager, showonlyiconic, i);
       }
       else if (!strcasecmp (option1, "font")) {
+	char *f;
 	p = read_next_cmd (READ_REST_OF_LINE);
 	trim(p);
 	if (!p) {
 	  ConsoleMessage ("Bad line: %s\n", current_line);
 	  continue;
 	}
-	ConsoleDebug (CONFIG, "font: %s\n", p);
+	CopyStringWithQuotes(&f, p);
+	ConsoleDebug (CONFIG, "font: %s\n", f);
 
 	SET_MANAGER (manager, fontname,
-		     copy_string (&globals.managers[id].fontname, p));
+		     copy_string (&globals.managers[id].fontname, f));
+	free(f);
       }
       else if (!strcasecmp (option1, "foreground")) {
 	p = read_next_cmd (READ_ARG);
