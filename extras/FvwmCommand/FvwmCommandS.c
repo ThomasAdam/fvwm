@@ -1,4 +1,4 @@
-/* $Id: FvwmCommandS.c,v 1.5 1999/01/10 20:59:41 steve Exp $
+/* $Id: FvwmCommandS.c,v 1.5.2.1 1999/06/25 11:54:47 domivogt Exp $
  * $Source: /home/cvs/fvwm/fvwm/extras/FvwmCommand/Attic/FvwmCommandS.c,v $
  *
  * Fvwm command input interface.
@@ -108,7 +108,7 @@ void server ( char *name ) {
   if (open_fifos (f_stem) < 0) {
     exit (-1);
   }
-  SendText(Fd,"",0); /* tell fvwm that we are here */
+  SendText(Fd," ",0); /* tell fvwm that we are here */
 
   cix = 0;
 
