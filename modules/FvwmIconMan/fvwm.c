@@ -24,7 +24,7 @@
 #include <libs/Module.h>
 
 static char const rcsid[] =
-  "$Id: fvwm.c,v 1.34.2.2 2002/11/10 19:54:33 domivogt Exp $";
+  "$Id: fvwm.c,v 1.34.2.3 2003/03/16 11:24:39 domivogt Exp $";
 
 static WinData *fvwm_focus_win = NULL;
 
@@ -153,7 +153,7 @@ int win_in_viewport (WinData *win)
 
   assert (manager);
 
-  if (IS_ICONIFIED(win))
+  if (IS_ICONIFIED(win) && !IS_ICON_SUPPRESSED(win))
   {
     g = win->icon_g;
   }
