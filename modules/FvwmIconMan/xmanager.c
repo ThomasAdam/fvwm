@@ -24,7 +24,7 @@
 #include "xmanager.h"
 
 static char const rcsid[] =
-  "$Id: xmanager.c,v 1.50.2.2 2002/04/22 22:01:41 migo Exp $";
+  "$Id: xmanager.c,v 1.50.2.3 2002/10/09 23:07:04 domivogt Exp $";
 
 extern char *MyName;
 
@@ -1207,7 +1207,8 @@ void check_in_window (WinData *win)
   int is_state_selected;
 
   if (win->manager && win->complete) {
-    is_state_selected = (!win->manager->showonlyiconic || win->iconified);
+    is_state_selected =
+      ((!win->manager->showonlyiconic || win->iconified) && !IS_TRANSIENT(win));
     in_viewport = win_in_viewport (win);
     if (win->manager->usewinlist && DO_SKIP_WINDOW_LIST(win))
       in_viewport = 0;

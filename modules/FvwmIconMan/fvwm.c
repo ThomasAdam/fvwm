@@ -24,7 +24,7 @@
 #include <libs/Module.h>
 
 static char const rcsid[] =
-  "$Id: fvwm.c,v 1.34 2001/08/26 12:43:26 domivogt Exp $";
+  "$Id: fvwm.c,v 1.34.2.1 2002/10/09 23:07:04 domivogt Exp $";
 
 static WinData *fvwm_focus_win = NULL;
 
@@ -380,22 +380,12 @@ static void new_window (FvwmPacketBody *body)
 {
   WinData *win;
 
-  win = new_windata();
+  win = id_to_win (body->add_config_data.w);
   memcpy(&(win->flags), &(body->add_config_data.flags), sizeof(win->flags));
-  if (!(IS_TRANSIENT(win)))
-  {
-    win->app_id = body->add_config_data.w;
-    win->app_id_set = 1;
-    set_win_configuration (win, body);
-
-    insert_win_hashtab (win);
-    check_win_complete (win);
-    check_in_window (win);
-  }
-  else
-  {
-    Free(win);
-  }
+  set_win_configuration (win, body);
+  got_configure (win->manager);
+  check_win_complete (win);
+  check_in_window (win);
 }
 
 static void destroy_window (FvwmPacketBody *body)
