@@ -24,7 +24,7 @@
 #include "xmanager.h"
 
 static char const rcsid[] =
-  "$Id: xmanager.c,v 1.50.2.1 2001/11/10 21:21:52 domivogt Exp $";
+  "$Id: xmanager.c,v 1.50.2.2 2002/04/22 22:01:41 migo Exp $";
 
 extern char *MyName;
 
@@ -342,7 +342,7 @@ static char *make_display_string (WinData *win, char *format, int len)
 {
 #define MAX_DISPLAY_SIZE 1024
 #define COPY(field)                                       \
-  temp_p = win->##field;                                  \
+  temp_p = win->field;                                    \
   if (temp_p)                                             \
     while (*temp_p && out_p - buf < len - 1) \
       *out_p++ = *temp_p++;                               \
