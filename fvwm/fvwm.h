@@ -556,13 +556,28 @@ typedef struct
 
 typedef struct
 {
+#ifdef USE_EWMH_WINDOW_TYPE
+	unsigned has_ewmh_window_type:1;
+#endif /* USE_EWMH_WINDOW_TYPE */
+	unsigned has_resource:1;
+	unsigned has_class:1;
+	unsigned has_icon:1;
+	unsigned has_name:1;
+	unsigned has_window_id:1;
+	unsigned is_compability_mode:1;
+} style_id_flags;
+
+typedef struct style_id_t
+{
+#ifdef USE_EWMH_WINDOW_TYPE
+	int ewmh_window_type;
+#endif /* USE_EWMH_WINDOW_TYPE */
+	char *resource;
+	char *class;
+	char *icon;
 	char *name;
 	XID window_id;
-	struct
-	{
-		unsigned has_name:1;
-		unsigned has_window_id:1;
-	} flags;
+	style_id_flags flags;
 } style_id_t;
 
 
@@ -627,6 +642,14 @@ typedef struct window_style
 	style_flags change_mask;
 	unsigned has_style_changed : 1;
 } window_style;
+
+typedef struct window_style_list
+{
+	struct window_style_list *next;
+	style_id_flags flags;
+	window_style  *first_style;
+	window_style  *last_style;
+} window_style_list;
 
 /* for each window that is on the display, one of these structures
  * is allocated and linked into a list

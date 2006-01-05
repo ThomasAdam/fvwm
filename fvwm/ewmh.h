@@ -57,6 +57,8 @@ void EWMH_Init(void);
 void EWMH_ExitStuff(void);
 
 /* ewmh_conf.c */
+char * EWMH_WindowTypeName(int ewmh_window_type);
+int EWMH_ParseWindowType(char *action, char **ret_action, int default_ret);
 
 /* ewmh_events.c */
 Bool EWMH_ProcessClientMessage(const exec_context_t *exc);

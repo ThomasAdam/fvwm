@@ -1,3 +1,27 @@
+2006-01-05  Viktor Griph  <griph@dd.chalmers.se>
+
+	* fvwm/fvwm.1.in:
+	* fvwm/fvwm.h:
+	* fvwm/style.h:
+	* fvwm/style.c (parse_style_id, parse_style_id_one_flag)
+	(init_window_style_list, style_ids_are_equal, fw_match_style_id)
+	(one_fw_can_match_both_ids, free_style_id, free_style)
+	(add_style_to_list, remove_style_from_list)
+	(remove_all_of_style_from_list, __simplify_style_list)
+	(style_parse_one_style_option, __style_command)
+	(simplify_style_list, lookup_style, reset_style_changes)
+	(update_style_colorset, print_style_id, print_styles)
+	(CMD_DestroyStyle):
+	changed styles to support conditions (WindowID,Name, Icon,
+	Class, Resource). Styles are applied in order of priority
+	of the field according to todo-3.0. The old syntax is still 
+	supported through compability layer, with lower priority.
+
+	* fvwm/ewmh.h:
+	* fvwm/ewmh_conf.c:
+	(EWMH_ParseWindowType,EWMH_WindowTypeName):
+	Added functions for reading window types.
+
 2006-01-01  Viktor Griph  <griph@dd.chalmers.se>
 
 	* fvwm/style.c (style_parse_button_style):

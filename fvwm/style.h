@@ -353,6 +353,24 @@
 	((c).s.ewmh_maximize_mode = (x))
 
 /* access to style_id */
+#ifdef USE_EWMH_WINDOW_TYPE
+#  define SID_GET_EWMH_WINDOW_TYPE(id) \
+	((id).ewmh_window_type)
+#  define SID_SET_EWMH_WINDOW_TYPE(id,x) \
+	((id).ewmh_window_type = (x))
+#endif /* USE_EWMH_WINDOW_TYPE */
+#define SID_GET_RESOURCE(id) \
+	((id).resource)
+#define SID_SET_RESOURCE(id,x) \
+	((id).resource = (x))
+#define SID_GET_CLASS(id) \
+	((id).class)
+#define SID_SET_CLASS(id,x) \
+	((id).class = (x))
+#define SID_GET_ICON(id) \
+	((id).icon)
+#define SID_SET_ICON(id,x) \
+	((id).icon = (x))
 #define SID_GET_NAME(id) \
 	((id).name)
 #define SID_SET_NAME(id,x) \
@@ -361,6 +379,24 @@
 	((id).window_id)
 #define SID_SET_WINDOW_ID(id,x) \
 	((id).window_id = (x))
+#ifdef USE_EWMH_WINDOW_TYPE
+#  define SID_GET_HAS_EWMH_WINDOW_TYPE(id) \
+	((id).flags.has_ewmh_window_type)
+#  define SID_SET_HAS_EWMH_WINDOW_TYPE(id,x) \
+	((id).flags.has_ewmh_window_type = (x))
+#endif /* USE_EWMH_WINDOW_TYPE */
+#define SID_GET_HAS_RESOURCE(id) \
+	((id).flags.has_resource)
+#define SID_SET_HAS_RESOURCE(id,x) \
+	((id).flags.has_resource = (x))
+#define SID_GET_HAS_CLASS(id) \
+	((id).flags.has_class)
+#define SID_SET_HAS_CLASS(id,x) \
+	((id).flags.has_class = (x))
+#define SID_GET_HAS_ICON(id) \
+	((id).flags.has_icon)
+#define SID_SET_HAS_ICON(id,x) \
+	((id).flags.has_icon = (x))
 #define SID_SET_HAS_NAME(id,x) \
         ((id).flags.has_name = !!(x))
 #define SID_GET_HAS_NAME(id) \
@@ -369,6 +405,10 @@
         ((id).flags.has_window_id = !!(x))
 #define SID_GET_HAS_WINDOW_ID(id) \
         ((id).flags.has_window_id)
+#define SID_SET_IS_COMPABILITY_MODE(id,x) \
+        ((id).flags.is_compability_mode = !!(x))
+#define SID_GET_IS_COMPABILITY_MODE(id) \
+        ((id).flags.is_compability_mode)
 
 /* access to other parts of a style (call with the style itself) */
 #define SGET_NEXT_STYLE(s) \
@@ -381,6 +421,24 @@
 	((s).prev = (x))
 #define SGET_ID(s) \
         ((s).id)
+#ifdef USE_EWMH_WINDOW_TYPE
+#  define SGET_EWMH_WINDOW_TYPE(s) \
+	SID_GET_EWMH_WINDOW_TYPE(SGET_ID(s))
+#  define SSET_EWMH_WINDOW_TYPE(s,x) \
+	SID_SET_EWMH_WINDOW_TYPE(SGET_ID(s),x)
+#endif /* USE_EWMH_WINDOW_TYPE */
+#define SGET_RESOURCE(s) \
+	SID_GET_RESOURCE(SGET_ID(s))
+#define SSET_RESOURCE(s,x) \
+	SID_SET_RESOURCE(SGET_ID(s),x)
+#define SGET_CLASS(s) \
+	SID_GET_CLASS(SGET_ID(s))
+#define SSET_CLASS(s,x) \
+	SID_SET_CLASS(SGET_ID(s),x)
+#define SGET_ICON(s) \
+	SID_GET_ICON(SGET_ID(s))
+#define SSET_ICON(s,x) \
+	SID_SET_ICON(SGET_ID(s),x)
 #define SGET_NAME(s) \
 	SID_GET_NAME(SGET_ID(s))
 #define SSET_NAME(s,x) \
@@ -389,6 +447,24 @@
 	SID_GET_WINDOW_ID(SGET_ID(s))
 #define SSET_WINDOW_ID(s,x) \
 	SID_SET_WINDOW_ID(SGET_ID(s),x)
+#ifdef USE_EWMH_WINDOW_TYPE
+#  define SSET_ID_HAS_EWMH_WINDOW_TYPE(s,x) \
+        SID_SET_HAS_EWMH_WINDOW_TYPE(SGET_ID(s), x)
+#  define SGET_ID_HAS_EWMH_WINDOW_TYPE(s) \
+        SID_GET_HAS_EWMH_WINDOW_TYPE(SGET_ID(s))
+#endif /* USE_EWMH_WINDOW_TYPE */
+#define SSET_ID_HAS_RESOURCE(s,x) \
+        SID_SET_HAS_RESOURCE(SGET_ID(s), x)
+#define SGET_ID_HAS_RESOURCE(s) \
+        SID_GET_HAS_RESOURCE(SGET_ID(s))
+#define SSET_ID_HAS_CLASS(s,x) \
+        SID_SET_HAS_CLASS(SGET_ID(s), x)
+#define SGET_ID_HAS_CLASS(s) \
+        SID_GET_HAS_CLASS(SGET_ID(s))
+#define SSET_ID_HAS_ICON(s,x) \
+        SID_SET_HAS_ICON(SGET_ID(s), x)
+#define SGET_ID_HAS_ICON(s) \
+        SID_GET_HAS_ICON(SGET_ID(s))
 #define SSET_ID_HAS_NAME(s,x) \
         SID_SET_HAS_NAME(SGET_ID(s), x)
 #define SGET_ID_HAS_NAME(s) \
@@ -397,6 +473,10 @@
         SID_SET_HAS_WINDOW_ID(SGET_ID(s),x)
 #define SGET_ID_HAS_WINDOW_ID(s) \
         SID_GET_HAS_WINDOW_ID(SGET_ID(s))
+#define SSET_ID_IS_COMPABILITY_MODE(s,x) \
+        SID_SET_IS_COMPABILITY_MODE(SGET_ID(s),x)
+#define SGET_ID_IS_COMPABILITY_MODE(s) \
+        SID_GET_IS_COMPABILITY_MODE(SGET_ID(s))
 #define SGET_ICON_NAME(s) \
 	((s).icon_name)
 #define SSET_ICON_NAME(s,x) \
@@ -581,6 +661,13 @@
 	((s).placement_percentage_penalty[2] = (x))
 #define SSET_75_PLACEMENT_PERCENTAGE_PENALTY(s,x) \
 	((s).placement_percentage_penalty[3] = (x))
+
+/* access to style lists */
+#define SLGET_NEXT_LIST(s) \
+	((s).next)
+#define SLSET_NEXT_LIST(s,x) \
+	((s).next = (x))
+/* The flags can be retrived with the SID macros -- maybe duplicate them */
 
 /* function prototypes */
 void lookup_style(FvwmWindow *fw, window_style *styles);

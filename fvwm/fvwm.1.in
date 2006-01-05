@@ -6403,7 +6403,7 @@ alphabetically.  The description of the
 command can be found at the end of this section.
 
 .TP
-.BI "FocusStyle " "stylename options"
+.BI "FocusStyle " stylename |  "(conditions) options"
 works exactly like the
 .B Style
 command, but accepts only the focus policy related styles
@@ -6428,7 +6428,9 @@ The changes take effect immediately.  Note that
 is not a wild-carded search string, but rather a case-sensitive
 string that should exactly match the original
 .B Style
-command.
+command. To delete a style created with condition-rules
+.I style
+must have exactly the same rules.
 
 Destroying style "*" can be done, but isn't really to be
 recommended. For example:
@@ -6452,7 +6454,7 @@ immediately.  E.g. if
 commands were issued inside a fvwm function.
 
 .TP
-.BI "Style " "stylename options"
+.BI "Style " stylename |  "(conditions) options"
 This command is intended to replace the old fvwm 1.xx global
 commands NoBorder, NoTitle, StartsOnDesk, Sticky, StaysOnTop,
 Icon, WindowListSkip, CirculateSkip, SuppressIcons, BoundaryWidth,
@@ -6466,7 +6468,35 @@ can be a window's name, class, or resource string.  It may contain
 the wildcards '*' and '?', which are matched in the usual Unix
 filename manner.  They are searched in the reverse order stated.
 When two conflicting styles apply to the same window, the style
-that was changed last wins.
+that was changed last wins. There is one exception to this rule,
+and it is that the style '*' always lose over other styles. You
+may use '**' if you want to override that effect.
+
+.I conditions
+are a comma spearated list of rules that must match a window
+for it to use the style. A condition is a field and a value. Each field
+may only appear once in the condition list. Valid fields are
+.IR Resource ", " Class ", " Icon ", " Name " and " WindowID "."
+.I Resource
+match against a window's resource string,
+.I Class
+agains the class,
+.I Icon
+against the icon name,
+.I Name
+against the name and
+.I WindowID
+match the ID of the window.
+All values but the window id may contain wildchars. It is also possible to
+use a single '*' as condition, in which case it will apply to all windows.
+
+When conditions are used styles are applied in order of priority of the
+fields specified. The priority order is, with highest first, window id, name,
+icon, class, resource, styles using the
+.I stylename
+syntax and the '*' condition. A style get's the priority of the
+highest priority field specified. If two conflicting styles have the same
+priority, the one that was last changed wins.
 
 Note: windows that have no name (WM_NAME) are given a name of
 "Untitled", and windows that don't have a class (WM_CLASS,
@@ -8197,8 +8227,8 @@ This style is deprecated and will be removed in the future.  There
 are plans to replace it with a more flexible solution in fvwm-3.0.
 
 .I UseStyle
-takes one arg, which is the name of another style.  That way you
-can have unrelated window names easily inherit similar traits
+takes one arg, which is the name or the exact conditions of another style.
+That way you can have unrelated window names easily inherit similar traits
 without retyping.  For example:
 .EX
   Style rxvt UseStyle XTerm

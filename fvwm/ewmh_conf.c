@@ -37,6 +37,18 @@
 #include "ewmh_intern.h"
 #include "move_resize.h"
 
+static char *window_type_optlist[] = {
+		"Desktop",
+		"Dialog",
+		"Dock",
+		"Menu",
+		"Normal",
+		"Toolbar",
+		"Splash",
+		"Utility",
+		NULL
+	};
+
 /*
  * CMDS
  */
@@ -315,4 +327,39 @@ Bool EWMH_CMD_Style(char *token, window_style *ptmpstyle, int on)
 		S_SET_DO_EWMH_IGNORE_WINDOW_TYPE(SCC(*ptmpstyle), 1);
 	}
 	return found;
+}
+
+int EWMH_ParseWindowType(char *action, char **ret_action, int default_ret)
+{
+	int index;
+	char *next;
+
+	next = GetNextTokenIndex(action, window_type_optlist, 0, &index);
+	if (index == -1)
+	{
+		/* nothing selected, use default and don't modify action */
+		index = default_ret;
+		next = action;
+	}
+	else
+	{
+		index++;
+	}
+	if (ret_action)
+	{
+		*ret_action = next;
+	}
+
+	return index;
+}
+
+char * EWMH_WindowTypeName(int ewmh_window_type) {
+	if (ewmh_window_type >= 1 && ewmh_window_type <= 8)
+	{
+		return window_type_optlist[ewmh_window_type-1];
+	}
+	else
+	{
+		return "None";
+	}
 }
