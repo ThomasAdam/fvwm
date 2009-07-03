@@ -1866,6 +1866,7 @@ static void make_menu_window(MenuRoot *mr, Bool is_tear_off)
 	int w;
 	int h;
 	unsigned int evmask;
+	char *canim;
 
 	w = MR_WIDTH(mr);
 	if (w == 0)
@@ -1924,6 +1925,31 @@ static void make_menu_window(MenuRoot *mr, Bool is_tear_off)
 			MR_CREATE_DPY(mr), Scr.Root, 0, 0, w, h,
 			0, Pdepth, InputOutput, Pvisual, valuemask,
 			&attributes);
+		/* TA:  2009-06-30:  Hack XIM support here. */
+		if (MR_MENUIM_XIC(mr)) goto context;
+
+		if ((canim = XSetLocaleModifiers("")) != NULL && *canim)
+			MR_MENUIM_XIM(mr) = XOpenIM(dpy, NULL, NULL, NULL);
+		if (!MR_MENUIM_XIM(mr) && (canim = XSetLocaleModifiers("@im=none")) != NULL && *canim)
+			MR_MENUIM_XIM(mr) = XOpenIM(dpy, NULL, NULL, NULL);
+		if (!MR_MENUIM_XIM(mr))
+		{
+			fvwm_msg(ERR, "CreateMenu", "Failed to open input method.\n");
+		} else {
+			MR_MENUIM_XIC(mr) = XCreateIC(MR_MENUIM_XIM(mr),
+					XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
+					/*
+					XNClientWindow, MR_WINDOW(mr),
+					XNFocusWindow,  MR_WINDOW(mr),
+					*/
+					NULL,
+					NULL);
+			if (!MR_MENUIM_XIC(mr)) {
+				fvwm_msg(ERR, "CreateMenu", "Failed to create input context.\n");
+				XCloseIM(MR_MENUIM_XIM(mr));
+				MR_MENUIM_XIM(mr)=NULL;
+			}
+		}
 		if (MR_CREATE_DPY(mr) != dpy)
 		{
 			/* We *must* synchronize the display here.  Otherwise
@@ -1936,8 +1962,10 @@ static void make_menu_window(MenuRoot *mr, Bool is_tear_off)
 			 * display */
 			XSelectInput(dpy, MR_WINDOW(mr), evmask);
 		}
-		XSaveContext(dpy, MR_WINDOW(mr), MenuContext,(caddr_t)mr);
+
 	}
+context:
+	XSaveContext(dpy, MR_WINDOW(mr), MenuContext,(caddr_t)mr);
 
 	return;
 }
@@ -6871,6 +6899,8 @@ MenuRoot *NewMenuRoot(char *name)
 
 	memset(mr->s, 0, sizeof(MenuRootStatic));
 	memset(mr->d, 0, sizeof(MenuRootDynamic));
+	MR_MENUIM_XIM(mr) = (XIM)NULL;
+	MR_MENUIM_XIC(mr) = (XIC)NULL;
 	MR_NEXT_MENU(mr) = Menus.all;
 	MR_NAME(mr) = safestrdup(name);
 	MR_WINDOW(mr) = None;

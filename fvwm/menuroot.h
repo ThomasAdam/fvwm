@@ -19,6 +19,15 @@ struct MenuStyle;
  * MENU ROOT STRUCTURES
  */
 
+/* TA:  2009/06/30:  Complete proof-of-concept for now -- try and use XIM for
+ * handling key events on menus
+ */
+typedef struct MenuIM
+{
+	XIM xim;
+	XIC xic;
+} MenuIM;
+
 /* This struct contains the parts of a root menu that are shared among all
  * copies of the menu */
 typedef struct MenuRootStatic
@@ -146,6 +155,7 @@ typedef struct MenuRootDynamic
 		int d_npixels;
 	} stored_pixels;
 	/* alloc pixels when dithering is used for gradients */
+	struct MenuIM MIM;
 } MenuRootDynamic;
 
 /* access macros to dynamic menu members */
@@ -161,6 +171,8 @@ typedef struct MenuRootDynamic
 #define MR_XANIMATION(m)            ((m)->d->xanimation)
 #define MR_STORED_ITEM(m)           ((m)->d->stored_item)
 #define MR_STORED_PIXELS(m)         ((m)->d->stored_pixels)
+#define MR_MENUIM_XIM(m)	    ((m)->d->MIM.xim)
+#define MR_MENUIM_XIC(m)	    ((m)->d->MIM.xic)
 /* flags */
 #define MR_DYNAMIC_FLAGS(m)         ((m)->d->dflags)
 #define MR_IS_BACKGROUND_SET(m)     ((m)->d->dflags.is_background_set)
@@ -173,6 +185,7 @@ typedef struct MenuRootDynamic
 #define MR_IS_TEAR_OFF_MENU(m)      ((m)->d->dflags.is_tear_off_menu)
 #define MR_HAS_POPPED_UP_LEFT(m)    ((m)->d->dflags.has_popped_up_left)
 #define MR_HAS_POPPED_UP_RIGHT(m)   ((m)->d->dflags.has_popped_up_right)
+
 
 typedef struct MenuRoot
 {

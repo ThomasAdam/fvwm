@@ -653,15 +653,30 @@ void menu_shortcuts(
 		/* Is it okay to treat keysym-s as Ascii?
 		 * No, because the keypad numbers don't work.
 		 * Use XlookupString */
-		index = XLookupString(&(event->xkey), &ckeychar, 1, &keysym,
-				      NULL);
+		if (MR_MENUIM_XIC(mr) != NULL)
+		{
+			fprintf(stderr, "Using XIC ----\n");
+			index = XmbLookupString(MR_MENUIM_XIC(mr),
+					&(event->xkey), &ckeychar, sizeof(ckeychar), &keysym, NULL);
+			fprintf(stderr, "INDEX:  %d\n", index);
+		}
+
+		if (index == 0)
+		{
+			fprintf(stderr, "Using XLS ----\n");
+			index = XLookupString(&(event->xkey), &ckeychar, sizeof(ckeychar), &keysym, NULL);
+			fprintf(stderr, "INDEX:  %d\n", index);
+		}
 		ikeychar = (int)ckeychar;
 	}
 	/*** Try to match hot keys ***/
 
 	/* Need isascii here - isgraph might coredump! */
-	if (index == 1 && isascii(ikeychar) && isgraph(ikeychar) &&
-	    with_control == 0 && with_meta == 0)
+	/* TA:  (2009/06/28):  But using isascii() stops accented chars!  In
+	 * either case, this coredump was most likely undefined behaviour seen
+	 * locally at one point.
+	 */
+	if (index == 1 && isgraph(ikeychar) && with_control == 0 && with_meta == 0)
 	{
 		/* allow any printable character to be a keysym, but be sure
 		 * control isn't pressed */
@@ -692,7 +707,21 @@ void menu_shortcuts(
 				key = (MI_LABEL(mi)[(int)MI_HOTKEY_COLUMN(mi)])
 					[MI_HOTKEY_COFFSET(mi)];
 				key = tolower(key);
-				if (ikeychar == key)
+
+				/* TA:  But when comparing hotkeys, ensure we
+				 * make the comparison based on the actual
+				 * character, and not the keysyms -- applies
+				 * to the case of non-ascii chars.
+				 */
+				/* TA:  (2009/06/28):  FIXME -- we really
+				 * -have- to find a better way of dealing with
+				 *  different character sets.
+				 */
+				fprintf(stderr, "ikeychar: %c (%d) with:  key %c (%d)\n",
+						ikeychar, (int)ikeychar, key, (int)key);
+
+				/*if ((char)ikeychar == (char)key)*/
+				if((char)key == (char)ikeychar)
 				{
 					if (++countHotkey == 1)
 					{
