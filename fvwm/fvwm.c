@@ -28,6 +28,7 @@
 
 #include <stdio.h>
 #include <signal.h>
+#include <errno.h>
 #include <sys/stat.h>
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
@@ -41,12 +42,20 @@
 #endif
 
 #include <X11/Xproto.h>
+#include <X11/Xatom.h>
 
 #include "libs/fvwmlib.h"
+#include "libs/envvar.h"
+#include "libs/Strings.h"
+#include "libs/System.h"
+#include "libs/Grab.h"
+#include "libs/ColorUtils.h"
+#include "libs/Graphics.h"
 #include "libs/FScreen.h"
 #include "libs/FShape.h"
 #include "libs/PictureBase.h"
 #include "libs/PictureUtils.h"
+#include "libs/Fsvg.h"
 #include "libs/FRenderInit.h"
 #include "libs/charmap.h"
 #include "libs/wcontext.h"
@@ -57,7 +66,7 @@
 #include "misc.h"
 #include "screen.h"
 #include "builtins.h"
-#include "module_interface.h"
+#include "module_list.h"
 #include "colorset.h"
 #include "events.h"
 #include "eventhandler.h"
@@ -66,7 +75,7 @@
 #include "gnome.h"
 #include "ewmh.h"
 #include "add_window.h"
-#include "fvwmsignal.h"
+#include "libs/fvwmsignal.h"
 #include "stack.h"
 #include "virtual.h"
 #include "session.h"
@@ -76,6 +85,7 @@
 #include "move_resize.h"
 #include "frame.h"
 #include "menus.h"
+#include "menubindings.h"
 #include "libs/FGettext.h"
 
 /* ---------------------------- local definitions -------------------------- */
@@ -127,7 +137,7 @@ static char *home_dir;
 
 static volatile sig_atomic_t fvwmRunState = FVWM_RUNNING;
 
-static const char *initFunctionNames[4] =
+static const char *init_function_names[4] =
 {
 	"InitFunction",
 	"RestartFunction",
@@ -150,7 +160,8 @@ XContext MenuContext;           /* context for fvwm menus */
 
 int JunkX = 0, JunkY = 0;
 Window JunkRoot, JunkChild;             /* junk window */
-unsigned int JunkWidth, JunkHeight, JunkBW, JunkDepth, JunkMask;
+int JunkWidth, JunkHeight, JunkBW, JunkDepth;
+unsigned int JunkMask;
 
 Bool debugging = False;
 Bool debugging_stack_ring = False;
@@ -164,7 +175,7 @@ char *state_filename = NULL;
 char *restart_state_filename = NULL;  /* $HOME/.fs-restart */
 
 Bool Restarting = False;
-int fd_width, x_fd;
+int x_fd;
 char *display_name = NULL;
 char *fvwm_userdir;
 char const *Fvwm_VersionInfo;
@@ -308,7 +319,7 @@ SigDone(int sig)
 }
 
 /*
- * parseCommandArgs - parses a given command string into a given limited
+ * parse_command_args - parses a given command string into a given limited
  * argument array suitable for execv*. The parsing is similar to shell's.
  * Returns:
  *   positive number of parsed arguments - on success,
@@ -327,121 +338,121 @@ SigDone(int sig)
  * on the next function call. This can be changed using dynamic allocation,
  * in this case the caller must free the string pointed by argv[0].
  */
-static int parseCommandArgs(
-	const char *command, char **argv, int maxArgc, const char **errorMsg)
+static int parse_command_args(
+	const char *command, char **argv, int max_argc, const char **error_msg)
 {
 	/* It is impossible to guess the exact length because of expanding */
 #define MAX_TOTAL_ARG_LEN 256
-	/* char *argString = safemalloc(MAX_TOTAL_ARG_LEN); */
-	static char argString[MAX_TOTAL_ARG_LEN];
-	int totalArgLen = 0;
-	int errorCode = 0;
+	/* char *arg_string = safemalloc(MAX_TOTAL_ARG_LEN); */
+	static char arg_string[MAX_TOTAL_ARG_LEN];
+	int total_arg_len = 0;
+	int error_code = 0;
 	int argc;
-	char *aptr = argString;
+	char *aptr = arg_string;
 	const char *cptr = command;
 
-#define theChar (*cptr)
-#define advChar (cptr++)
-#define topChar (*cptr     == '\\'? *(cptr+1): *cptr)
-#define popChar (*(cptr++) == '\\'? *(cptr++): *(cptr-1))
-#define canAddArgChar (totalArgLen < MAX_TOTAL_ARG_LEN-1)
-#define addArgChar(ch) (++totalArgLen, *(aptr++) = ch)
-#define canAddArgStr(str) (totalArgLen < MAX_TOTAL_ARG_LEN-strlen(str))
-#define addArgStr(str) \
+#define the_char (*cptr)
+#define adv_char (cptr++)
+#define top_char (*cptr     == '\\' ? *(cptr + 1) : *cptr)
+#define pop_char (*(cptr++) == '\\' ? *(cptr++) : *(cptr - 1))
+#define can_add_arg_char (total_arg_len < MAX_TOTAL_ARG_LEN-1)
+#define add_arg_char(ch) (++total_arg_len, *(aptr++) = ch)
+#define can_add_arg_str(str) (total_arg_len < MAX_TOTAL_ARG_LEN - strlen(str))
+#define add_arg_str(str) \
 {\
 	const char *tmp = str;\
 	while (*tmp)\
 	{\
-		addArgChar(*(tmp++));\
+		add_arg_char(*(tmp++));\
 	}\
 }
 
-	*errorMsg = "";
+	*error_msg = "";
 	if (!command)
 	{
-		*errorMsg = "No command";
+		*error_msg = "No command";
 		return -1;
 	}
-	for (argc = 0; argc < maxArgc - 1; argc++)
+	for (argc = 0; argc < max_argc - 1; argc++)
 	{
-		int sQuote = 0;
+		int s_quote = 0;
 		argv[argc] = aptr;
-		while (isspace(theChar))
+		while (isspace(the_char))
 		{
-			advChar;
+			adv_char;
 		}
-		if (theChar == '\0')
+		if (the_char == '\0')
 		{
 			break;
 		}
-		while ((sQuote || !isspace(theChar)) &&
-		       theChar != '\0' && canAddArgChar)
+		while ((s_quote || !isspace(the_char)) &&
+		       the_char != '\0' && can_add_arg_char)
 		{
-			if (theChar == '"')
+			if (the_char == '"')
 			{
-				if (sQuote)
+				if (s_quote)
 				{
-					sQuote = 0;
+					s_quote = 0;
 				}
 				else
 				{
-					sQuote = 1;
+					s_quote = 1;
 				}
-				advChar;
+				adv_char;
 			}
-			else if (!sQuote && theChar == '\'')
+			else if (!s_quote && the_char == '\'')
 			{
-				advChar;
-				while (theChar != '\'' && theChar != '\0' &&
-				       canAddArgChar)
+				adv_char;
+				while (the_char != '\'' && the_char != '\0' &&
+				       can_add_arg_char)
 				{
-					addArgChar(popChar);
+					add_arg_char(pop_char);
 				}
-				if (theChar == '\'')
+				if (the_char == '\'')
 				{
-					advChar;
+					adv_char;
 				}
-				else if (!canAddArgChar)
+				else if (!can_add_arg_char)
 				{
 					break;
 				}
 				else
 				{
-					*errorMsg = "No closing single quote";
-					errorCode = -3;
+					*error_msg = "No closing single quote";
+					error_code = -3;
 					break;
 				}
 			}
-			else if (!sQuote && theChar == '~')
+			else if (!s_quote && the_char == '~')
 			{
-				if (!canAddArgStr(home_dir))
+				if (!can_add_arg_str(home_dir))
 				{
 					break;
 				}
-				addArgStr(home_dir);
-				advChar;
+				add_arg_str(home_dir);
+				adv_char;
 			}
-			else if (theChar == '$')
+			else if (the_char == '$')
 			{
 				int beg, len;
 				const char *str = getFirstEnv(cptr, &beg, &len);
 
 				if (!str || beg)
 				{
-					addArgChar(theChar);
-					advChar;
+					add_arg_char(the_char);
+					adv_char;
 					continue;
 				}
-				if (!canAddArgStr(str))
+				if (!can_add_arg_str(str))
 				{
 					break;
 				}
-				addArgStr(str);
+				add_arg_str(str);
 				cptr += len;
 			}
 			else
 			{
-				if (addArgChar(popChar) == '\0')
+				if (add_arg_char(pop_char) == '\0')
 				{
 					break;
 				}
@@ -449,43 +460,43 @@ static int parseCommandArgs(
 		}
 		if (*(aptr-1) == '\0')
 		{
-			*errorMsg = "Unexpected last backslash";
-			errorCode = -2;
+			*error_msg = "Unexpected last backslash";
+			error_code = -2;
 			break;
 		}
-		if (errorCode)
+		if (error_code)
 		{
 			break;
 		}
-		if (theChar == '~' || theChar == '$' || !canAddArgChar)
+		if (the_char == '~' || the_char == '$' || !can_add_arg_char)
 		{
-			*errorMsg = "The command is too long";
-			errorCode = -argc - 100;
+			*error_msg = "The command is too long";
+			error_code = -argc - 100;
 			break;
 		}
-		if (sQuote)
+		if (s_quote)
 		{
-			*errorMsg = "No closing double quote";
-			errorCode = -4;
+			*error_msg = "No closing double quote";
+			error_code = -4;
 			break;
 		}
-		addArgChar('\0');
+		add_arg_char('\0');
 	}
-#undef theChar
-#undef advChar
-#undef topChar
-#undef popChar
-#undef canAddArgChar
-#undef addArgChar
-#undef canAddArgStr
-#undef addArgStr
+#undef the_char
+#undef adv_char
+#undef top_char
+#undef pop_char
+#undef can_add_arg_char
+#undef add_arg_char
+#undef can_add_arg_str
+#undef add_arg_str
 	argv[argc] = NULL;
-	if (argc == 0 && !errorCode)
+	if (argc == 0 && !error_code)
 	{
-		*errorMsg = "Void command";
+		*error_msg = "Void command";
 	}
 
-	return errorCode ? errorCode : argc;
+	return error_code ? error_code : argc;
 }
 
 /*
@@ -524,27 +535,27 @@ char *get_display_name(char *display_name, int screen_num)
 /*
  *
  *  Procedure:
- *      Done - tells FVWM to clean up and exit
+ *      Done - tells fvwm to clean up and exit
  *
  */
 /* if restart is true, command must not be NULL... */
 void Done(int restart, char *command)
 {
-	const char *exitFuncName;
+	const char *exit_func_name;
 
 	if (!restart)
 	{
 		MoveViewport(0,0,False);
 	}
 	/* migo (03/Jul/1999): execute [Session]ExitFunction */
-	exitFuncName = getInitFunctionName(2);
-	if (functions_is_complex_function(exitFuncName))
+	exit_func_name = get_init_function_name(2);
+	if (functions_is_complex_function(exit_func_name))
 	{
 		const exec_context_t *exc;
 		exec_context_changes_t ecc;
 
 		char *action = safestrdup(
-			CatString2("Function ", exitFuncName));
+			CatString2("Function ", exit_func_name));
 		ecc.type = restart ? EXCT_TORESTART : EXCT_QUIT;
 		ecc.w.wcontext = C_ROOT;
 		exc = exc_create_context(&ecc, ECC_TYPE | ECC_WCONTEXT);
@@ -563,7 +574,7 @@ void Done(int restart, char *command)
 	EWMH_ExitStuff();
 	if (restart)
 	{
-		Bool doPreserveState = True;
+		Bool do_preserve_state = True;
 		SaveDesktopState();
 
 		if (command)
@@ -574,7 +585,7 @@ void Done(int restart, char *command)
 			}
 			if (strncmp(command, "--dont-preserve-state", 21) == 0)
 			{
-				doPreserveState = False;
+				do_preserve_state = False;
 				command += 21;
 				while (isspace(command[0])) command++;
 			}
@@ -587,7 +598,7 @@ void Done(int restart, char *command)
 		/* won't return under SM on Restart without parameters */
 		RestartInSession(
 			restart_state_filename, command == NULL,
-			doPreserveState);
+			do_preserve_state);
 
 		/* RBW - 06/08/1999 - without this, windows will wander to
 		 * other pages on a Restart/Recapture because Restart gets the
@@ -611,16 +622,16 @@ void Done(int restart, char *command)
 		if (command)
 		{
 			char *my_argv[MAX_ARG_SIZE];
-			const char *errorMsg;
-			int n = parseCommandArgs(
-				command, my_argv, MAX_ARG_SIZE, &errorMsg);
+			const char *error_msg;
+			int n = parse_command_args(
+				command, my_argv, MAX_ARG_SIZE, &error_msg);
 
 			if (n <= 0)
 			{
 				fvwm_msg(
 					ERR, "Done",
 					"Restart command parsing error in"
-					" (%s): [%s]", command, errorMsg);
+					" (%s): [%s]", command, error_msg);
 			}
 			else if (strcmp(my_argv[0], "--pass-args") == 0)
 			{
@@ -706,7 +717,7 @@ void Done(int restart, char *command)
 	 * SubstructureRedirect selected on the root window ==> windows end up
 	 * in nirvana. This explicitly happened with windows unswallowed by
 	 * FvwmButtons. */
-	ClosePipes();
+	module_kill_all();
 
 	exit(0);
 }
@@ -806,13 +817,26 @@ InstallSignals(void)
 #endif
 #endif
 
-	/* When FVWM restarts, the SIGCHLD handler is automatically reset
+	/* When fvwm restarts, the SIGCHLD handler is automatically reset
 	 * to the default handler. This means that Zombies left over from
-	 * the previous instance of FVWM could still be roaming the process
+	 * the previous instance of fvwm could still be roaming the process
 	 * table if they exited while the default handler was in place.
 	 * We fix this by invoking the SIGCHLD handler NOW, so that they
 	 * may finally rest in peace. */
 	fvwmReapChildren(0);
+
+	return;
+}
+
+void fvmm_deinstall_signals(void)
+{
+	signal(SIGCHLD, SIG_DFL);
+	signal(SIGHUP, SIG_DFL);
+	signal(SIGINT, SIG_DFL);
+	signal(SIGPIPE, SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+	signal(SIGTERM, SIG_DFL);
+	signal(SIGUSR1, SIG_DFL);
 
 	return;
 }
@@ -835,11 +859,11 @@ static void LoadDefaultLeftButton(DecorFace *df, int i)
 	case 0:
 	case 4:
 		v->num = 5;
-		v->x = safemalloc(sizeof(char) * v->num);
-		v->y = safemalloc(sizeof(char) * v->num);
-		v->xoff = safemalloc(sizeof(char) * v->num);
-		v->yoff = safemalloc(sizeof(char) * v->num);
-		v->c = safecalloc(v->num, sizeof(char));
+		v->x = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->y = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->xoff = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->yoff = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->c = (signed char*)safecalloc(v->num, sizeof(char));
 		v->x[0] = 22;
 		v->y[0] = 39;
 		v->c[0] = 1;
@@ -856,11 +880,11 @@ static void LoadDefaultLeftButton(DecorFace *df, int i)
 		break;
 	case 1:
 		v->num = 5;
-		v->x = safemalloc(sizeof(char) * v->num);
-		v->y = safemalloc(sizeof(char) * v->num);
-		v->xoff = safemalloc(sizeof(char) * v->num);
-		v->yoff = safemalloc(sizeof(char) * v->num);
-		v->c = safecalloc(v->num, sizeof(char));
+		v->x = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->y = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->xoff = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->yoff = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->c = (signed char*)safecalloc(v->num, sizeof(char));
 		v->x[0] = 32;
 		v->y[0] = 45;
 		v->x[1] = 68;
@@ -876,11 +900,11 @@ static void LoadDefaultLeftButton(DecorFace *df, int i)
 		break;
 	case 2:
 		v->num = 5;
-		v->x = safemalloc(sizeof(char) * v->num);
-		v->y = safemalloc(sizeof(char) * v->num);
-		v->xoff = safemalloc(sizeof(char) * v->num);
-		v->yoff = safemalloc(sizeof(char) * v->num);
-		v->c = safecalloc(v->num, sizeof(char));
+		v->x = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->y = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->xoff = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->yoff = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->c = (signed char*)safecalloc(v->num, sizeof(char));
 		v->x[0] = 49;
 		v->y[0] = 49;
 		v->c[0] = 1;
@@ -897,11 +921,11 @@ static void LoadDefaultLeftButton(DecorFace *df, int i)
 		break;
 	case 3:
 		v->num = 5;
-		v->x = safemalloc(sizeof(char) * v->num);
-		v->y = safemalloc(sizeof(char) * v->num);
-		v->xoff = safemalloc(sizeof(char) * v->num);
-		v->yoff = safemalloc(sizeof(char) * v->num);
-		v->c = safecalloc(v->num, sizeof(char));
+		v->x = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->y = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->xoff = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->yoff = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->c = (signed char*)safecalloc(v->num, sizeof(char));
 		v->x[0] = 32;
 		v->y[0] = 45;
 		v->c[0] = 1;
@@ -945,11 +969,11 @@ static void LoadDefaultRightButton(DecorFace *df, int i)
 	case 0:
 	case 3:
 		v->num = 5;
-		v->x = safemalloc(sizeof(char) * v->num);
-		v->y = safemalloc(sizeof(char) * v->num);
-		v->xoff = safemalloc(sizeof(char) * v->num);
-		v->yoff = safemalloc(sizeof(char) * v->num);
-		v->c = safecalloc(v->num, sizeof(char));
+		v->x = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->y = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->xoff = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->yoff = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->c = (signed char*)safecalloc(v->num, sizeof(char));
 		v->x[0] = 25;
 		v->y[0] = 25;
 		v->c[0] = 1;
@@ -966,11 +990,11 @@ static void LoadDefaultRightButton(DecorFace *df, int i)
 		break;
 	case 1:
 		v->num = 5;
-		v->x = safemalloc(sizeof(char) * v->num);
-		v->y = safemalloc(sizeof(char) * v->num);
-		v->xoff = safemalloc(sizeof(char) * v->num);
-		v->yoff = safemalloc(sizeof(char) * v->num);
-		v->c = safecalloc(v->num, sizeof(char));
+		v->x = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->y = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->xoff = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->yoff = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->c = (signed char*)safecalloc(v->num, sizeof(char));
 		v->x[0] = 39;
 		v->y[0] = 39;
 		v->c[0] = 1;
@@ -987,11 +1011,11 @@ static void LoadDefaultRightButton(DecorFace *df, int i)
 		break;
 	case 2:
 		v->num = 5;
-		v->x = safemalloc(sizeof(char) * v->num);
-		v->y = safemalloc(sizeof(char) * v->num);
-		v->xoff = safemalloc(sizeof(char) * v->num);
-		v->yoff = safemalloc(sizeof(char) * v->num);
-		v->c = safecalloc(v->num, sizeof(char));
+		v->x = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->y = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->xoff = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->yoff = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->c = (signed char*)safecalloc(v->num, sizeof(char));
 		v->x[0] = 49;
 		v->y[0] = 49;
 		v->c[0] = 1;
@@ -1008,11 +1032,11 @@ static void LoadDefaultRightButton(DecorFace *df, int i)
 		break;
 	case 4:
 		v->num = 5;
-		v->x = safemalloc(sizeof(char) * v->num);
-		v->y = safemalloc(sizeof(char) * v->num);
-		v->xoff = safemalloc(sizeof(char) * v->num);
-		v->yoff = safemalloc(sizeof(char) * v->num);
-		v->c = safecalloc(v->num, sizeof(char));
+		v->x = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->y = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->xoff = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->yoff = (signed char*)safemalloc(sizeof(char) * v->num);
+		v->c = (signed char*)safecalloc(v->num, sizeof(char));
 		v->x[0] = 36;
 		v->y[0] = 36;
 		v->c[0] = 1;
@@ -1125,13 +1149,7 @@ static void InitVariables(void)
 	Scr.CurrentDesk = 0;
 	Scr.EdgeScrollX = DEFAULT_EDGE_SCROLL * Scr.MyDisplayWidth / 100;
 	Scr.EdgeScrollY = DEFAULT_EDGE_SCROLL * Scr.MyDisplayHeight / 100;
-	Scr.ScrollResistance = DEFAULT_SCROLL_RESISTANCE;
-	Scr.MoveResistance = DEFAULT_MOVE_RESISTANCE;
-	Scr.XiMoveResistance = DEFAULT_XIMOVE_RESISTANCE;
-	Scr.SnapAttraction = DEFAULT_SNAP_ATTRACTION;
-	Scr.SnapMode = DEFAULT_SNAP_ATTRACTION_MODE;
-	Scr.SnapGridX = DEFAULT_SNAP_GRID_X;
-	Scr.SnapGridY = DEFAULT_SNAP_GRID_Y;
+	Scr.ScrollDelay = DEFAULT_SCROLL_DELAY;
 	Scr.OpaqueSize = DEFAULT_OPAQUE_MOVE_SIZE;
 	Scr.MoveThreshold = DEFAULT_MOVE_THRESHOLD;
 	/* ClickTime is set to the positive value upon entering the
@@ -1305,6 +1323,9 @@ static void setVersionInfo(void)
 #ifdef HAVE_PNG
 	strcat(support_str, " PNG,");
 #endif
+#ifdef HAVE_RSVG
+	strcat(support_str, " SVG,");
+#endif
 	if (FHaveShapeExtension)
 		strcat(support_str, " Shape,");
 #ifdef HAVE_XSHM
@@ -1321,6 +1342,9 @@ static void setVersionInfo(void)
 #endif
 #ifdef HAVE_XRENDER
 	strcat(support_str, " XRender,");
+#endif
+#ifdef HAVE_XCURSOR
+	strcat(support_str, " XCursor,");
 #endif
 #ifdef HAVE_XFT
 	strcat(support_str, " XFT,");
@@ -1348,6 +1372,7 @@ static void setVersionInfo(void)
 /* Sets some initial style values & such */
 static void SetRCDefaults(void)
 {
+#define RC_DEFAULTS_COMPLETE ((char *)-1)
 	int i;
 	/* set up default colors, fonts, etc */
 	const char *defaults[][3] = {
@@ -1376,20 +1401,30 @@ static void SetRCDefaults(void)
 		},
 		{
 			"+ \"&4. ",
-			_("Issue FVWM commands"),
+			_("Issue fvwm commands"),
 			"\" Module FvwmConsole"
 		},
 		{
 			"+ \"&R. ",
-			_("Restart FVWM"),
+			_("Restart fvwm"),
 			"\" Restart"
 		},
 		{
 			"+ \"&X. ",
-			_("Exit FVWM"),
+			_("Exit fvwm"),
 			"\" Quit"
 		},
 		{ "Mouse 1 R A Menu MenuFvwmRoot", "", "" },
+		/* default menu navigation */
+		{ "Key Escape M A MenuClose", "", "" },
+		{ "Key Return M A MenuSelectItem", "", "" },
+		{ "Key Left M A MenuCursorLeft", "", "" },
+		{ "Key Right M A MenuCursorRight", "", "" },
+		{ "Key Up M A MenuMoveCursor -1", "", "" },
+		{ "Key Down M A MenuMoveCursor 1", "", "" },
+		{ "Mouse 1 MI A MenuSelectItem", "", "" },
+		/* don't add anything below */
+		{ RC_DEFAULTS_COMPLETE, "", "" },
 		{ "Read "FVWM_DATADIR"/ConfigFvwmDefaults", "", "" },
 		{ NULL, NULL, NULL }
 	};
@@ -1400,6 +1435,11 @@ static void SetRCDefaults(void)
 		exec_context_changes_t ecc;
 		char *cmd;
 
+		if (defaults[i][0] == RC_DEFAULTS_COMPLETE)
+		{
+			menu_bindings_startup_complete();
+			continue;
+		}
 		ecc.type = Restarting ? EXCT_RESTART : EXCT_INIT;
 		ecc.w.wcontext = C_ROOT;
 		exc = exc_create_context(&ecc, ECC_TYPE | ECC_WCONTEXT);
@@ -1408,6 +1448,7 @@ static void SetRCDefaults(void)
 		execute_function(NULL, exc, cmd, 0);
 		exc_destroy_context(exc);
 	}
+#undef RC_DEFAULTS_COMPLETE
 
 	return;
 }
@@ -1427,7 +1468,7 @@ static int CatchFatal(Display *dpy)
 	/* No action is taken because usually this action is caused by someone
 	   using "xlogout" to be able to switch between multiple window managers
 	*/
-	ClosePipes();
+	module_kill_all();
 	exit(1);
 
 	/* to make insure happy */
@@ -1471,8 +1512,8 @@ static int FvwmErrorHandler(Display *dpy, XErrorEvent *event)
 /* Does initial window captures and runs init/restart function */
 void StartupStuff(void)
 {
-#define startFuncName "StartFunction"
-	const char *initFuncName;
+#define start_func_name "StartFunction"
+	const char *init_func_name;
 	const exec_context_t *exc;
 	exec_context_changes_t ecc;
 
@@ -1514,19 +1555,19 @@ void StartupStuff(void)
 #endif
 
 	/* migo (04-Sep-1999): execute StartFunction */
-	if (functions_is_complex_function(startFuncName))
+	if (functions_is_complex_function(start_func_name))
 	{
-		char *action = "Function " startFuncName;
+		char *action = "Function " start_func_name;
 
 		execute_function(NULL, exc, action, 0);
 	}
 
 	/* migo (03-Jul-1999): execute [Session]{Init|Restart}Function */
-	initFuncName = getInitFunctionName(Restarting == True);
-	if (functions_is_complex_function(initFuncName))
+	init_func_name = get_init_function_name(Restarting == True);
+	if (functions_is_complex_function(init_func_name))
 	{
 		char *action = safestrdup(
-			CatString2("Function ", initFuncName));
+			CatString2("Function ", init_func_name));
 
 		execute_function(NULL, exc, action, 0);
 		free(action);
@@ -1658,21 +1699,49 @@ void SetMWM_INFO(Window window)
 }
 
 /*
- * setInitFunctionName - sets one of the init, restart or exit function names
- * getInitFunctionName - gets one of the init, restart or exit function names
+ * set_init_function_name - sets one of the init, restart or exit function names
+ * get_init_function_name - gets one of the init, restart or exit function names
  *
  * First parameter defines a function type: 0 - init, 1 - restart, 2 - exit.
  */
-void setInitFunctionName(int n, const char *name)
+void set_init_function_name(int n, const char *name)
 {
-	initFunctionNames[n >= 0 && n < 3? n: 3] = name;
+	init_function_names[n >= 0 && n < 3? n: 3] = name;
 
 	return;
 }
 
-const char *getInitFunctionName(int n)
+const char *get_init_function_name(int n)
 {
-	return initFunctionNames[n >= 0 && n < 3? n: 3];
+	return init_function_names[n >= 0 && n < 3? n: 3];
+}
+
+#ifndef _PATH_DEVNULL
+#	define _PATH_DEVNULL "/dev/null"
+#endif
+static void reopen_fd(int fd, char* mode, FILE *of)
+{
+	struct stat sbuf;
+	FILE *f;
+	int rc;
+
+	errno = 0;
+	rc = fstat(fd, &sbuf);
+	if (rc == 0)
+	{
+		return;
+	}
+	else if (errno != EBADF)
+	{
+		exit(77);
+	}
+	f = freopen(_PATH_DEVNULL, mode, of);
+	if (f == 0 || fileno(f) != fd)
+	{
+		exit(88);
+	}
+
+	return;
 }
 
 /***********************************************************************
@@ -1700,6 +1769,17 @@ int main(int argc, char **argv)
 
 	DBUG("main", "Entered, about to parse args");
 
+	fvwmlib_init_max_fd();
+	/* close open fds */
+	for (i = 3; i < fvwmlib_max_fd; i++)
+	{
+		close(i);
+	}
+	/* reopen stdin, stdout and stderr if necessary */
+	reopen_fd(0, "rb", stdin);
+	reopen_fd(1, "wb", stdout);
+	reopen_fd(2, "wb", stderr);
+
 	memset(&Scr, 0, sizeof(Scr));
 	/* for use on restart */
 	g_argv = (char **)safemalloc((argc + 4) * sizeof(char *));
@@ -1710,8 +1790,8 @@ int main(int argc, char **argv)
 	}
 	g_argv[g_argc] = NULL;
 
-	FlocaleInit(LC_CTYPE, "", "", "FVWM");
-	FGettextInit("fvwm", LOCALEDIR, "FVWM");
+	FlocaleInit(LC_CTYPE, "", "", "fvwm");
+	FGettextInit("fvwm", LOCALEDIR, "fvwm");
 
 	setVersionInfo();
 	/* Put the default module directory into the environment so it can be
@@ -1885,8 +1965,8 @@ int main(int argc, char **argv)
 			/* obsolete option */
 			fvwm_msg(
 				WARN, "main",
-				"The -blackout option is obsolete, it may be "
-				"removed in the future.");
+				"The -blackout option is obsolete, it will be "
+				"removed in 3.0.");
 		}
 		else if (strcmp(argv[i], "-r") == 0 ||
 			 strcmp(argv[i], "-replace") == 0 ||
@@ -2042,7 +2122,8 @@ int main(int argc, char **argv)
 		if (dn == NULL)
 		{
 			fvwm_msg(
-				ERR, "main", "Cannot found default display (%s)",
+				ERR,
+				"main", "couldn't find default display (%s)",
 				XDisplayName(dn));
 		}
 		else
@@ -2117,7 +2198,6 @@ int main(int argc, char **argv)
 	}
 	FScreenInit(dpy);
 	x_fd = XConnectionNumber(dpy);
-	fd_width = GetFdWidth();
 
 #ifdef HAVE_X11_FD
 	if (fcntl(x_fd, F_SETFD, 1) == -1)
@@ -2176,131 +2256,97 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	if (visualClass != -1)
 	{
-		/* grab the best visual of the required class */
-		XVisualInfo template, *vizinfo;
+		XVisualInfo template, *vinfo = NULL;
 		int total, i;
 
 		Pdepth = 0;
+		Pdefault = False;
+		total = 0;
 		template.screen = Scr.screen;
-		template.class = visualClass;
-		vizinfo = XGetVisualInfo(
-			dpy, VisualScreenMask | VisualClassMask, &template,
-			&total);
-		if (total)
+		if (visualClass != -1)
 		{
-			for (i = 0; i < total; i++)
+			template.class = visualClass;
+			vinfo = XGetVisualInfo(dpy,
+					VisualScreenMask|VisualClassMask,
+					&template, &total);
+			if (!total)
 			{
-				if (vizinfo[i].depth > Pdepth)
-				{
-					Pvisual = vizinfo[i].visual;
-					Pdepth = vizinfo[i].depth;
-				}
+				fvwm_msg(ERR, "main",
+					"Cannot find visual class %d",
+					visualClass);
 			}
-			XFree(vizinfo);
-			/* have to have a colormap for non-default visual
-			 * windows */
-			if (Pvisual->class == DirectColor)
-			{
-				Pcmap = XCreateColormap(
-					dpy, Scr.Root, Pvisual, AllocAll);
-			}
-			else
-			{
-				Pcmap = XCreateColormap(
-					dpy, Scr.Root, Pvisual, AllocNone);
-			}
-			Pdefault = False;
 		}
-		else
+		else if (visualId != -1)
 		{
-			fvwm_msg(
-				ERR, "main", "Cannot find visual class %d",
-				visualClass);
-			visualClass = -1;
+			template.visualid = visualId;
+			vinfo = XGetVisualInfo(dpy,
+					VisualScreenMask|VisualIDMask,
+					&template, &total);
+			if (!total)
+			{
+				fvwm_msg(ERR, "main",
+					"VisualId 0x%x is not valid ",
+					visualId);
+			}
 		}
-	}
-	else if (visualId != -1)
-	{
-		/* grab visual id asked for */
-		XVisualInfo template, *vizinfo;
-		int total;
 
-		Pdepth = 0;
-		template.screen = Scr.screen;
-		template.visualid = visualId;
-		vizinfo = XGetVisualInfo(
-			dpy, VisualScreenMask | VisualIDMask, &template,
-			&total);
-		if (total)
+		/* visualID's are unique so there will only be one.
+		   Select the visualClass with the biggest depth */
+		for (i = 0; i < total; i++)
 		{
-			/* visualID's are unique so there will only be one */
-			Pvisual = vizinfo[0].visual;
-			Pdepth = vizinfo[0].depth;
-			XFree(vizinfo);
-			/* have to have a colormap for non-default visual
-			 * windows */
-			if (Pvisual->class == DirectColor)
+			if (vinfo[i].depth > Pdepth)
 			{
-				Pcmap = XCreateColormap(
-					dpy, Scr.Root, Pvisual, AllocAll);
+				Pvisual = vinfo[i].visual;
+				Pdepth = vinfo[i].depth;
 			}
-			else
-			{
-				Pcmap = XCreateColormap(
-					dpy, Scr.Root, Pvisual, AllocNone);
-			}
-			Pdefault = False;
 		}
-		else
+		if (vinfo)
 		{
-			fvwm_msg(
-				ERR, "main", "VisualId 0x%x is not valid ",
-				visualId);
-			visualId = -1;
+			XFree(vinfo);
 		}
-	}
-
-	/* use default visuals if none found so far */
-	if (visualClass == -1 && visualId == -1)
-	{
-		Pdepth = 0;
 
 		/* Detection of a card with 2 hardware colormaps (8+24) which
 		 * use depth 8 for the default. We can use our own depth 24
 		 * cmap without affecting other applications. */
-		if (DefaultDepth(dpy, Scr.screen) <= 8)
+		if (Pdepth == 0 && DefaultDepth(dpy, Scr.screen) <= 8)
 		{
-			XVisualInfo template, *vizinfo = NULL;
-			int total,i;
-
-			template.screen = Scr.screen;
 			template.class = TrueColor;
-			vizinfo = XGetVisualInfo(
+			vinfo = XGetVisualInfo(
 				dpy, VisualScreenMask|VisualClassMask,
 				&template, &total);
+
 			for(i = 0; i<total; i++)
 			{
-				if (Pdepth < vizinfo[i].depth &&
-				    vizinfo[i].depth > 8)
+				if (Pdepth < vinfo[i].depth &&
+				    vinfo[i].depth > 8)
 				{
-					Pvisual = vizinfo[i].visual;
-					Pdepth = vizinfo[i].depth;
+					Pvisual = vinfo[i].visual;
+					Pdepth = vinfo[i].depth;
 				}
 			}
-			if (vizinfo)
+			if (vinfo)
 			{
-				XFree(vizinfo);
+				XFree(vinfo);
 			}
-			if (Pdepth > 0)
+		}
+
+		/* have to have a colormap for non-default visual windows */
+		if (Pdepth > 0)
+		{
+			if (Pvisual->class == DirectColor)
+			{
+				Pcmap = XCreateColormap(
+					dpy, Scr.Root, Pvisual, AllocAll);
+			}
+			else
 			{
 				Pcmap = XCreateColormap(
 					dpy, Scr.Root, Pvisual, AllocNone);
-				Pdefault = False;
 			}
 		}
-		if (Pdepth == 0)
+		/* use default visuals if none found so far */
+		else
 		{
 			Pvisual = DefaultVisual(dpy, Scr.screen);
 			Pdepth = DefaultDepth(dpy, Scr.screen);
@@ -2320,6 +2366,7 @@ int main(int argc, char **argv)
 	Scr.ColorLimit = PictureInitColors(
 		PICTURE_CALLED_BY_FVWM, True, &colorLimitop, True, True);
 
+	Frsvg_init();
 	FShapeInit(dpy);
 	FRenderInit(dpy);
 	Scr.pscreen = XScreenOfDisplay(dpy, Scr.screen);
@@ -2333,6 +2380,7 @@ int main(int argc, char **argv)
 			XA_CARDINAL, 32, PropModeReplace, NULL, 0);
 
 	Scr.FvwmCursors = CreateCursors(dpy);
+	XDefineCursor(dpy, Scr.Root, Scr.FvwmCursors[CRS_ROOT]);
 	/* create a window which will accept the keyboard focus when no other
 	 * windows have it */
 	/* do this before any RC parsing as some GC's are created from this
@@ -2359,13 +2407,21 @@ int main(int argc, char **argv)
 	}
 
 	SetupICCCM2(replace_wm);
-	XSetErrorHandler(CatchRedirectError);
 	XSetIOErrorHandler(CatchFatal);
-	XSelectInput(dpy, Scr.Root, XEVMASK_ROOTW);
-	XFlush(dpy);
-
-	XSetErrorHandler(FvwmErrorHandler);
-
+	{
+		/* We need to catch any errors of XSelectInput on the root
+		 * window here.  The event mask contains
+		 * SubstructureRedirectMask which can be acquired by exactly
+		 * one client (window manager).  Synchronizing is necessary
+		 * here because Neither XSetErrorHandler nor XSelectInput
+		 * generate any protocol requests.
+		 */
+		XSync(dpy, 0);
+		XSetErrorHandler(CatchRedirectError);
+		XSelectInput(dpy, Scr.Root, XEVMASK_ROOTW);
+		XSync(dpy, 0);
+		XSetErrorHandler(FvwmErrorHandler);
+	}
 	{
 		/* do not grab the pointer earlier because if fvwm exits with
 		 * the pointer grabbed while a different display is visible,
@@ -2414,7 +2470,6 @@ int main(int argc, char **argv)
 		Scr.FvwmRoot.cmap_windows = &Scr.NoFocusWin;
 	}
 	InitEventHandlerJumpTable();
-	initModules();
 
 	Scr.gray_bitmap =
 		XCreateBitmapFromData(dpy,Scr.Root,g_bits, g_width,g_height);
@@ -2506,7 +2561,7 @@ int main(int argc, char **argv)
 	valuemask = CWBackPixel | CWColormap | CWBorderPixel;
 
 	Scr.SizeWindow = XCreateWindow(
-		dpy, Scr.Root, 0, 0, 1, 1, (unsigned int)0, Pdepth,
+		dpy, Scr.Root, 0, 0, 1, 1, 0, Pdepth,
 		InputOutput, Pvisual, valuemask, &attributes);
 	resize_geometry_window();
 	initPanFrames();
@@ -2528,7 +2583,7 @@ int main(int argc, char **argv)
 		Done(1, "");       /* does not return */
 
 	default:
-		DBUG("main", "Unknown FVWM run-state");
+		DBUG("main", "Unknown fvwm run-state");
 	}
 
 	exit(0);

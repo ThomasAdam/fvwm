@@ -28,19 +28,22 @@
 
 #include <stdio.h>
 #include <X11/Xproto.h>
+#include <X11/Xatom.h>
 
 #include "libs/fvwmlib.h"
 #include "libs/FShape.h"
+#include "libs/Parse.h"
+#include "libs/lang-strings.h"
 #include "fvwm.h"
 #include "externs.h"
 #include "execcontext.h"
 #include "commands.h"
 #include "misc.h"
 #include "screen.h"
-#include "lang-strings.h"
 #include "update.h"
 #include "style.h"
 #include "geometry.h"
+#include "decorations.h"
 
 /* ---------------------------- local definitions -------------------------- */
 
@@ -129,7 +132,7 @@ void GetMwmHints(FvwmWindow *t)
 		t->mwm_hints = NULL;
 	}
 	if (XGetWindowProperty(
-		    dpy, FW_W(t), _XA_MwmAtom, 0L, 32, False,
+		    dpy, FW_W(t), _XA_MwmAtom, 0L, 32L, False,
 		    _XA_MwmAtom, &actual_type, &actual_format, &nitems,
 		    &bytesafter,(unsigned char **)&t->mwm_hints)==Success)
 	{
@@ -183,7 +186,7 @@ void GetOlHints(FvwmWindow *t)
 	t->ol_hints = OL_DECOR_ALL;
 
 	if (XGetWindowProperty(
-		    dpy, FW_W(t), _XA_OL_WIN_ATTR, 0L, 32, False,
+		    dpy, FW_W(t), _XA_OL_WIN_ATTR, 0L, 32L, False,
 		    _XA_OL_WIN_ATTR, &actual_type, &actual_format,
 		    &nitems, &bytesafter, (unsigned char **)&hints) == Success)
 	{
@@ -201,7 +204,7 @@ void GetOlHints(FvwmWindow *t)
 			}
 
 			/* got this from olvwm and sort of mapped it to
-			 * FVWM/MWM hints */
+			 * fvwm/MWM hints */
 			if (win_type == _XA_OL_WT_BASE)
 			{
 				t->ol_hints = OL_DECOR_ALL;
@@ -243,7 +246,7 @@ void GetOlHints(FvwmWindow *t)
 	}
 
 	if (XGetWindowProperty(
-		    dpy, FW_W(t), _XA_OL_DECOR_ADD, 0L, 32, False,
+		    dpy, FW_W(t), _XA_OL_DECOR_ADD, 0L, 32L, False,
 		    XA_ATOM, &actual_type, &actual_format, &nitems,
 		    &bytesafter,(unsigned char **)&hints)==Success)
 	{
@@ -274,7 +277,7 @@ void GetOlHints(FvwmWindow *t)
 	}
 
 	if (XGetWindowProperty(
-		    dpy, FW_W(t), _XA_OL_DECOR_DEL, 0L, 32, False,
+		    dpy, FW_W(t), _XA_OL_DECOR_DEL, 0L, 32L, False,
 		    XA_ATOM, &actual_type, &actual_format, &nitems,
 		    &bytesafter,(unsigned char **)&hints)==Success)
 	{
@@ -318,9 +321,9 @@ void SelectDecor(FvwmWindow *t, window_style *pstyle, short *buttons)
 {
 	int decor;
 	int i;
-	short border_width;
-	short handle_width;
-	short used_width;
+	int border_width;
+	int handle_width;
+	int used_width;
 	PropMwmHints *prop;
 	style_flags *sflags = &(pstyle->flags);
 
@@ -614,8 +617,8 @@ void SelectDecor(FvwmWindow *t, window_style *pstyle, short *buttons)
 	return;
 }
 
-static Bool __is_resize_allowed(FvwmWindow *t, int functions,
-				Bool is_user_request)
+static Bool __is_resize_allowed(
+	const FvwmWindow *t, int functions, request_origin_t request_origin)
 {
         if (!HAS_OVERRIDE_SIZE_HINTS(t) &&
 	    t->hints.min_width == t->hints.max_width &&
@@ -623,18 +626,19 @@ static Bool __is_resize_allowed(FvwmWindow *t, int functions,
 	{
 	        return False;
 	}
-	if (is_user_request && IS_SIZE_FIXED(t))
+	if (request_origin && IS_SIZE_FIXED(t))
 	{
 	        return False;
 	}
-	else if (!is_user_request && IS_PSIZE_FIXED(t))
+	else if (!request_origin && IS_PSIZE_FIXED(t))
 	{
 	        return False;
 	}
-	if (is_user_request && !(functions & MWM_FUNC_RESIZE))
+	if (request_origin && !(functions & MWM_FUNC_RESIZE))
 	{
 	        return False;
 	}
+
 	return True;
 }
 
@@ -644,8 +648,8 @@ static Bool __is_resize_allowed(FvwmWindow *t, int functions,
 ** combined them here and made them wrapper functions instead.
 */
 Bool is_function_allowed(
-	int function, char *action_string, FvwmWindow *t, Bool is_user_request,
-	Bool do_allow_override_mwm_hints)
+	int function, char *action_string, const FvwmWindow *t,
+	request_origin_t request_origin, Bool do_allow_override_mwm_hints)
 {
 	unsigned int functions;
 	char *functionlist[] = {
@@ -772,7 +776,7 @@ Bool is_function_allowed(
 		}
 		break;
 	case F_RESIZE:
-	        if(!__is_resize_allowed(t,functions,is_user_request))
+	        if(!__is_resize_allowed(t, functions, request_origin))
 		{
 		        return False;
 		}
@@ -786,11 +790,11 @@ Bool is_function_allowed(
 		break;
 	case F_MAXIMIZE:
 	        if (IS_MAXIMIZE_FIXED_SIZE_DISALLOWED(t) &&
-		    !__is_resize_allowed(t,functions,is_user_request))
+		    !__is_resize_allowed(t, functions, request_origin))
 		{
 		       return False;
 		}
-		if ((is_user_request && !(functions & MWM_FUNC_MAXIMIZE)) ||
+		if ((request_origin && !(functions & MWM_FUNC_MAXIMIZE)) ||
 		    IS_UNMAXIMIZABLE(t))
 		{
 			return False;
@@ -799,15 +803,15 @@ Bool is_function_allowed(
 	case F_MOVE:
 		/* Move is a funny hint. Keeps it out of the menu, but you're
 		 * still allowed to move. */
-		if (is_user_request && IS_FIXED(t))
+		if (request_origin && IS_FIXED(t))
 		{
 			return False;
 		}
-		else if (!is_user_request && IS_FIXED_PPOS(t))
+		else if (!request_origin && IS_FIXED_PPOS(t))
 		{
 			return False;
 		}
-		if (is_user_request && !(functions & MWM_FUNC_MOVE))
+		if (request_origin && !(functions & MWM_FUNC_MOVE))
 		{
 			return False;
 		}

@@ -1,23 +1,23 @@
 .\" t
 .\" @(#)@PACKAGE@-@VERSION@ @RELDATELONG@
-.TH FvwmConsoleC.pl 1 "@RELDATELONG@ (@VERSION@)" FVWM "FVWM Modules"
+.TH FvwmConsoleC.pl 1 "@RELDATELONG@ (@VERSION@)" Fvwm "Fvwm Modules"
 .UC
 
 .SH NAME
-FvwmConsoleC.pl \- Command editor for FVWM command input interface 
+FvwmConsoleC.pl \- Command editor for fvwm command input interface
 .SH SYNOPSIS
 FvwmConsole -e /usr/X11/lib/fvwm/FvwmConsoleC.pl
 
 .SH COPYRIGHT
 Copyright 1996, Toshi Isogai. No guarantees or warranties are provided.
 Use this program at your own risk. Permission to use this program for
-any purpose is given, as long as the copyright is kept intact. 
+any purpose is given, as long as the copyright is kept intact.
 
 
 .SH DESCRIPTION
 FvwmConsoleC.pl offers editing capabilities  while  the  user  is
 entering  the line.  By default, the line editing commands
-are similar to those of emacs. It also offers 
+are similar to those of emacs. It also offers
 .B substitution
 , which replaces a pattern to a string before it sends the command.
 
@@ -26,8 +26,8 @@ Functions are bound to a key or key combination to be
 invoked. The followings are functions available and their
 default key bindings.
 .RS
-.IP \fBbind\fP 
-\fIMeta-k, Cntl-x Cntl-b\fP
+.IP \fBbind\fP
+\fIMeta-k, Ctrl-x Ctrl-b\fP
 .br
 .\"Bind key to function or bind pattern to string for substitution.
 List up key bindings and substitutions.
@@ -39,41 +39,41 @@ Move to the beginning of history.
 Move to the beginning of history. If it is in search mode,
 continue.
 .IP \fBbol\fP
-\fIHome, Cntl-a\fP
+\fIHome, Ctrl-a\fP
 .br
 Move cursor to the beginning of the line.
-.IP "\fBbs[(n)]\fP \fIBackSpace, Cntl-h\fP"
+.IP "\fBbs[(n)]\fP \fIBackSpace, Ctrl-h\fP"
 .br
 Backspace n times. default of n is 1.
 .IP \fBcancel\fP
-\fICntl-x Cntl-k\fP
+\fICtrl-x Ctrl-k\fP
 .br
 Cancel the current input.
 .IP \fBdel_back_line\fP
 .br
 Delete the line from the beginning to the cursor.
-.IP "\fBdel_back_word\fP \fICntl-w\fP"
+.IP "\fBdel_back_word\fP \fICtrl-w\fP"
 .br
 Delete the word from the beginning to the cursor.
-.IP "\fBdel_char [(n)]\fP \fIDelete, Cntl-d\fP"
+.IP "\fBdel_char [(n)]\fP \fIDelete, Ctrl-d\fP"
 Delete n characters from the cursor to the right. Default of n
 is 1.
-.IP "\fBdel_forw_line\fP \fICntl-k\fP"
+.IP "\fBdel_forw_line\fP \fICtrl-k\fP"
 .br
 Delete the line from the cursor to the end.
 .IP "\fBdel_forw_word\fP \fIMeta-d\fP"
 .br
 Delete the word from the cursor to the end.
-.IP "\fBdel_line\fP \fICntl-u\fP"
+.IP "\fBdel_line\fP \fICtrl-u\fP"
 .br
 Delete the entire line.
 .IP \fBenter\fP
-\fIEnter, Cntl-j, Cntl-m\fP
+\fIEnter, Ctrl-j, Ctrl-m\fP
 .br
-Perform substitution if applicable and send the line to Fvwm.
+Perform substitution if applicable and send the line to fvwm.
 .IP "\fBenter_wo_subst\fP \fIMeta-Enter\fP"
 .br
-Send the line to Fvwm without any substitution.
+Send the line to fvwm without any substitution.
 .IP \fBeoh\fP
 .br
 Move to the end of history.
@@ -81,7 +81,7 @@ Move to the end of history.
 .br
 Move to the end of history. If it is in search mode, continue.
 .IP \fBeol\fP
-\fIEnd, Cntl-e\fP
+\fIEnd, Ctrl-e\fP
 .br
 Move the cursor to the end of line.
 .IP "\fBins_char (str)\fP"
@@ -96,10 +96,10 @@ Insert the n-th argument of the previous command at the cursor.
 .IP "\fBlist_func\fP \fIMeta-l\fP"
 .br
 List up available editing functions.
-.IP "\fBnext_char\fP \fIRight, Cntl-f\fP"
+.IP "\fBnext_char\fP \fIRight, Ctrl-f\fP"
 .br
 Move the cursor to the next character.
-.IP "\fBnext_line\fP \fIDown, Cntl-n\fP"
+.IP "\fBnext_line\fP \fIDown, Ctrl-n\fP"
 .br
 Move to the next line in history.
 .IP "\fBnext_word\fP \fIMeta-f\fP"
@@ -107,25 +107,25 @@ Move to the next line in history.
 Move the cursor to the next word.
 .IP \fBprefix\fP
 .br
-Wait for the next character typed in  for multi-key binding. 
-.IP "\fBprev_char\fP \fILeft, Cntl-b\fP"
+Wait for the next character typed in  for multi-key binding.
+.IP "\fBprev_char\fP \fILeft, Ctrl-b\fP"
 .br
 Move the cursor to the previous character.
-.IP "\fBprev_line\fP \fIUp, Cntl-p\fP"
+.IP "\fBprev_line\fP \fIUp, Ctrl-p\fP"
 .br
 Move to the previous line in history.
 .IP "\fBprev_word\fP \fIMeta-b\fP"
 .br
 Move the cursor to the previous word.
 .IP \fBquote\fP
-\fICntl-q\fP
+\fICtrl-q\fP
 .br
 Insert the next character  typed  into  the  buffer literally.
 .IP \fBsearch\fP
-\fICntl-s\fP
+\fICtrl-s\fP
 .br
 Search pattern in history.
-.IP "\fBsearch_rev\fP \fICntl-r\fP"
+.IP "\fBsearch_rev\fP \fICtrl-r\fP"
 .br
 Search pattern in history in reverse order.
 .IP \fBsubst\fP
@@ -133,7 +133,7 @@ Search pattern in history in reverse order.
 .br
 Substitute all patterns to strings and reprint the line.
 The substitutions are not nested and performed in the order
-that they are defined. 
+that they are defined.
 .RE
 
 .SH CONFIGURATION
@@ -151,7 +151,7 @@ In order to undefine, omit the last argument.
 *FvwmConsole: Key \\ck
 .RE
 
-Note that non-meta character is case sensitive. 
+Note that non-meta character is case sensitive.
 \\c means control key, \\e means escape, and \\m is alt key.
 .br
 It also accepts Subst configuration. Users often input long fvwm command
@@ -162,12 +162,12 @@ string. Example:
 *FvwmConsole: Subst '^bigx' 'Exec xterm -g 120x60+0+0 -fn 10x20 -fg black -bg lemonchiffon'
 .RE
 
-Typing 'bigx<return>' in FvwmConsole will launch xterm. '^' denotes 
-the beginning of line in 
-.B regular expression. 
+Typing 'bigx<return>' in FvwmConsole will launch xterm. '^' denotes
+the beginning of line in
+.B regular expression.
 \'pl\' in the middle
 of the command will not be replaced. Although the format looks different,
-it takes Perl regular expression. 
+it takes Perl regular expression.
 It just uses single or double quote as the delimiter.
 Single or double quotes have no difference, although they have to match,
 and cannot include itself in the string.
@@ -185,4 +185,4 @@ FvwmConsoleC.pl should be invoked by FvwmConsole.
 FvwmConsole(1x), perlre(1)
 
 .SH AUTHOR
-Toshi Isogai  
+Toshi Isogai

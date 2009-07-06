@@ -1,9 +1,26 @@
 %{
+/* This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+# include "config.h"
 # include "script.h"
 # include "types.h"
+# include "libs/Parse.h"
 
-/* Suppress definition of yyunput(), as we do not use it. */
+/* Suppress definition of yyunput() and yyinput(), as we do not use it. */
 #define YY_NO_UNPUT
+#define YY_NO_INPUT
 
 int numligne=1;
 %}
@@ -27,20 +44,22 @@ get		=
 {bl}		;
 {commentaire}	;
 
-^{bl}+UseGettext	{ return USEGETTEXT; }
-^{bl}+WindowTitle	{ return WINDOWTITLE; }
-^{bl}+WindowLocaleTitle	{ return WINDOWLOCALETITLE; }
-^{bl}+WindowSize	{ return WINDOWSIZE; }
-^{bl}+WindowPosition	{ return WINDOWPOSITION; }
-^{bl}+ForeColor		{ return FORECOLOR; }
-^{bl}+BackColor		{ return BACKCOLOR; }
-^{bl}+ShadowColor	{ return SHADCOLOR; }
-^{bl}+HilightColor	{ return LICOLOR; }
-^{bl}+Colorset		{ return COLORSET; }
-^{bl}+Widget		{ return OBJECT; }
-^{bl}+Property		{ return PROP; }
-^{bl}+Main		{ return MAIN; }
-^{bl}+End		{ return END; }
+^{bl}+UseGettext	       { return USEGETTEXT; }
+^{bl}+WindowTitle	       { return WINDOWTITLE; }
+^{bl}+ChangeWindowTitle	       { return CHWINDOWTITLE; }
+^{bl}+ChangeWindowTitleFromArg { return CHWINDOWTITLEFARG; }
+^{bl}+WindowLocaleTitle	       { return WINDOWLOCALETITLE; }
+^{bl}+WindowSize	       { return WINDOWSIZE; }
+^{bl}+WindowPosition	       { return WINDOWPOSITION; }
+^{bl}+ForeColor		       { return FORECOLOR; }
+^{bl}+BackColor		       { return BACKCOLOR; }
+^{bl}+ShadowColor	       { return SHADCOLOR; }
+^{bl}+HilightColor	       { return LICOLOR; }
+^{bl}+Colorset		       { return COLORSET; }
+^{bl}+Widget		       { return OBJECT; }
+^{bl}+Property		       { return PROP; }
+^{bl}+Main		       { return MAIN; }
+^{bl}+End		       { return END; }
 ^{bl}+Font.* {
   char *tmp,*rest;
 

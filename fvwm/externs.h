@@ -30,8 +30,8 @@
 #define EXTERNS_H
 
 void Done(int, char *) __attribute__((__noreturn__));
-void setInitFunctionName(int n, const char *name);
-const char *getInitFunctionName(int n);
+void set_init_function_name(int n, const char *name);
+const char *get_init_function_name(int n);
 
 extern char NoName[];
 extern char NoClass[];
@@ -40,6 +40,7 @@ extern XGCValues Globalgcv;
 extern unsigned long Globalgcm;
 extern int master_pid;
 extern Display *dpy;
+extern int x_fd;
 extern XContext FvwmContext;
 extern Bool fFvwmInStartup;
 extern Bool DoingCommandLine;
@@ -48,7 +49,8 @@ extern Bool debugging_stack_ring;
 extern int GrabPointerState;
 extern Window JunkRoot, JunkChild;
 extern int JunkX, JunkY;
-extern unsigned int JunkWidth, JunkHeight, JunkBW, JunkDepth, JunkMask;
+extern int JunkWidth, JunkHeight, JunkBW, JunkDepth;
+extern unsigned int JunkMask;
 extern char *fvwm_userdir;
 extern char *display_name;
 extern Atom _XA_MIT_PRIORITY_COLORS;

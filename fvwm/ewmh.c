@@ -54,6 +54,7 @@
 #include "config.h"
 
 #include <stdio.h>
+#include <X11/Xatom.h>
 
 #include "libs/fvwmlib.h"
 #include "libs/FScreen.h"
@@ -336,7 +337,7 @@ ewmh_atom *ewmh_GetEwmhAtomByAtom(Atom atom, ewmh_atom_list_name list_name)
 
 void ewmh_ChangeProperty(
 	Window w, const char *atom_name, ewmh_atom_list_name list,
-	unsigned char *data, unsigned int length)
+	unsigned char *data, int length)
 {
 	ewmh_atom *a;
 	int format = 32;
@@ -381,7 +382,7 @@ static int atom_size(int format)
 }
 
 static
-void *atom_get(Window win, Atom to_get, Atom type, unsigned int *size)
+void *atom_get(Window win, Atom to_get, Atom type, int *size)
 {
 	unsigned char *retval;
 	Atom  type_ret;
@@ -394,7 +395,7 @@ void *atom_get(Window win, Atom to_get, Atom type, unsigned int *size)
 	retval = NULL;
 	length = 0x7fffffff;
 	ok = XGetWindowProperty(
-		dpy, win, to_get, 0, length, False, type, &type_ret,
+		dpy, win, to_get, 0L, length, False, type, &type_ret,
 		&format_ret, &num_ret, &bytes_after, &retval);
 
 	if ((ok == Success) && (retval) && (num_ret > 0) && (format_ret > 0))
@@ -434,7 +435,7 @@ void *atom_get(Window win, Atom to_get, Atom type, unsigned int *size)
 
 void *ewmh_AtomGetByName(
 	Window win, const char *atom_name, ewmh_atom_list_name list,
-	unsigned int *size)
+	int *size)
 {
 	ewmh_atom *a;
 	void *data = NULL;
@@ -725,8 +726,8 @@ void set_kde_sys_tray(void)
 
 void ewmh_AddToKdeSysTray(FvwmWindow *fw)
 {
-	unsigned int size = 0;
-	Atom *val;
+	int size = 0;
+	CARD32 *val;
 	KstItem *t;
 
 	val = ewmh_AtomGetByName(
@@ -843,7 +844,7 @@ void EWMH_ManageKdeSysTray(Window w, int type)
 
 /**** Client lists ****/
 
-void EWMH_SetClientList()
+void EWMH_SetClientList(void)
 {
 	Window *wl = NULL;
 	FvwmWindow *fw;
@@ -873,7 +874,7 @@ void EWMH_SetClientList()
 	return;
 }
 
-void EWMH_SetClientListStacking()
+void EWMH_SetClientListStacking(void)
 {
 	Window *wl = NULL;
 	FvwmWindow *fw;
@@ -1206,14 +1207,19 @@ Bool ewmh_AllowsYes(EWMH_CMD_ARGS)
 
 Bool ewmh_AllowsClose(EWMH_CMD_ARGS)
 {
-	return is_function_allowed(F_CLOSE, NULL, fw, True, False);
+	return is_function_allowed(
+		F_CLOSE, NULL, fw, RQORIG_PROGRAM_US, False);
 }
 
 Bool ewmh_AllowsFullScreen(EWMH_CMD_ARGS)
 {
-	if (!is_function_allowed(F_MAXIMIZE, NULL, fw, True, False) ||
-	    !is_function_allowed(F_MOVE, NULL, fw, True, False) ||
-	    !is_function_allowed(F_RESIZE, NULL, fw, True, True))
+	if (
+		!is_function_allowed(
+			F_MAXIMIZE, NULL, fw, RQORIG_PROGRAM_US, False) ||
+		!is_function_allowed(
+			F_MOVE, NULL, fw, RQORIG_PROGRAM_US, False) ||
+		!is_function_allowed(
+			F_RESIZE, NULL, fw, RQORIG_PROGRAM_US, True))
 	{
 		return False;
 	}
@@ -1223,22 +1229,22 @@ Bool ewmh_AllowsFullScreen(EWMH_CMD_ARGS)
 
 Bool ewmh_AllowsMinimize(EWMH_CMD_ARGS)
 {
-	return is_function_allowed(F_ICONIFY, NULL, fw, True, False);
+	return is_function_allowed(F_ICONIFY, NULL, fw, RQORIG_PROGRAM_US, False);
 }
 
 Bool ewmh_AllowsMaximize(EWMH_CMD_ARGS)
 {
-	return is_function_allowed(F_MAXIMIZE, NULL, fw, True, False);
+	return is_function_allowed(F_MAXIMIZE, NULL, fw, RQORIG_PROGRAM_US, False);
 }
 
 Bool ewmh_AllowsMove(EWMH_CMD_ARGS)
 {
-	return is_function_allowed(F_MOVE, NULL, fw, True, False);
+	return is_function_allowed(F_MOVE, NULL, fw, RQORIG_PROGRAM_US, False);
 }
 
 Bool ewmh_AllowsResize(EWMH_CMD_ARGS)
 {
-	return is_function_allowed(F_RESIZE, NULL, fw, True, False);
+	return is_function_allowed(F_RESIZE, NULL, fw, RQORIG_PROGRAM_US, False);
 }
 
 void EWMH_SetAllowedActions(FvwmWindow *fw)
@@ -1346,10 +1352,10 @@ int ewmh_HandleDesktop(EWMH_CMD_ARGS)
 	FPS_GRAB_FOCUS(S_FOCUS_POLICY(SCC(*style)), 1);
 
 	/* ClickToFocusPassesClick */
-	FPS_PASS_FOCUS_CLICK(S_FOCUS_POLICY(SCF(*style)), 0);
+	FPS_PASS_FOCUS_CLICK(S_FOCUS_POLICY(SCF(*style)), 1);
 	FPS_PASS_FOCUS_CLICK(S_FOCUS_POLICY(SCM(*style)), 1);
 	FPS_PASS_FOCUS_CLICK(S_FOCUS_POLICY(SCC(*style)), 1);
-	FPS_PASS_RAISE_CLICK(S_FOCUS_POLICY(SCF(*style)), 0);
+	FPS_PASS_RAISE_CLICK(S_FOCUS_POLICY(SCF(*style)), 1);
 	FPS_PASS_RAISE_CLICK(S_FOCUS_POLICY(SCM(*style)), 1);
 	FPS_PASS_RAISE_CLICK(S_FOCUS_POLICY(SCC(*style)), 1);
 
@@ -1504,9 +1510,10 @@ int ewmh_HandleToolBar(EWMH_CMD_ARGS)
 
 void ewmh_HandleWindowType(FvwmWindow *fw, window_style *style)
 {
-	Atom *val;
+	CARD32 *val;
+	unsigned int nitems;
 	ewmh_atom *list = ewmh_atom_window_type;
-	unsigned int size = 0;
+	int size = 0;
 	int i = 0;
 	Bool found = False;
 
@@ -1523,7 +1530,8 @@ void ewmh_HandleWindowType(FvwmWindow *fw, window_style *style)
 		return;
 	}
 	/* we support only one window type: the first that we support */
-	while(i < size && !found)
+	nitems = size / sizeof(CARD32);
+	while(i < nitems && !found)
 	{
 		list = ewmh_atom_window_type;
 		while(list->name != NULL && !found)
@@ -1598,8 +1606,8 @@ void EWMH_GetStyle(FvwmWindow *fw, window_style *style)
 
 static void ewmh_check_wm_pid(FvwmWindow *fw)
 {
-	unsigned int size = 0;
-	Atom *val;
+	int size = 0;
+	CARD32 *val;
 
 	fw->ewmh_window_type = 0;
 	val = ewmh_AtomGetByName(
@@ -1786,7 +1794,7 @@ void EWMH_Init(void)
 		Scr.NoFocusWin, "_NET_SUPPORTING_WM_CHECK",
 		EWMH_ATOM_LIST_FVWM_ROOT, (unsigned char *)&val, 1);
 
-	names[0] = "FVWM";
+	names[0] = "fvwm";
 	classhints.res_name= "fvwm";
 	classhints.res_class= "FVWM";
 
@@ -1884,12 +1892,13 @@ void EWMH_fullscreen(FvwmWindow *fw)
 	char cmd[128] = "\0";
 
 	/* maximize with ResizeMoveMaximize */
-	if (!is_function_allowed(
-		    F_MAXIMIZE, NULL, fw, True, False) ||
-	    !is_function_allowed(
-		    F_MOVE, NULL, fw, True, False) ||
-	    !is_function_allowed(
-		    F_RESIZE, NULL, fw, True, True))
+	if (
+		!is_function_allowed(
+			F_MAXIMIZE, NULL, fw, RQORIG_PROGRAM_US, False) ||
+		!is_function_allowed(
+			F_MOVE, NULL, fw, RQORIG_PROGRAM_US, False) ||
+		!is_function_allowed(
+			F_RESIZE, NULL, fw, RQORIG_PROGRAM_US, True))
 	{
 		return;
 	}
@@ -1909,10 +1918,8 @@ void EWMH_fullscreen(FvwmWindow *fw)
 	}
 	SET_EWMH_FULLSCREEN(fw,True);
 	apply_decor_change(fw);
-	fscr.xypos.x =
-		fw->frame_g.x + fw->frame_g.width / 2;
-	fscr.xypos.y =
-		fw->frame_g.y + fw->frame_g.height / 2;
+	fscr.xypos.x = fw->g.frame.x + fw->g.frame.width / 2;
+	fscr.xypos.y = fw->g.frame.y + fw->g.frame.height / 2;
 	FScreenGetScrRect(
 		&fscr, FSCREEN_XYPOS, &scr_g.x, &scr_g.y,
 		&scr_g.width, &scr_g.height);
@@ -1930,8 +1937,7 @@ void EWMH_fullscreen(FvwmWindow *fw)
 		new_layer(fw, Scr.TopLayer);
 		if (sl == 0)
 		{
-			fw->ewmh_normal_layer =
-				Scr.DefaultLayer;
+			fw->ewmh_normal_layer = Scr.DefaultLayer;
 		}
 		else
 		{

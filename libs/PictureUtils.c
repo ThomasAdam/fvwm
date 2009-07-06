@@ -23,20 +23,21 @@
 #include <stdio.h>
 #include <signal.h>
 #include <ctype.h>
-#include <time.h>
 #include <math.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
 
-#include <fvwmlib.h>
+#include "fvwmlib.h"
+#include "envvar.h"
+#include "Grab.h"
+#include "Parse.h"
+#include "ftime.h"
 #include "PictureBase.h"
 #include "PictureUtils.h"
 #include "PictureDitherMatrice.h"
 
 /* ---------------------------- local definitions and macro ----------------- */
-
-#define PICTURE_DEBUG_COLORS_ALLOC_FAILURE 0
 
 #if 0
 /* dv: unused */
@@ -652,9 +653,9 @@ int alloc_color_dynamic_no_limit(
 	}
 	else if (!alloc_color_in_cmap(c, False))
 	{
-		XGrabServer(dpy);
+		MyXGrabServer(dpy);
 		r = alloc_color_in_cmap(c, True);
-		XUngrabServer(dpy);
+		MyXUngrabServer(dpy);
 	}
 	else
 	{
@@ -1769,7 +1770,7 @@ int PictureAllocColorTable(
 	if (Pct == NULL)
 	{
 		fprintf(stderr,
-			"[FVWM] ERR -- Cannot get Black and White. exiting!\n");
+			"[fvwm] ERR -- Cannot get Black and White. exiting!\n");
 		exit(2);
 	}
 	return PColorLimit;
@@ -1853,7 +1854,7 @@ void init_static_colors_table(void)
 {
 	XColor colors[256];
 	int i;
-	int nbr_of_colors = max(256, (1 << Pdepth));
+	int nbr_of_colors = min(256, (1 << Pdepth));
 
 	PColorLimit = nbr_of_colors;
 	Pct = (PColor *)safemalloc((nbr_of_colors+1) * sizeof(PColor));
@@ -2003,8 +2004,8 @@ PictureImageColorAllocator *PictureOpenImageColorAllocator(
 }
 
 void PictureCloseImageColorAllocator(
-	Display *dpy, PictureImageColorAllocator *pica, int *nalloc_pixels,
-	Pixel **alloc_pixels, Bool *no_limit)
+	Display *dpy, PictureImageColorAllocator *pica,
+	int *nalloc_pixels, Pixel **alloc_pixels, Bool *no_limit)
 {
 	if (nalloc_pixels)
 	{
@@ -2021,7 +2022,8 @@ void PictureCloseImageColorAllocator(
 	if (pica->pixels_table)
 	{
 		int i,j;
-		int k = 0, l = 0, np = 0;
+		int k = 0, l = 0;
+		unsigned int np = 0;
 		int free_num = 0;
 		Pixel *free_pixels = NULL;
 		Pixel *save_pixels = NULL;
@@ -2378,7 +2380,7 @@ void PicturePrintColorInfo(int verbose)
 {
 	unsigned long nbr_of_colors = 1 << Pdepth;
 
-	fprintf(stderr, "FVWM info on colors\n");
+	fprintf(stderr, "fvwm info on colors\n");
 	fprintf(stderr, "  Visual ID: 0x%x, Default?: %s, Class: ",
 		(int)(Pvisual->visualid),
 		(Pdefault)? "Yes":"No");

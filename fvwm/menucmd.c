@@ -32,6 +32,8 @@
 
 #include <stdio.h>
 
+#include "libs/Parse.h"
+#include "libs/Strings.h"
 #include "fvwm.h"
 #include "functions.h"
 #include "repeat.h"
@@ -39,6 +41,10 @@
 #include "move_resize.h"
 #include "screen.h"
 #include "menus.h"
+#include "menudim.h"
+#include "menuroot.h"
+#include "menustyle.h"
+#include "menuparameters.h"
 
 /* ---------------------------- local definitions -------------------------- */
 
@@ -60,12 +66,12 @@
 
 static void menu_func(F_CMD_ARGS, Bool fStaysUp)
 {
-	MenuRoot *menu;
+	struct MenuRoot *menu;
 	char *ret_action = NULL;
-	MenuOptions mops;
+	struct MenuOptions mops;
 	char *menu_name = NULL;
-	MenuParameters mp;
-	MenuReturn mret;
+	struct MenuParameters mp;
+	struct MenuReturn mret;
 	FvwmWindow * const fw = exc->w.fw;
 	const Window w = exc->w.w;
 	const exec_context_t *exc2;

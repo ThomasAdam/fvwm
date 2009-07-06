@@ -83,6 +83,7 @@ enum
 	F_LOCALE_PATH,
 	F_MENUSTYLE,
 	F_MODULE,
+	F_MODULE_LISTEN_ONLY,
 	F_MODULE_PATH,
 	F_MODULE_SYNC,
 	F_MOUSE,
@@ -160,6 +161,7 @@ enum
 	F_DESTROY_MOD,
 	F_DESTROY_WINDOW_STYLE,
 	F_ECHO,
+	F_ECHO_FUNC_DEFINITION,
 	F_FLIP_FOCUS,
 	F_FOCUS,
 	F_ICONIFY,
@@ -191,7 +193,8 @@ enum
 	F_END_OF_LIST = 999,
 
 	/* Functions for use by modules only! */
-	F_SEND_WINDOW_LIST = 1000
+	F_SEND_WINDOW_LIST = 1000,
+	F_SEND_REPLY
 };
 
 /* ---------------------------- exported variables (globals) --------------- */
@@ -257,8 +260,8 @@ P(DestroyModuleConfig);
 P(DestroyStyle);
 P(DestroyWindowStyle);
 P(Direction);
-P(Dummy);
 P(Echo);
+P(EchoFuncDefinition);
 P(EdgeCommand);
 P(EdgeLeaveCommand);
 P(EdgeResistance);
@@ -275,6 +278,7 @@ P(FakeKeypress);
 P(FlipFocus);
 P(Focus);
 P(FocusStyle);
+P(Function);
 P(GlobalOpts);
 P(GnomeButton);
 P(GnomeShowDesks);
@@ -289,6 +293,7 @@ P(Iconify);
 P(IconPath);
 P(IgnoreModifiers);
 P(ImagePath);
+P(KeepRc);
 P(Key);
 P(KillModule);
 P(Layer);
@@ -298,6 +303,7 @@ P(Maximize);
 P(Menu);
 P(MenuStyle);
 P(Module);
+P(ModuleListenOnly);
 P(ModulePath);
 P(ModuleSynchronous);
 P(ModuleTimeout);
@@ -346,6 +352,7 @@ P(ScanForWindow);
 P(Schedule);
 P(Scroll);
 P(Send_ConfigInfo);
+P(Send_Reply);
 P(Send_WindowList);
 P(SendToModule);
 P(set_mask);
@@ -353,6 +360,7 @@ P(set_nograb_mask);
 P(set_sync_mask);
 P(SetAnimation);
 P(SetEnv);
+P(Silent);
 P(SnapAttraction);
 P(SnapGrid);
 P(State);
@@ -364,9 +372,11 @@ P(Stroke);
 P(StrokeFunc);
 #endif /* HAVE_STROKE */
 P(Style);
+P(TearMenuOff);
 P(Test);
 P(TestRc);
 P(ThisWindow);
+P(Title);
 P(TitleStyle);
 P(Unalias);
 P(UnsetEnv);

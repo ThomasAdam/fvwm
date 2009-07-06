@@ -27,9 +27,11 @@
 #include "libs/fvwmlib.h"
 #include "libs/FShape.h"
 #include "libs/Colorset.h"
-#include "libs/safemalloc.h"
 #include "libs/PictureBase.h"
+#include "libs/Graphics.h"
+#include "libs/Grab.h"
 #include "libs/PictureGraphics.h"
+#include "libs/XError.h"
 
 /* globals */
 colorset_t *Colorset = NULL;
@@ -268,21 +270,9 @@ void SetWindowBackgroundWithOffset(
 	else
 	{
 
-		pixmap = CreateBackgroundPixmap(
-			dpy, win, width, height, colorset, depth, gc, False);
-		if (x_off != 0 || y_off != 0)
-		{
-			Pixmap p2;
-
-			p2 = ScrollPixmap(
-				dpy, pixmap, gc, x_off, y_off, width, height,
-				depth);
-			if (p2 != None && p2 != ParentRelative && p2 != pixmap)
-			{
-				XFreePixmap(dpy, pixmap);
-				pixmap = p2;
-			}
-		}
+		pixmap = CreateOffsetBackgroundPixmap(
+			dpy, win, x_off, y_off, width, height, colorset,
+			depth, gc, False);
 		if (pixmap)
 		{
 			XSetWindowBackgroundPixmap(dpy, win, pixmap);
@@ -361,10 +351,31 @@ void GetWindowBackgroundPixmapSize(
 	}
 }
 
-/* create a pixmap suitable for plonking on the background of a window */
-Pixmap CreateBackgroundPixmap(Display *dpy, Window win, int width, int height,
-			      colorset_t *colorset, unsigned int depth,
-			      GC gc, Bool is_shape_mask)
+static int is_bad_gc = 0;
+static int BadGCErrorHandler(Display *dpy, XErrorEvent *error)
+{
+	if (error->error_code == BadGC)
+	{
+		is_bad_gc = 1;
+
+		return 0;
+	}
+	else
+	{
+		int rc;
+
+		/* delegate error to original handler */
+		rc = ferror_call_next_error_handler(dpy, error);
+
+		return rc;
+	}
+}
+
+/* create a pixmap suitable for plonking on the background of a part of a
+ * window */
+Pixmap CreateOffsetBackgroundPixmap(
+	Display *dpy, Window win, int x, int y, int width, int height,
+	colorset_t *colorset, unsigned int depth, GC gc, Bool is_shape_mask)
 {
 	Pixmap pixmap = None;
 	Pixmap cs_pixmap = None;
@@ -385,10 +396,10 @@ Pixmap CreateBackgroundPixmap(Display *dpy, Window win, int width, int height,
 		fra.mask = FRAM_DEST_IS_A_WINDOW | FRAM_HAVE_TINT;
 		fra.tint = colorset->tint;
 		fra.tint_percent = colorset->tint_percent;
-		XGrabServer(dpy);
-		pixmap = PGraphicsCreateTransprency(
-			dpy, win, &fra, gc, 0, 0, width, height, True);
-		XUngrabServer(dpy);
+		MyXGrabServer(dpy);
+		pixmap = PGraphicsCreateTransparency(
+			dpy, win, &fra, gc, x, y, width, height, True);
+		MyXUngrabServer(dpy);
 		if (pixmap == None)
 		{
 			return ParentRelative;
@@ -428,7 +439,7 @@ Pixmap CreateBackgroundPixmap(Display *dpy, Window win, int width, int height,
 			}
 		}
 		XTranslateCoordinates(
-			dpy, win, DefaultRootWindow(dpy), 0, 0, &sx, &sy,
+			dpy, win, DefaultRootWindow(dpy), x, y, &sx, &sy,
 			&dummy);
 		pixmap = XCreatePixmap(dpy, win, width, height, Pdepth);
 		if (!pixmap)
@@ -458,11 +469,21 @@ Pixmap CreateBackgroundPixmap(Display *dpy, Window win, int width, int height,
 		xgcv.ts_x_origin = cs_width-sx;
 		xgcv.ts_y_origin = cs_height-sy;
 		fill_gc = fvwmlib_XCreateGC(
-			dpy, win, GCTile | GCTileStipXOrigin | GCTileStipYOrigin
-			| GCFillStyle, &xgcv);
+			dpy, win, GCTile | GCTileStipXOrigin |
+			GCTileStipYOrigin | GCFillStyle, &xgcv);
+		if (fill_gc == None)
+		{
+			XFreePixmap(dpy, pixmap);
+			return None;
+		}
+		XSync(dpy, False);
+		is_bad_gc = 0;
+		ferror_set_temp_error_handler(BadGCErrorHandler);
 		XFillRectangle(dpy, pixmap, fill_gc, 0, 0, width, height);
-		if (CSETS_IS_TRANSPARENT_ROOT_PURE(colorset) &&
-		    colorset->tint_percent > 0)
+		if (
+			is_bad_gc == 0 &&
+			CSETS_IS_TRANSPARENT_ROOT_PURE(colorset) &&
+			colorset->tint_percent > 0)
 		{
 			FvwmRenderAttributes fra;
 
@@ -475,6 +496,14 @@ Pixmap CreateBackgroundPixmap(Display *dpy, Window win, int width, int height,
 				fill_gc, None, None,
 				0, 0, width, height,
 				0, 0, width, height, False);
+		}
+		XSync(dpy, False);
+		ferror_reset_temp_error_handler();
+		if (is_bad_gc == 1)
+		{
+			is_bad_gc = 0;
+			XFreePixmap(dpy, pixmap);
+			pixmap = None;
 		}
 		XFreeGC(dpy,fill_gc);
 		return pixmap;
@@ -596,9 +625,32 @@ Pixmap CreateBackgroundPixmap(Display *dpy, Window win, int width, int height,
 			height, gc);
 	}
 
+	if (x != 0 || y != 0)
+	{
+		Pixmap p2;
+
+		p2 = ScrollPixmap(
+			dpy, pixmap, gc, x, y, width, height,
+			depth);
+		if (p2 != None && p2 != ParentRelative && p2 != pixmap)
+		{
+			XFreePixmap(dpy, pixmap);
+			pixmap = p2;
+		}
+	}
+
 	return pixmap;
 }
 
+/* create a pixmap suitable for plonking on the background of a window */
+Pixmap CreateBackgroundPixmap(Display *dpy, Window win, int width, int height,
+			      colorset_t *colorset, unsigned int depth,
+			      GC gc, Bool is_shape_mask)
+{
+	return CreateOffsetBackgroundPixmap(
+		dpy, win, 0, 0, width, height, colorset, depth, gc,
+		is_shape_mask);
+}
 
 /* Draws a colorset background into the specified rectangle in the target
  * drawable. */

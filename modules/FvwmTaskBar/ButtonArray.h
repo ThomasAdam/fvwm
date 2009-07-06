@@ -11,7 +11,7 @@
  * program for any purpose is given, as long as the copyright is kept intact.
  */
 
-#include <libs/PictureBase.h>
+#include "libs/PictureBase.h"
 
 #define DEFAULT_BTN_WIDTH 180
 
@@ -37,7 +37,8 @@ typedef struct
 {
   int count;
   Button *head, *tail;
-  int x, y, w, h, tw;
+  int x, y;
+  int w, h, tw;
 } ButtonArray;
 
 /* Function Prototypes */

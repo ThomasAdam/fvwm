@@ -22,17 +22,18 @@ typedef XpmExtension   FxpmExtension;
 typedef XpmColor       FxpmColor;
 typedef XpmAttributes  FxpmAttributes;
 typedef XpmImage       FxpmImage;
+typedef XpmInfo        FxpmInfo;
 #else
 typedef struct {
 	char *name;
 	char *value;
 	Pixel pixel;
-}      FxpmColorSymbol;
+} FxpmColorSymbol;
 typedef struct {
 	char *name;
 	unsigned int nlines;
 	char **lines;
-}      FxpmExtension;
+} FxpmExtension;
 typedef struct {
 	char *string;
 	char *symbolic;
@@ -40,7 +41,7 @@ typedef struct {
 	char *g4_color;
 	char *g_color;
 	char *c_color;
-}      FxpmColor;
+} FxpmColor;
 typedef int (*FxpmAllocColorFunc)(
 #ifdef __STDC__
 	Display*,Colormap,char*,XColor*,void*
@@ -87,7 +88,7 @@ typedef struct {
 	FxpmAllocColorFunc alloc_color;
 	FxpmFreeColorsFunc free_colors;
 	void *color_closure;
-}      FxpmAttributes;
+} FxpmAttributes;
 typedef struct {
 	unsigned int width;
 	unsigned int height;
@@ -95,7 +96,12 @@ typedef struct {
 	unsigned int ncolors;
 	FxpmColor *colorTable;
 	unsigned int *data;
-}      FxpmImage;
+} FxpmImage;
+typedef struct {
+	unsigned long valuemask;
+	unsigned int x_hotspot;
+	unsigned int y_hotspot;
+} FxpmInfo;
 #endif
 
 /* ---------------------------- global definitions ------------------------- */
@@ -147,6 +153,7 @@ typedef struct {
 #define FxpmCreatePixmapFromXpmImage(a,b,c,d,e,f) \
 	    XpmCreatePixmapFromXpmImage(a,b,c,d,e,f)
 #define FxpmFreeXpmImage(a) XpmFreeXpmImage(a)
+#define FxpmFreeXpmInfo(a) XpmFreeXpmInfo(a)
 #define FxpmReadFileToPixmap(a,b,c,d,e,f) XpmReadFileToPixmap(a,b,c,d,e,f)
 #define FxpmReadFileToImage(a,b,c,d,e) XpmReadFileToImage(a,b,c,d,e)
 #define FxpmCreatePixmapFromData(a,b,c,d,e,f) \
@@ -197,6 +204,7 @@ typedef struct {
 #define FxpmReadFileToXpmImage(a,b,c) 0
 #define FxpmCreatePixmapFromXpmImage(a,b,c,d,e,f) 0
 #define FxpmFreeXpmImage(a)
+#define FxpmFreeXpmInfo(a)
 #define FxpmReadFileToPixmap(a,b,c,d,e,f) 0
 #define FxpmCreatePixmapFromData(a,b,c,d,e,f) 0
 

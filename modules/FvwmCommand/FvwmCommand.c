@@ -31,11 +31,9 @@
 #include "libs/fvwmlib.h"
 
 #define MYNAME "FvwmCommand"
-#define MAXHOSTNAME 32
 
 static int  Fdr, Fdw;  /* file discriptor for fifo */
 static int  Fdrun;     /* file discriptor for run file */
-static struct stat stat_buf;
 static char *Fr_name = NULL;
 static fd_set fdset;
 
@@ -49,7 +47,6 @@ static int  Opt_flags;
 
 volatile sig_atomic_t  Bg;  /* FvwmCommand in background */
 
-static char hostname[MAXHOSTNAME];
 
 void err_msg( const char *msg );
 void err_quit( const char *msg );
@@ -85,7 +82,6 @@ int main ( int argc, char *argv[])
   char cmd[MAX_MODULE_INPUT_TEXT_LEN + 1];
   char *f_stem, *fc_name, *fm_name;
   char *sf_stem;
-  char *c;
   char *s;
   int  i;
   int  opt;
@@ -209,55 +205,13 @@ int main ( int argc, char *argv[])
 
   if( f_stem == NULL )
   {
-    char *dpy_name;
-    char dpy_name_add[3];
-    int i;
-
-    /* default name */
-    dpy_name = getenv("DISPLAY");
-    if (!dpy_name || *dpy_name == 0)
-      dpy_name = ":0.0";
-    if (strncmp(dpy_name, "unix:", 5) == 0)
-      dpy_name += 4;
-    dpy_name_add[0] = 0;
-    c = strrchr(dpy_name, '.');
-    i = 0;
-    if (c != NULL)
+    if ((f_stem = fifos_get_default_name()) == NULL)
     {
-      if (*(c + 1) != 0)
-      {
-	for (c++, i = 0; isdigit(*c); c++, i++)
-	{
-	  /* nothing */
-	}
-      }
-      else
-      {
-	/* cut off trailing period */
-	*c = 0;
-      }
+       fprintf (stderr, "\n%s can't decide on fifo-name. "
+	       "Make sure that $FVWM_USERDIR is set.\n",
+	       MYNAME );
+       exit(1);
     }
-    if (i == 0)
-    {
-      /* append screen number */
-      strcpy(dpy_name_add, ".0");
-    }
-    f_stem = safemalloc(11 + strlen(F_NAME) + MAXHOSTNAME + strlen(dpy_name));
-
-    if ((stat("/var/tmp", &stat_buf) == 0) && (stat_buf.st_mode & S_IFDIR))
-      strcpy (f_stem, "/var/tmp/");
-    else
-      strcpy (f_stem, "/tmp/");
-    strcat (f_stem, F_NAME);
-
-    /* Make it unique */
-    if (!dpy_name[0] || ':' == dpy_name[0])
-    {
-      gethostname(hostname, MAXHOSTNAME);
-      strcat(f_stem, hostname);  /* Put hostname before dpy if not there */
-    }
-    strcat(f_stem, dpy_name);
-    strcat(f_stem, dpy_name_add);
   }
 
   /* create 2 fifos */
@@ -271,12 +225,12 @@ int main ( int argc, char *argv[])
   strcpy(s,f_stem);
   strcat(s, "R");
 
-  Fdrun = open(s, O_WRONLY | O_CREAT | O_EXCL, 0600);
+  Fdrun = open(s, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0600);
   if (Fdrun < 0)
   {
     FILE *f;
 
-    if ((f = fopen (Fr_name,"r" )) != NULL)
+    if ((f = fopen (s,"r" )) != NULL)
     {
       *cmd = 0;
       fgets(cmd, 20, f);
@@ -314,7 +268,7 @@ int main ( int argc, char *argv[])
 
   Fdr = Fdw = -1;
   count = 0;
-  while ((Fdr=open (fm_name, O_RDONLY)) < 0)
+  while ((Fdr=open (fm_name, O_RDONLY | O_NOFOLLOW)) < 0)
   {
     if (count++>5)
     {
@@ -323,7 +277,7 @@ int main ( int argc, char *argv[])
     sleep(1);
   }
   count = 0;
-  while ((Fdw=open (fc_name, O_WRONLY)) < 0)
+  while ((Fdw=open (fc_name, O_WRONLY | O_NOFOLLOW)) < 0)
   {
     if (count++>2)
     {
@@ -654,7 +608,11 @@ void process_message( void )
       break;
 
     case M_CONFIG_INFO:
-      printf( "%s", (char *)&body[3] );
+      printf( "%s\n", (char *)&body[3] );
+      break;
+
+    case MX_REPLY:
+      list(body, "reply");
       break;
 
     default:

@@ -20,6 +20,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "config.h"
+
 #include "types.h"
 #include "libs/fvwmlib.h"
 #include "libs/FScreen.h"
@@ -33,6 +35,11 @@
 #include "libs/Bindings.h"
 #include "libs/charmap.h"
 #include "libs/wcontext.h"
+#include "libs/ColorUtils.h"
+#include "libs/Graphics.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
+#include "libs/XError.h"
 
 #ifdef MEMDEBUG                 /* For debugging */
 #include <unchecked.h>
@@ -62,7 +69,7 @@ extern int __bounds_debug_no_checking;
 char *ScriptName;       /* Nom du fichier contenat le script decrivant le GUI */
 char *ScriptBaseName;
 char *ScriptPath = "";
-char *ModuleName;
+ModuleArgs *module;
 int fd[2];                      /* pipe pair */
 int fd_err;
 int x_fd;                       /* fd for X */
@@ -188,7 +195,7 @@ void ReadConfig (char *ScriptName)
   if (yyin == NULL)
   {
     fprintf(stderr,"[%s][ReadConfig]: <<ERROR>> Can't open the script %s\n",
-	    ModuleName,s);
+	    module->name,s);
     exit(1);
   }
   /* On ne redefini pas yyout qui est la sortie standard */
@@ -320,11 +327,7 @@ void Xinit(int IsFather)
   }
   screen = DefaultScreen(dpy);
   Root = RootWindow(dpy,screen);
-  PictureInitCMap(dpy);
-  FScreenInit(dpy);
-  AllocColorset(0);
-  FShapeInit(dpy);
-  FRenderInit(dpy);
+  flib_init_graphics(dpy);
   FlocaleAllocateWinString(&FwinString);
   XSetErrorHandler(myErrorHandler);
 
@@ -500,7 +503,7 @@ void OpenWindow (void)
   IndicWM->flags = InputHint|StateHint;
 
   classHints.res_name = safestrdup(ScriptBaseName);
-  classHints.res_class = safestrdup(ModuleName);
+  classHints.res_class = safestrdup(module->name);
 
   XSetWMProperties(dpy, x11base->win, &Name,
 		   &Name, NULL, 0, IndicNorm, IndicWM, &classHints);
@@ -701,42 +704,78 @@ void SendMsgAndString(char *action, char *type)
 {
   int val[2];
   char *token = NULL;
+  char *arg1 = NULL;
+  char *arg2 = NULL;
+  char *windowName;
   int i;
 
-  if (GetIntegerArguments(action, NULL, val, 2) == 2)
-  {
-    if (val[0] > 1000 || val[0] < 1)
-    {
-      fprintf(stderr,
-	"[%s][%s]: <<WARNING>> Widget id out of range: %i\n",
-	ScriptName,type,val[0]);
-      return;
-    }
-    i = TabIdObj[val[0]];
-    if (i != -1) {
-    /* skip the integer argument */
-      action = GetNextToken(action, &token);
-      action = GetNextToken(action, &token);
-      if (LastString != NULL) {
-	free(LastString);
-	LastString = NULL;
+  if(StrEquals(type,"SendString") || StrEquals(type,"CheckBinding")){
+    if (GetIntegerArguments(action, NULL, val, 2) == 2){
+      if (val[0] > 1000 || val[0] < 1){
+	fprintf(stderr,"[%s][%s]: <<WARNING>> Widget id out of range: %i\n",
+		ScriptName,type,val[0]);
+	return;
       }
-      if (action != NULL && strlen(action) > 0)
-	CopyString(&LastString,action);
-      SendMsg(tabxobj[i],val[1]);
+
+      i = TabIdObj[val[0]];
+      if (i != -1) {
+	/* skip the integer argument */
+	action = GetNextToken(action, &token);
+	action = GetNextToken(action, &token);
+	if (LastString != NULL) {
+	  free(LastString);
+	  LastString = NULL;
+	}
+	if (action != NULL && strlen(action) > 0)
+	  CopyString(&LastString,action);
+
+	SendMsg(tabxobj[i],val[1]);
+      }else{
+	fprintf(stderr,"[%s][%s]: <<WARNING>> no Widget %i\n",
+		ScriptName,type,val[0]);
+      }
+      if (token)
+	free(token);
+    }else{
+      fprintf(stderr,"[%s][%s]: <<WARNING>> Syntax Error: %s\n",
+	      ScriptName,type,action);
+    }
+  }else{
+
+    if(StrEquals(type,"ChangeWindowTitle")){
+      action=GetNextToken(action, &arg1);
+      action=GetNextToken(action, &arg2);
+
+      if(arg2 == NULL){
+
+	 XChangeProperty(
+		 dpy, x11base->win, XA_WM_NAME, XA_STRING, 8, PropModeReplace,
+		 (unsigned char*)arg1, strlen(arg1));
+
+      }else{
+	if(XFetchName(dpy, x11base->win, &windowName) == 0){
+		fprintf(
+			stderr,"[%s][SendMsgAndString]: <<ERROR>> "
+			"Can't find the title of a window\n", module->name);
+	}else{
+	  if(StrEquals(arg2,windowName)){
+	    XChangeProperty(
+		    dpy, x11base->win, XA_WM_NAME, XA_STRING, 8,
+		    PropModeReplace, (unsigned char*)arg1, strlen(arg1));
+	  }
+	}
+      }
     }
     else
     {
-	fprintf(stderr,"[%s][%s]: <<WARNING>> no Widget %i\n",
-		ScriptName,type,val[0]);
+	    fprintf(
+		    stderr,"[%s][SendMsgAndString]: <<ERROR>> "
+		    "Unknown SendToModule command: %s\n", module->name, type);
     }
-    if (token)
-      free(token);
-  }
-  else
-  {
-    fprintf(stderr,"[%s][%s]: <<WARNING>> Syntaxe Error: %s\n",
-	    ScriptName,type,action);
+
+    if(arg1) free(arg1);
+    if(arg2) free(arg2);
+
   }
 }
 
@@ -959,7 +998,7 @@ void ReadXServer (void)
 	isTab = 2;
       if (event.xkey.subwindow!=0)
       {
-	/* Envoi de l'evt à l'objet */
+	/* Envoi de l'evt Ã  l'objet */
 	for (i=0; i<nbobj; i++)
 	{
 	  if (tabxobj[i]->win == event.xkey.subwindow)
@@ -1242,9 +1281,9 @@ void MainLoop (void)
 	  char *action, *token;
 	  action = (char*)&(packet->body[3]);
 	  action = GetNextToken(action, &token);
-	  if (StrEquals(token,"SendString")) {
-	    SendMsgAndString(action, "SendString");
-	  }
+
+          SendMsgAndString(action, token);
+
 	  if (token)
 	    free(token);
 	}
@@ -1314,41 +1353,40 @@ int main (int argc, char **argv)
 
   FlocaleInit(LC_CTYPE, "", "", "FvwmScript");
 
-  ModuleName = GetFileNameFromPath(argv[0]);
-
-  if (argc < 6)
+  module = ParseModuleArgs(argc,argv,0); /* no alias */
+  if (module == NULL)
   {
-    fprintf(stderr,"%s must be started by Fvwm.\n", ModuleName);
+    fprintf(stderr,"FvwmScript must be started by Fvwm.\n");
     exit(1);
   }
 
-  if (argc == 6)
+  if (module->user_argc == 0)
   {
-    fprintf(stderr,"%s requires the script's name or path.\n", ModuleName);
+    fprintf(stderr,"FvwmScript requires the script's name or path.\n");
     exit(1);
   }
 
   /* On determine si le script a un pere */
-  if (argc >= 8)
-    IsFather = (argv[7][0] != (char)161);
+  if (module->user_argc >= 2)
+    IsFather = (module->user_argv[1][0] != (char)161);
   else
     IsFather = 1;
 
-  ScriptName = argv[6];
+  ScriptName = module->user_argv[0];
   ScriptBaseName = GetFileNameFromPath(ScriptName);
   ref = strtol(argv[4], NULL, 16);
   if (ref == 0) ref = None;
-  fd[0] = atoi(argv[1]);
-  fd[1] = atoi(argv[2]);
+  fd[0] = module->to_fvwm;
+  fd[1] = module->from_fvwm;
   SetMessageMask(fd, M_NEW_DESK | M_END_WINDOWLIST| M_STRING |
 		 M_MAP|  M_RES_NAME| M_RES_CLASS| M_CONFIG_INFO|
 		 M_END_CONFIG_INFO| M_WINDOW_NAME | M_SENDCONFIG);
   SetMessageMask(fd, MX_PROPERTY_CHANGE);
   /* Enregistrement des arguments du script */
   x11base = (X11base*) safecalloc(1,sizeof(X11base));
-  x11base->TabArg[0] = ModuleName;
-  for (i=8-IsFather; i<argc; i++)
-    x11base->TabArg[i-7+IsFather] = argv[i];
+  x11base->TabArg[0] = module->name;
+  for (i=2-IsFather; i< module->user_argc; i++)
+    x11base->TabArg[i-1+IsFather] = module->user_argv[i];
   /* Couleurs et fontes par defaut */
   x11base->font = NULL;
   x11base->forecolor = safestrdup("black");

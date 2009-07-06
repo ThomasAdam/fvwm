@@ -65,7 +65,7 @@ static void ToggleChoice (Item *item);
 static void ResizeFrame (void);
 
 /* read an X event */
-void ReadXServer ()
+void ReadXServer (void)
 {
   static XEvent event;
   int old_cursor = 0, keypress;
@@ -79,6 +79,15 @@ void ReadXServer ()
     FNextEvent(dpy, &event);
     if (event.xany.window == CF.frame) {
       switch (event.type) {
+      case ClientMessage:
+      {
+	      if(event.xclient.format == 32 &&
+		 event.xclient.data.l[0] == wm_del_win)
+	      {
+		      exit(0);
+	      }
+      }
+      break;
       case ConfigureNotify:             /* has window be reconfigured */
       {
 	      XEvent tmpe;
@@ -669,7 +678,7 @@ static void process_paste_request (XEvent *event, Item *item) {
     if (XGetWindowProperty (dpy,
 			    DefaultRootWindow (dpy),
 			    XA_CUT_BUFFER0,
-			    nread/4, 1024,   /* offset, length */
+			    nread/4, 1024L,   /* offset, length */
 			    False,           /* delete */
 			    AnyPropertyType, /* request type */
 			    &actual_type,

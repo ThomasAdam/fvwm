@@ -19,11 +19,13 @@
 #include "FvwmIconMan.h"
 #include "readconfig.h"
 #include "xmanager.h"
-#include <libs/defaults.h>
-#include <libs/fvwmlib.h>
-#include <libs/FScreen.h>
-#include <libs/FShape.h>
-#include <libs/Module.h>
+#include "libs/defaults.h"
+#include "libs/fvwmlib.h"
+#include "libs/FScreen.h"
+#include "libs/FShape.h"
+#include "libs/Module.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
 
 /*
  *
@@ -81,11 +83,6 @@ FunctionType builtin_functions[] = {
 
 static int num_builtins = sizeof(builtin_functions) / sizeof(FunctionType);
 
-#if FVWM_VERSION == 1
-static FILE *config_fp = NULL;
-#endif
-
-
 /* This is only used for printing out the .fvwmrc line if an error
    occured */
 
@@ -112,7 +109,7 @@ static void save_current_line(char *s)
 
 void print_args(int numargs, BuiltinArg *args)
 {
-#ifdef PRINT_DEBUG
+#ifdef FVWM_DEBUG_MSGS
 	int i;
 
 	for (i = 0; i < numargs; i++) {
@@ -168,13 +165,13 @@ void print_args(int numargs, BuiltinArg *args)
 #endif
 }
 
-#ifdef PRINT_DEBUG
+#ifdef FVWM_DEBUG_MSGS
 static void print_binding(Binding *binding)
 {
 	int i;
 	Function *func;
 
-	if (binding->type == MOUSE_BINDING)
+	if (binding->type == BIND_BUTTONPRESS)
 	{
 		ConsoleDebug(CONFIG, "\tMouse: %d\n", binding->Button_Key);
 	}
@@ -186,8 +183,9 @@ static void print_binding(Binding *binding)
 	}
 
 	ConsoleDebug(CONFIG, "\tModifiers: %d\n", binding->Modifier);
-	ConsoleDebug(CONFIG, "\tAction: %s\n", binding->Action);
-	ConsoleDebug(CONFIG, "\tFunction struct: 0x%x\n", binding->Action2);
+	ConsoleDebug(CONFIG, "\tAction: %s\n", (char *) binding->Action);
+	ConsoleDebug(CONFIG, "\tFunction struct: 0x%x\n",
+		(unsigned int) binding->Action2);
 	func = (Function *)(binding->Action2);
 	while (func)
 	{
@@ -197,7 +195,8 @@ static void print_binding(Binding *binding)
 			{
 				ConsoleDebug(
 					CONFIG, "\tFunction: %s 0x%x ",
-					builtin_functions[i].name, func->func);
+					builtin_functions[i].name,
+					(unsigned int) func->func);
 				break;
 			}
 		}
@@ -205,7 +204,7 @@ static void print_binding(Binding *binding)
 		{
 			ConsoleDebug(
 				CONFIG, "\tFunction: not found 0x%x ",
-				func->func);
+				(unsigned int) func->func);
 		}
 		print_args(func->numargs, func->args);
 		func = func->next;
@@ -863,14 +862,7 @@ static int GetConfigLineWrapper(int *fd, char **tline)
 			*temp = '\0';
 		}
 		/* grok the global config lines */
-/*
-		if (strncasecmp(*tline, DEFGRAPHSTR, DEFGRAPHLEN) == 0)
-		{
-			ParseGraphics(theDisplay, *tline, G);
-			SavePictureCMap(theDisplay, G->viz, G->cmap, G->depth);
-		}
-*/
-		/* add colorlimit in here */
+
 		return 1;
 	}
 
@@ -1037,7 +1029,7 @@ static NameType parse_format_dependencies(char *format)
 			}
 		}
 	}
-#ifdef PRINT_DEBUG
+#ifdef FVWM_DEBUG_MSGS
 	ConsoleDebug(CONFIG, "Format depends on: ");
 	if (flags & ICON_NAME)
 	{
@@ -1190,7 +1182,7 @@ static void add_weighted_sort(WinManager *man, WeightedSort *weighted_sort)
 	++man->weighted_sorts_len;
 }
 
-void read_in_resources()
+void read_in_resources(void)
 {
   char *p, *q;
   int i, n, manager;
@@ -1714,7 +1706,7 @@ void read_in_resources()
 	p = read_next_cmd(READ_ARG);
 	if (!p) {
 	  ConsoleMessage("Bad line: %s\n", current_line);
-	  ConsoleMessage("Need argument to followfocus\n");
+	  ConsoleMessage("Need argument to shape\n");
 	  continue;
 	}
 	if (!strcasecmp(p, "true")) {
@@ -2296,7 +2288,7 @@ void process_dynamic_config_line(char *line)
 	}
 	manager--;
 
-	/* currently support only "resolution" */
+	/* currently supports only "resolution" and "tips" */
 	if (strcasecmp(token, "resolution") == 0)
 	{
 		int value;

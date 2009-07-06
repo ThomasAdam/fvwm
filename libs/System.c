@@ -20,12 +20,14 @@
 
 #include "config.h"
 #include "fvwmlib.h"
-
+#include "envvar.h"
+#include "System.h"
+#include "Strings.h"
 
 #if HAVE_UNAME
 #include <sys/utsname.h>
 #endif
-#include <sys/stat.h>
+#include "libs/fvwm_sys_stat.h"
 
 #if HAVE_SYS_SELECT_H
 #include <sys/select.h>
@@ -40,13 +42,22 @@
 #endif
 
 
-int GetFdWidth(void)
+fd_set_size_t fvwmlib_max_fd = (fd_set_size_t)-9999999;
+
+fd_set_size_t GetFdWidth(void)
 {
 #if HAVE_SYSCONF
 	return min(sysconf(_SC_OPEN_MAX),FD_SETSIZE);
 #else
 	return min(getdtablesize(),FD_SETSIZE);
 #endif
+}
+
+void fvwmlib_init_max_fd(void)
+{
+	fvwmlib_max_fd = GetFdWidth();
+
+	return;
 }
 
 
@@ -120,6 +131,12 @@ char *searchPath(
 		return NULL;
 	}
 
+	if (pathlist == NULL || *pathlist == 0)
+	{
+		/* use pwd if no path list is given */
+		pathlist = ".";
+	}
+
 	filename_len = strlen(filename);
 	maxpath_len = (pathlist) ? strlen(pathlist) : 0;
 	maxpath_len += (suffix) ? strlen(suffix) : 0;
@@ -128,12 +145,23 @@ char *searchPath(
 	path = safemalloc(maxpath_len + filename_len + 2);
 	*path = '\0';
 
-	if (*filename == '/' || pathlist == NULL || *pathlist == '\0')
+	if (*filename == '/')
 	{
 		/* No search if filename begins with a slash */
-		/* No search if pathlist is empty */
 		strcpy(path, filename);
-		return path;
+
+		/* test if the path is accessable -- the module code assumes
+		 * this is done */
+		if (access(filename, type) == 0)
+		{
+			return path;
+		}
+
+		/* the file is not accessable (don't test suffixes with full
+		 * path), return NULL */
+		free(path);
+
+		return NULL;
 	}
 
 	/* Search each element of the pathlist for the file */
@@ -240,7 +268,7 @@ Bool isFileStampChanged(const FileStamp *stamp, const char *name)
 	return *stamp != getFileStamp(name);
 }
 
-#ifdef HAVE_SAFTY_MKSTEMP
+#ifdef HAVE_SAFETY_MKSTEMP
 int fvwm_mkstemp (char *TEMPLATE)
 {
 	return mkstemp(TEMPLATE);
@@ -258,7 +286,7 @@ int fvwm_mkstemp (char *TEMPLATE)
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <sys/time.h>
+#include "ftime.h"
 
 #define __set_errno(val) errno = (val)
 
@@ -311,8 +339,9 @@ int fvwm_mkstemp (char *template)
 		v /= 62;
 		XXXXXX[5] = letters[v % 62];
 
-		fd = open (template, O_RDWR | O_CREAT | O_EXCL, 0600);
-
+		fd = open(
+			template, O_RDWR | O_CREAT | O_EXCL,
+			FVWM_S_IRUSR | FVWM_S_IWUSR);
 		if (fd >= 0)
 		{
 			__set_errno (save_errno);
@@ -328,4 +357,5 @@ int fvwm_mkstemp (char *template)
 	__set_errno (EEXIST);
 	return -1;
 }
-#endif /* HAVE_SAFTY_MKSTEMP */
+
+#endif /* HAVE_SAFETY_MKSTEMP */

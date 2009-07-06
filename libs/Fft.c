@@ -23,7 +23,7 @@
 #include <X11/Xlib.h>
 
 #include "fvwmlib.h"
-#include "safemalloc.h"
+#include "wild.h"
 #include "Strings.h"
 #include "Flocale.h"
 #include "Fft.h"
@@ -252,11 +252,13 @@ void FftGetFontWidths(
 	/* FIXME:  max_char_width should not be use in the all fvwm! */
 	if (FftUtf8Support && FLC_ENCODING_TYPE_IS_UTF_8(flf->fc))
 	{
-		FftTextExtentsUtf8(fftdpy, flf->fftf.fftfont, "W", 1, &extents);
+		FftTextExtentsUtf8(fftdpy, flf->fftf.fftfont, (FftChar8*)"W",
+				   1, &extents);
 	}
 	else
 	{
-		FftTextExtents8(fftdpy, flf->fftf.fftfont, "W", 1, &extents);
+		FftTextExtents8(fftdpy, flf->fftf.fftfont, (FftChar8*)"W", 1,
+				&extents);
 	}
 	*max_char_width = extents.xOff;
 
@@ -324,7 +326,7 @@ FftFontType *FftGetFont(Display *dpy, char *fontname, char *module)
 	{
 		goto bail;
 	}
-	/* safty check */
+	/* safety check */
 	if (FftPatternGetMatrix(
 		load_pat, FFT_MATRIX, 0, &a) == FftResultMatch && a)
 	{
@@ -357,7 +359,7 @@ FftFontType *FftGetFont(Display *dpy, char *fontname, char *module)
 			}
 		}
 	}
-	/* FIXME: other safty checking ? */
+	/* FIXME: other safety checking ? */
 	fftfont = FftFontOpenPattern(dpy, load_pat);
 
 	if (!fftfont)
@@ -571,7 +573,8 @@ int FftTextWidth(FlocaleFont *flf, char *str, int len)
 	if (FftUtf8Support && FLC_ENCODING_TYPE_IS_UTF_8(flf->fc))
 	{
 		FftTextExtentsUtf8(
-				fftdpy, flf->fftf.fftfont, str, len, &extents);
+				fftdpy, flf->fftf.fftfont, (FftChar8*)str, len,
+				&extents);
 		result = extents.xOff;
 	}
 	else if (FLC_ENCODING_TYPE_IS_UTF_8(flf->fc))

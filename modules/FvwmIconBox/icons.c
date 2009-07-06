@@ -44,6 +44,8 @@
 #include <X11/Intrinsic.h>
 
 #include "libs/Module.h"
+#include "libs/Grab.h"
+#include "libs/Graphics.h"
 
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
@@ -436,7 +438,8 @@ Bool GetBackPixmap(void)
 	Pixmap maskPixmap;
 	char *path = NULL;
 	Pixmap tmp_pixmap;
-	int w=0, h=0, icon_depth = 0;
+	int w=0, h=0;
+	int icon_depth = 0;
 	FvwmPictureAttributes fpa;
 
 	fpa.mask = FPAM_NO_ALLOC_PIXELS | FPAM_NO_ALPHA;

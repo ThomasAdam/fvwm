@@ -23,8 +23,8 @@
 #include <X11/Xmd.h>
 
 #include "libs/fvwmlib.h"
-#include "libs/fvwmrect.h"
 #include "libs/FScreen.h"
+#include "libs/Strings.h"
 #include "fvwm.h"
 #include "execcontext.h"
 #include "functions.h"
@@ -128,7 +128,7 @@ int ewmh_NumberOfDesktops(EWMH_CMD_ARGS)
 {
 	int d = ev->xclient.data.l[0];
 
-	/* not a lot of sinification for FVWM */
+	/* not a lot of sinification for fvwm */
 	if (d > 0 && (d <= ewmhc.MaxDesktops || ewmhc.MaxDesktops == 0))
 	{
 		ewmhc.NumberOfDesktops = d;
@@ -173,7 +173,7 @@ int ewmh_CloseWindow(EWMH_CMD_ARGS)
 	{
 		return 0;
 	}
-	if (!is_function_allowed(F_CLOSE, NULL, fw, True, False))
+	if (!is_function_allowed(F_CLOSE, NULL, fw, RQORIG_PROGRAM_US, False))
 	{
 		return 0;
 	}
@@ -185,20 +185,52 @@ int ewmh_CloseWindow(EWMH_CMD_ARGS)
 int ewmh_MoveResizeWindow(EWMH_CMD_ARGS)
 {
 	XConfigureRequestEvent cre;
+	int do_reconfigure;
+	int win_gravity;
+	int value_mask;
+	int source;
 
 	if (ev == NULL)
 	{
 		return 0;
 	}
+	win_gravity = ev->xclient.data.l[0] & 0xff;
+	value_mask = (ev->xclient.data.l[0] >> 8) & 0xf;
+	source = (ev->xclient.data.l[0] >> 12) & 0xf;
+	if (fw == NULL)
+	{
+		/* unmanaged window */
+		do_reconfigure = 1;
+	}
+	else
+	{
+		int func;
 
-	cre.value_mask = ev->xclient.data.l[0];
-	cre.x = ev->xclient.data.l[1];
-	cre.y = ev->xclient.data.l[2];
-	cre.width = ev->xclient.data.l[3];
-	cre.height = ev->xclient.data.l[4];
-	cre.window = ev->xclient.window;
-
-	events_handle_configure_request(cre, fw, True);
+		if (
+			((value_mask & CWWidth) == 0 ||
+			 ev->xclient.data.l[3] == fw->g.normal.width) &&
+			((value_mask & CWHeight) == 0 ||
+			 ev->xclient.data.l[4] == fw->g.normal.height))
+		{
+			func = F_MOVE;
+		}
+		else
+		{
+			func = F_RESIZE;
+		}
+		do_reconfigure = !!is_function_allowed(
+			func, NULL, fw, RQORIG_PROGRAM, False);
+	}
+	if (do_reconfigure == 1)
+	{
+		cre.value_mask = value_mask;
+		cre.x = ev->xclient.data.l[1];
+		cre.y = ev->xclient.data.l[2];
+		cre.width = ev->xclient.data.l[3];
+		cre.height = ev->xclient.data.l[4];
+		cre.window = ev->xclient.window;
+		events_handle_configure_request(cre, fw, True, win_gravity);
+	}
 
 	return 0;
 }
@@ -206,18 +238,29 @@ int ewmh_MoveResizeWindow(EWMH_CMD_ARGS)
 int ewmh_RestackWindow(EWMH_CMD_ARGS)
 {
 	XConfigureRequestEvent cre;
+	int do_restack;
 
 	if (ev == NULL)
 	{
 		return 0;
 	}
-
-	cre.value_mask = CWSibling | CWStackMode;
-	cre.above = ev->xclient.data.l[1];
-	cre.detail = ev->xclient.data.l[2];
-	cre.window = ev->xclient.window;
-
-	events_handle_configure_request(cre, fw, True);
+	if (fw == NULL)
+	{
+		/* unmanaged window */
+		do_restack = 1;
+	}
+	else
+	{
+		do_restack = !!DO_EWMH_USE_STACKING_HINTS(fw);
+	}
+	if (do_restack == 1)
+	{
+		cre.value_mask = CWSibling | CWStackMode;
+		cre.above = ev->xclient.data.l[1];
+		cre.detail = ev->xclient.data.l[2];
+		cre.window = ev->xclient.window;
+		events_handle_configure_request(cre, fw, True, ForgetGravity);
+	}
 
 	return 0;
 }
@@ -258,7 +301,8 @@ int ewmh_WMDesktop(EWMH_CMD_ARGS)
 				" (%ld)\n"
 				"  using an EWMH client message.\n"
 				"    fvwm is ignoring this request.\n",
-				fw ? FW_W(fw) : 0, fw ? fw->name.name : "(none)",
+				fw ? FW_W(fw) : 0,
+				fw ? fw->name.name : "(none)",
 				ev->xclient.data.l[0]);
 			fvwm_msg_report_app_and_workers();
 		}
@@ -269,8 +313,8 @@ int ewmh_WMDesktop(EWMH_CMD_ARGS)
 	if (style != NULL && ev == NULL)
 	{
 		/* start on desk */
-		unsigned long *val;
-		unsigned int size = 0;
+		CARD32 *val;
+		int size = 0;
 
 		if (DO_EWMH_IGNORE_STATE_HINTS(style))
 		{
@@ -295,11 +339,11 @@ int ewmh_WMDesktop(EWMH_CMD_ARGS)
 #if DEBUG_EWMH_INIT_STATE
 		fprintf(
 			stderr, "ewmh WM_DESKTOP hint for window 0x%lx  "
-			"(%i,%lu,%lu)\n", FW_W(fw),
+			"(%i,%lu,%u)\n", FW_W(fw),
 			HAS_EWMH_INIT_WM_DESKTOP(fw),
 			fw->ewmh_hint_desktop, val[0]);
 #endif
-		if (val[0] == (unsigned long)-2 || val[0] == (unsigned long)-1)
+		if (val[0] == (CARD32)-2 || val[0] == (CARD32)-1)
 		{
 			S_SET_IS_STICKY_ACROSS_PAGES(SCF(*style), 1);
 			S_SET_IS_STICKY_ACROSS_PAGES(SCM(*style), 1);
@@ -373,14 +417,18 @@ int ewmh_MoveResize(EWMH_CMD_ARGS)
 
 	if (move)
 	{
-		if (!is_function_allowed(F_MOVE, NULL, fw, True, False))
+		if (
+			!is_function_allowed(
+				F_MOVE, NULL, fw, RQORIG_PROGRAM_US, False))
 		{
 			return 0;
 		}
 	}
 	else
 	{
-		if (!is_function_allowed(F_RESIZE, NULL, fw, True, False))
+		if (
+			!is_function_allowed(
+				F_RESIZE, NULL, fw, RQORIG_PROGRAM_US, False))
 		{
 			return 0;
 		}
@@ -433,8 +481,9 @@ int ewmh_WMState(EWMH_CMD_ARGS)
 	}
 	else if (style != NULL)
 	{
-		Atom *val;
-		unsigned int size = 0;
+		CARD32 *val;
+		unsigned int nitems;
+		int size = 0;
 		int i;
 		ewmh_atom *list = ewmh_atom_wm_state;
 		int has_hint = 0;
@@ -456,10 +505,11 @@ int ewmh_WMState(EWMH_CMD_ARGS)
 				" _NET_WM_STATE hint\n",FW_W(fw));
 		}
 #endif
+		nitems = size / sizeof(CARD32);
 		while(list->name != NULL)
 		{
 			has_hint = 0;
-			for(i = 0; i < (size / (sizeof(Atom))); i++)
+			for(i = 0; i < nitems; i++)
 			{
 				if (list->atom == val[i])
 				{
@@ -489,7 +539,8 @@ int ewmh_WMState(EWMH_CMD_ARGS)
 		else
 		{
 			if (!is_function_allowed(
-				    F_MAXIMIZE, NULL, fw, True, False))
+				    F_MAXIMIZE, NULL, fw, RQORIG_PROGRAM_US,
+				    False))
 			{
 				return 0;
 			}
@@ -554,28 +605,17 @@ int ewmh_WMStateFullScreen(EWMH_CMD_ARGS)
 		}
 		else
 		{
-			if (HAS_EWMH_INIT_FULLSCREEN_STATE(fw) !=
+			if (HAS_EWMH_INIT_FULLSCREEN_STATE(fw) ==
 			    EWMH_STATE_HAS_HINT)
-			{
-				/* unmaximize will restore is_ewmh_fullscreen,
-				 * layer and apply_decor_change */
-				execute_function_override_window(
-					NULL, NULL, "Maximize off", 0, fw);
-			}
-			else
 			{
 				/* the application started fullscreen */
 				SET_HAS_EWMH_INIT_FULLSCREEN_STATE(
 					fw, EWMH_STATE_NO_HINT);
-				SET_EWMH_FULLSCREEN(fw, False);
-				if (DO_EWMH_USE_STACKING_HINTS(fw))
-				{
-					new_layer(
-						fw, fw->ewmh_normal_layer);
-				}
-				apply_decor_change(fw);
-				/* the client should resize itself */
 			}
+			/* unmaximize will restore is_ewmh_fullscreen,
+			 * layer and apply_decor_change */
+			execute_function_override_window(
+				NULL, NULL, "Maximize off", 0, fw);
 		}
 		if ((IS_EWMH_FULLSCREEN(fw) &&
 		     !DO_EWMH_USE_STACKING_HINTS(fw)) ||
@@ -652,8 +692,10 @@ int ewmh_WMStateHidden(EWMH_CMD_ARGS)
 		    bool_arg == NET_WM_STATE_ADD)
 		{
 			/* iconify */
-			if (!is_function_allowed(
-				    F_ICONIFY, NULL, fw, True, False))
+			if (
+				!is_function_allowed(
+					F_ICONIFY, NULL, fw, RQORIG_PROGRAM_US,
+					False))
 			{
 				return 0;
 			}
@@ -701,8 +743,13 @@ int ewmh_WMStateMaxHoriz(EWMH_CMD_ARGS)
 				fw, EWMH_STATE_UNDEFINED_HINT);
 			return 0;
 		}
-		if (HAS_EWMH_INIT_MAXHORIZ_STATE(fw) !=
-		    EWMH_STATE_UNDEFINED_HINT)
+
+                /* If the initial state is STATE_NO_HINT we still want to
+                 * override it, since having just one of MAXIMIZED_HORIZ or
+                 * MAXIMIZED_HORZ is enough to make the window maximized.
+                 */
+		if (HAS_EWMH_INIT_MAXHORIZ_STATE(fw) ==
+		    EWMH_STATE_HAS_HINT)
 		{
 			return 0;
 		}
@@ -719,13 +766,18 @@ int ewmh_WMStateMaxHoriz(EWMH_CMD_ARGS)
 	if (ev != NULL)
 	{
 		/* client message */
-		int bool_arg = ev->xclient.data.l[0];
-		if ((bool_arg == NET_WM_STATE_TOGGLE && !IS_MAXIMIZED(fw)) ||
-		    bool_arg == NET_WM_STATE_ADD)
+		int cmd_arg = ev->xclient.data.l[0];
+		if (
+			!IS_MAXIMIZED(fw) &&
+			(cmd_arg == NET_WM_STATE_TOGGLE ||
+			 cmd_arg == NET_WM_STATE_ADD))
 		{
 			return EWMH_MAXIMIZE_HORIZ;
 		}
-		else
+		else if (
+			IS_MAXIMIZED(fw) &&
+			(cmd_arg == NET_WM_STATE_TOGGLE ||
+			 cmd_arg == NET_WM_STATE_REMOVE))
 		{
 			return EWMH_MAXIMIZE_REMOVE;
 		}
@@ -784,13 +836,18 @@ int ewmh_WMStateMaxVert(EWMH_CMD_ARGS)
 	if (ev != NULL)
 	{
 		/* client message */
-		int bool_arg = ev->xclient.data.l[0];
-		if ((bool_arg == NET_WM_STATE_TOGGLE && !IS_MAXIMIZED(fw)) ||
-		    bool_arg == NET_WM_STATE_ADD)
+		int cmd_arg = ev->xclient.data.l[0];
+		if (
+			!IS_MAXIMIZED(fw) &&
+			(cmd_arg == NET_WM_STATE_TOGGLE ||
+			 cmd_arg == NET_WM_STATE_ADD))
 		{
 			return EWMH_MAXIMIZE_VERT;
 		}
-		else
+		else if (
+			IS_MAXIMIZED(fw) &&
+			(cmd_arg == NET_WM_STATE_TOGGLE ||
+			 cmd_arg == NET_WM_STATE_REMOVE))
 		{
 			return EWMH_MAXIMIZE_REMOVE;
 		}
@@ -879,14 +936,28 @@ int ewmh_WMStateModal(EWMH_CMD_ARGS)
 	if (ev != NULL && fw != NULL)
 	{
 		/* client message: I do not think we can get such message */
-		int bool_arg = ev->xclient.data.l[0];
-		if ((bool_arg == NET_WM_STATE_TOGGLE &&
-		     !IS_EWMH_MODAL(fw)) || bool_arg == NET_WM_STATE_ADD)
+	    	/* java sends this message */
+		int cmd_arg = ev->xclient.data.l[0];
+		if (
+			!IS_EWMH_MODAL(fw) &&
+			(cmd_arg == NET_WM_STATE_TOGGLE ||
+			 cmd_arg == NET_WM_STATE_ADD))
 		{
+		    /* ON */
 		}
-		else
+		else if (
+			IS_EWMH_MODAL(fw) &&
+			(cmd_arg == NET_WM_STATE_TOGGLE ||
+			 cmd_arg == NET_WM_STATE_REMOVE))
 		{
+		    /* OFF */
 		}
+	/* 			!MODAL			MODAL
+	 * CMD
+	 * STATE_ADD		  ON			do nothing
+	 * STATE_TOGGLE		  ON			  OFF
+	 * STATE_REMOVE		  do nothing		  OFF
+	 */
 	}
 	return 0;
 }
@@ -949,14 +1020,19 @@ int ewmh_WMStateShaded(EWMH_CMD_ARGS)
 	if (ev != NULL)
 	{
 		/* client message */
-		int bool_arg = ev->xclient.data.l[0];
-		if ((bool_arg == NET_WM_STATE_TOGGLE && !IS_SHADED(fw)) ||
-		    bool_arg == NET_WM_STATE_ADD)
+		int cmd_arg = ev->xclient.data.l[0];
+		if (
+			!IS_SHADED(fw) &&
+			(cmd_arg == NET_WM_STATE_TOGGLE ||
+			 cmd_arg == NET_WM_STATE_ADD))
 		{
 			execute_function_override_window(
 				NULL, NULL, "Windowshade on", 0, fw);
 		}
-		else
+		else if (
+			IS_SHADED(fw) &&
+			(cmd_arg == NET_WM_STATE_TOGGLE ||
+			 cmd_arg == NET_WM_STATE_REMOVE))
 		{
 			execute_function_override_window(
 				NULL, NULL, "Windowshade off", 0, fw);
@@ -1161,18 +1237,34 @@ int ewmh_WMStateStaysOnTop(EWMH_CMD_ARGS)
 	if (ev != NULL)
 	{
 		/* client message */
-		int bool_arg = ev->xclient.data.l[0];
+		int cmd_arg = ev->xclient.data.l[0];
 
-		if ((bool_arg == NET_WM_STATE_TOGGLE &&
-		     fw->layer < Scr.TopLayer) ||
-		    bool_arg == NET_WM_STATE_ADD)
+		if (!DO_EWMH_USE_STACKING_HINTS(fw))
+		{
+		    	/* if we don't pay attention to the hints,
+			 * I don't think we should honor this request also
+			 */
+			return 0;
+		}
+		if (fw->layer < Scr.TopLayer &&
+		    (cmd_arg == NET_WM_STATE_TOGGLE ||
+		     cmd_arg == NET_WM_STATE_ADD))
 		{
 			new_layer(fw, Scr.TopLayer);
 		}
-		else
+		else if (
+			fw->layer == Scr.TopLayer &&
+			(cmd_arg == NET_WM_STATE_TOGGLE ||
+			 cmd_arg == NET_WM_STATE_REMOVE))
 		{
 			new_layer(fw, Scr.DefaultLayer);
 		}
+	/* 			layer < TopLayer	layer == TopLayer
+	 * CMD
+	 * STATE_ADD		new_layer(TOP)		   do nothing
+	 * STATE_TOGGLE		new_layer(TOP)		new_layer(DEFAULT)
+	 * STATE_REMOVE		  do nothing		new_layer(DEFAULT)
+	 */
 	}
 	return 0;
 }
@@ -1230,18 +1322,35 @@ int ewmh_WMStateStaysOnBottom(EWMH_CMD_ARGS)
 	if (ev != NULL)
 	{
 		/* client message */
-		int bool_arg = ev->xclient.data.l[0];
+		int cmd_arg = ev->xclient.data.l[0];
 
-		if ((bool_arg == NET_WM_STATE_TOGGLE &&
-		     fw->layer > Scr.BottomLayer) ||
-		    bool_arg == NET_WM_STATE_ADD)
+		if (!DO_EWMH_USE_STACKING_HINTS(fw))
+		{
+		    	/* if we don't pay attention to the hints,
+			 * I don't think we should honor this request also
+			 */
+			return 0;
+		}
+		if (
+			fw->layer > Scr.BottomLayer &&
+			(cmd_arg == NET_WM_STATE_TOGGLE ||
+			 cmd_arg == NET_WM_STATE_ADD))
 		{
 			new_layer(fw, Scr.BottomLayer);
 		}
-		else
+		else if (
+			fw->layer == Scr.BottomLayer &&
+			(cmd_arg == NET_WM_STATE_TOGGLE ||
+			 cmd_arg == NET_WM_STATE_REMOVE))
 		{
 			new_layer(fw, Scr.DefaultLayer);
 		}
+	/* 			layer > BottomLayer	layer == BottomLayer
+	 * CMD
+	 * STATE_ADD		new_layer(BOTTOM)	   do nothing
+	 * STATE_TOGGLE		new_layer(BOTTOM)	new_layer(DEFAULT)
+	 * STATE_REMOVE		  do nothing		new_layer(DEFAULT)
+	 */
 	}
 	return 0;
 }
@@ -1330,10 +1439,10 @@ int ewmh_WMStateSticky(EWMH_CMD_ARGS)
  */
 int ewmh_WMIconGeometry(EWMH_CMD_ARGS)
 {
-	unsigned int size;
+	int size;
 	CARD32 *val;
 
-	/* FIXME: After a (un)silde of kicker the geometry are wrong (not
+	/* FIXME: After a (un)slide of kicker the geometry are wrong (not
 	 * because we set the geometry just after the property notify).  This
 	 * does not happen with kwin */
 	val = ewmh_AtomGetByName(
@@ -1393,7 +1502,7 @@ void EWMH_GetIconGeometry(FvwmWindow *fw, rectangle *icon_rect)
 
 int ewmh_WMStrut(EWMH_CMD_ARGS)
 {
-	unsigned int size = 0;
+	int size = 0;
 	CARD32 *val;
 
 	if (ev == NULL)

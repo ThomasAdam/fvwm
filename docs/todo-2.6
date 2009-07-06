@@ -1,18 +1,18 @@
------ Summary ------------------------------------------------------------------
+----- Summary -----------------------------------------------------------------
 
-Issues opened recently: 0 ()
-Issues closed recently: 1 (E.4)
+Issues opened recently: 0
+Issues closed recently: 2 (B.11, F.4)
 
                              open / total
 A. Release stopping bugs:       0 / 1
-B. Normal bugs:                 0 / 10
-C. To be verified:             10 / 27
-D. To be discussed:             1 / 3
-E. To do:                       7 / 18
+B. Normal bugs:                 0 / 11
+C. To be verified:              1 / 27
+D. To be discussed:             2 / 3
+E. To do:                       3 / 18
 F. Distribution issues:         3 / 4
 G. Testing:                     3 / 5
 
-Total:                         24 / 68
+Total:                         12 / 69
 
 - When you add/close an item give dates
 
@@ -35,7 +35,61 @@ B. Normal Bugs
 C. To be verified
 -----------------
 
-  C.5 Gtk+-2 and window placement [#938,2.4,2002-10-18]
+  C.20 Erratic EdgeScroll behavior [#766,2.4,2001-08-21]. Fixed?
+
+D. To be discussed
+------------------
+
+  D.2 Leave or remove the current change to triggering bindings on button press
+      or release?  Seems to irritate a lot of users, but fixes a root window
+      binding bug.
+      [dv: added on 29-Mar-2003]
+
+  D.3 Added the possibility "to grab fast and execute even if the grab fail"
+      when executing a complex function.
+      [Olivier: added on 2003-08-09]
+
+E. To do
+--------
+
+  E.6 Rename FvwmProxy
+      [dv: added on 02-Mar-2003]
+
+  E.7 Fix the FvwmProxy placement algorithm (it may loop and can place windows
+      off screen)
+      [dv: added on 02-Mar-2003]
+
+  E.16 Rename all "Pixmap" in the syntax to "Image" while supporting both.
+       Rename MultiPixmap to MultiPart, since it also accepts Solid and
+       Colorset options, not just images for different titlebar parts.
+       [Mikhael]
+       [dv: I wouldn't do that anymore.  That syntax will be removed soon after
+       the 2.6 release, so the clean up work is in vain.]
+       [Mikhael: if this was an objection, then please close this item.]
+
+F. Distribution issues
+----------------------
+
+  F.1 Update the default config files, probably needs discussion...
+
+  F.2 Update/complete fvwm-convert-2.6
+
+  F.3 Check INSTALL.fvwm
+      [Mikhael: already misses recently added features.]
+
+G. Testing
+----------
+
+  G.1 Update and run the purify script again
+      [Olivier: mostly done with valgrind. Should be done again]
+
+  G.2 Test fvwm with GNOME2 and KDE3 [see in particular: #980]
+      [Olivier: seems to work not so bad]
+
+  G.5 Is PositiveWrite module locking problem fixed? [e.g., #708]
+
+
+---- Unreproducable -----------------------------------------------------------
 
   C.8 An afterimage remains when moving a window [#913,2.4,2002-08-09].
       Not a bug?
@@ -58,103 +112,22 @@ C. To be verified
        [dv: I can't imagine how fvwm would be involved, but do not have an
        HP-UX machine to test this]
 
-  C.20 Erratic EdgeScroll behavior [#766,2.4,2001-08-21]. Fixed?
-
-  C.23 Strange behavior with XForms "sliderall" demo [#758,2.4,2001-08-12].
-       Fixed?
-       [dv: Definitely not fixed.  Nobody did anything about it.]
-
   C.27 The "titles" sometimes aren't shown when no items are available in a
        FvwmIconMan
        [Olivier: unable to reproduce this]
 
-D. To be discussed
-------------------
+---- Closed recently ----------------------------------------------------------
 
-  D.2 Leave or remove the current change to triggering bindings on button press
-      or release?  Seems to irritate a lot of users, but fixes a root window
-      binding bug.
-      [dv: added on 29-Mar-2003]
+[Thomas:  2009-02-27:  This section is deprecated.  Please add all closed
+entries under the "Closed" section.]
 
-  D.3 Added the possibility "to grab fast and execute even if the grab fail"
-      when executing a complex function.
-      [Olivier: added on 2003-08-09]
-
-E. To do
---------
+---- Postponed until after 2.6 ------------------------------------------------
 
   E.3 After F.1 try to find translator
       [Olivier, this can be done after 2.6.0 is released]
 
-  E.6 Rename FvwmProxy
-      [dv: added on 02-Mar-2003]
-
-  E.7 Fix the FvwmProxy placement algorithm (it may loop and can place windows
-      off screen)
-      [dv: added on 02-Mar-2003]
-
-  E.11 Perl library: finalize API.
-       [Mikhael]
-
-  E.12 Perl Library: add event trackers.
-       [Mikhael]
-
   E.15 Complete FvwmWindowMenu to be more functional.
        [Mikhael (with help of Richard Lister?)]
-
-  E.16 Rename all "Pixmap" in the syntax to "Image" while supporting both.
-       Rename MultiPixmap to MultiPart, since it also accepts Solid and
-       Colorset options, not just images for different titlebar parts.
-       [Mikhael]
-       [dv: I wouldn't do that anymore.  That syntax will be removed soon after
-       the 2.6 release, so the clean up work is in vain.]
-
-F. Distribution issues
-----------------------
-
-  F.1 Update the default config files, probably needs discussion...
-
-  F.2 Update/complete fvwm-convert-2.6
-
-  F.3 Check INSTALL.fvwm
-
-
-G. Testing
-----------
-
-  G.1 Update and run the purify script again
-      [Olivier: mostly done with valgrind. Should be done again]
-
-  G.2 Test fvwm with GNOME2 and KDE3 [see in particular: #980]
-      [Olivier: seems to work not so bad]
-
-  G.5 Is PositiveWrite module locking problem fixed? [e.g., #708]
-
-
----- Closed recently ----------------------------------------------------------
-
-  E.17 Finally document the Repeat command.  Forgot that for years :-)
-       [dv: added on 30-Apr-2003]
-       [dv: closed on 3-Feb-2004]
-
-  E.18 Documented IconTitle / NoIconTitle, StartIconic / StartNormal,
-       WindowListSkip / WindowListHit, CirculateSkip / CirculateHit,
-       CirculateSkipShaded / CirculateHitShaded, CirculateSkipIcon /
-       CirculateHitIcon, StickyAcrossPagesIcon / SickyAcrossDesksIcon
-       styles.
-       [Olivier: added on 2003-09-04]
-       [dv: closed on 3-Feb-2004]
-
-  B.10 Editing of UTF-8 (and other multi-byte encodings) doesn't work
-       in FvwmScript
-       [malu: added on 17-Jan-2004]
-       [malu: done on 04-Feb-2004]
-
----- Postponed until after 2.6 ------------------------------------------------
-
-  F.4 Translate our documentation into "xml/docbook" format
-      [Olivier: do not have the time now, but if someone wants to do it,
-       (s)he is welcome]
 
 ---- Closed -------------------------------------------------------------------
 
@@ -172,7 +145,7 @@ G. Testing
 
   B.3 Fixed FvwmButtons if "*FvwmButtons: Pixmap none" is used.
       Ref.: 2002-11-05 "Kingsly John" FvwmButtons and Transparency
-	    2002-12-19 "Andy Arbon"   FVWM: FvwmButtons problem
+	    2002-12-19 "Andy Arbon"   fvwm: FvwmButtons problem
       [Olivier]
       [dv: fixed on 02-Mar-2003, 2.5.7; Note:  it is still utterly broken when
       the window becomes too small]
@@ -200,13 +173,19 @@ G. Testing
       [malu: added on 29-Jun-2003]
       [malu: done on 09-Jul-2003]
 
+  B.11 Fvwm's Default Charset [#1647,2.5,2005-03-05]
+       Fvwm uses the first avaiable charset as default regardless if it
+       handles all characters in the other charsets.
+       [Thomas:  Fixed by Viktor on 31-Jan-2008]
+       [Thomas:  Closed on 27-Feb-2009]
+  
   C.1 FvwmIconMan "Resolution" option doesn't work correctly with
       NumManagers > 1
       Ref.: 2003-01-17 "Grzegorz Nieweglows" Bug in FvwmIconMan
       [dv: not a bug, but fixed anyway on 02-Mar-2003, 2.5.7]
 
   C.2 StartOnScreen and Xinerama/SLS
-      Ref.: 2002-12-22 "Andy Arbon" FVWM: Possible bug in StartsOnScreen
+      Ref.: 2002-12-22 "Andy Arbon" fvwm: Possible bug in StartsOnScreen
       [Olivier: Fixed by Dominik on 2003-03-13]
 
   C.3 Moving resizing certain applications with EWMH support (Mozilla,
@@ -214,6 +193,10 @@ G. Testing
       this fixed?
       [dv: i did not do anything about it yet]
       [fixed: ICCCM2/Traditional cr autodetection and styles]
+
+  C.5 Gtk+-2 and window placement [#938,2.4,2002-10-18]
+      [Viktor: tested this with a sample gtk+-2.0 app. It seems to work well.
+       06-Jan-2007]
 
   C.6 loss of focus unrecoverable [#926,2.4,2002-09-21]. Fixed?
       [dv: bug in the application]
@@ -247,6 +230,10 @@ G. Testing
        C.7? Fixed?
        [dv: 28-Mar-2003: unreproducible, may have been the same as C.7]
 
+  C.23 Strange behavior with XForms "sliderall" demo [#758,2.4,2001-08-12].
+       [Viktor: Fixed with "BugOpts FlickeringQtDialogsWorkaround off" on
+	17-Sep-2006]
+
   C.24 window appear/disappear in the Pager [#731,2.4,2001-07-04]. Fixed?
        [dv: no idea what has happened.  Maybe the pager running did not match
        the executable?  Delete this report.]
@@ -260,7 +247,7 @@ G. Testing
        [dv: added on 02-Mar-2003; asked for a config file but go no reply]
        [no reply, probably FAQ 0.1]
 
-  D.1 Make the distinction between FVWM (project) and fvwm (core executable)?
+  D.1 Make the distinction between fvwm (project) and fvwm (core executable)?
       [no consensus]
 
   E.1 Complete this document
@@ -289,6 +276,12 @@ G. Testing
   E.14 Rework WindowListFunc so it works under window content and does not
        need any window id parameter (optionally pass id for compatibility).
        [Mikhael]
+  
+  F.4 Translate our documentation into "xml/docbook" format
+      [Olivier: do not have the time now, but if someone wants to do it,
+       (s)he is welcome]
+      [Thomas:  Closed on 27-02-2009.  Work done mostly by Scott Smedley and
+                others on the fvwm-workers list.]
 
   G.3 Test fvwm with the latest SUN and IBM java [#654,#664,#707,#714,#863,#954]
       [dv:  That test will only prove that we did not do anything about these
@@ -301,6 +294,28 @@ G. Testing
   E.13 Support ~/.fvwm/config as a preferred alternative to ~/.fvwm/.fvwm2rc.
        [Mikhael: done on 21-Apr-2004]
 
+  E.17 Finally document the Repeat command.  Forgot that for years :-)
+       [dv: added on 30-Apr-2003]
+       [dv: closed on 3-Feb-2004]
+
+  E.18 Documented IconTitle / NoIconTitle, StartIconic / StartNormal,
+       WindowListSkip / WindowListHit, CirculateSkip / CirculateHit,
+       CirculateSkipShaded / CirculateHitShaded, CirculateSkipIcon /
+       CirculateHitIcon, StickyAcrossPagesIcon / SickyAcrossDesksIcon
+       styles.
+       [Olivier: added on 2003-09-04]
+       [dv: closed on 3-Feb-2004]
+
+  B.10 Editing of UTF-8 (and other multi-byte encodings) doesn't work
+       in FvwmScript
+       [malu: added on 17-Jan-2004]
+       [malu: done on 04-Feb-2004]
+
   E.4 Move documentation from FvwmTheme.1 to fvwm.1.in.
       [Dan 31-May-2004]
 
+  E.11 Perl library: finalize API.
+       [Mikhael: stable enough for release, 2009-03-17]
+
+  E.12 Perl Library: add event trackers.
+       [Mikhael: mostly done on 2003 and 2004]

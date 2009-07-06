@@ -31,6 +31,10 @@
 #include "libs/fvwmlib.h"
 #include "libs/charmap.h"
 #include "libs/wcontext.h"
+#include "libs/ClientMsg.h"
+#include "libs/Grab.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
 #include "fvwm.h"
 #include "externs.h"
 #include "execcontext.h"
@@ -90,6 +94,7 @@ static Bool focus_get_fpol_context_flag(
 	switch (context)
 	{
 	case C_WINDOW:
+	case C_EWMH_DESKTOP:
 		flag = fpol_context->client;
 		break;
 	case C_ICON:
@@ -295,7 +300,7 @@ static void __set_focus_to_fwin(
 				w = Scr.NoFocusWin;
 			}
 		}
-		else if (!IsRectangleOnThisPage(&(fw->frame_g), fw->Desk))
+		else if (!IsRectangleOnThisPage(&(fw->g.frame), fw->Desk))
 		{
 			fw = NULL;
 			w = Scr.NoFocusWin;
@@ -307,6 +312,7 @@ static void __set_focus_to_fwin(
 	{
 		FOCUS_SET(Scr.NoFocusWin);
 		set_focus_window(NULL);
+		Scr.UnknownWinFocused = None;
 		XFlush(dpy);
 		return;
 	}
@@ -341,6 +347,14 @@ static void __set_focus_to_fwin(
 	else if (focus_does_accept_input_focus(fw))
 	{
 		/* Window will accept input focus */
+		if (Scr.StolenFocusWin == w && Scr.UnknownWinFocused != None)
+		{
+			/* Without this FocusIn is not generated on the
+			 * window if it was focuesed when the unmanaged
+			 * window took focus. */
+			FOCUS_SET(Scr.NoFocusWin);
+
+		}
 		FOCUS_SET(w);
 		set_focus_window(fw);
 		if (fw)
@@ -442,8 +456,8 @@ static void warp_to_fvwm_window(
 	}
 	else
 	{
-		cx = t->frame_g.x + t->frame_g.width/2;
-		cy = t->frame_g.y + t->frame_g.height/2;
+		cx = t->g.frame.x + t->g.frame.width/2;
+		cy = t->g.frame.y + t->g.frame.height/2;
 	}
 	dx = (cx + Scr.Vx) / Scr.MyDisplayWidth * Scr.MyDisplayWidth;
 	dy = (cy + Scr.Vy) / Scr.MyDisplayHeight * Scr.MyDisplayHeight;
@@ -468,53 +482,55 @@ static void warp_to_fvwm_window(
 	{
 		if (x_unit != Scr.MyDisplayWidth && warp_x >= 0)
 		{
-			x = t->frame_g.x + warp_x;
+			x = t->g.frame.x + warp_x;
 		}
 		else if (x_unit != Scr.MyDisplayWidth)
 		{
-			x = t->frame_g.x + t->frame_g.width + warp_x;
+			x = t->g.frame.x + t->g.frame.width + warp_x;
 		}
 		else if (warp_x >= 0)
 		{
-			x = t->frame_g.x +
-				(t->frame_g.width - 1) * warp_x / 100;
+			x = t->g.frame.x +
+				(t->g.frame.width - 1) * warp_x / 100;
 		}
 		else
 		{
-			x = t->frame_g.x +
-				(t->frame_g.width - 1) * (100 + warp_x) / 100;
+			x = t->g.frame.x +
+				(t->g.frame.width - 1) * (100 + warp_x) / 100;
 		}
 
 		if (y_unit != Scr.MyDisplayHeight && warp_y >= 0)
 		{
-			y = t->frame_g.y + warp_y;
+			y = t->g.frame.y + warp_y;
 		}
 		else if (y_unit != Scr.MyDisplayHeight)
 		{
-			y = t->frame_g.y + t->frame_g.height + warp_y;
+			y = t->g.frame.y + t->g.frame.height + warp_y;
 		}
 		else if (warp_y >= 0)
 		{
-			y = t->frame_g.y +
-				(t->frame_g.height - 1) * warp_y / 100;
+			y = t->g.frame.y +
+				(t->g.frame.height - 1) * warp_y / 100;
 		}
 		else
 		{
-			y = t->frame_g.y +
-				(t->frame_g.height - 1) * (100 + warp_y) / 100;
+			y = t->g.frame.y +
+				(t->g.frame.height - 1) * (100 + warp_y) / 100;
 		}
 	}
-	FWarpPointer(dpy, None, Scr.Root, 0, 0, 0, 0, x, y);
-	RaiseWindow(t);
+	FWarpPointerUpdateEvpos(
+		exc->x.elast, dpy, None, Scr.Root, 0, 0, 0, 0, x, y);
+	RaiseWindow(t, False);
 	/* If the window is still not visible, make it visible! */
-	if (t->frame_g.x + t->frame_g.width  < 0 ||
-	    t->frame_g.y + t->frame_g.height < 0 ||
-	    t->frame_g.x >= Scr.MyDisplayWidth ||
-	    t->frame_g.y >= Scr.MyDisplayHeight)
+	if (t->g.frame.x + t->g.frame.width  < 0 ||
+	    t->g.frame.y + t->g.frame.height < 0 ||
+	    t->g.frame.x >= Scr.MyDisplayWidth ||
+	    t->g.frame.y >= Scr.MyDisplayHeight)
 	{
 		frame_setup_window(
-			t, 0, 0, t->frame_g.width, t->frame_g.height, False);
-		FWarpPointer(dpy, None, Scr.Root, 0, 0, 0, 0, 2, 2);
+			t, 0, 0, t->g.frame.width, t->g.frame.height, False);
+		FWarpPointerUpdateEvpos(
+			exc->x.elast, dpy, None, Scr.Root, 0, 0, 0, 0, 2, 2);
 	}
 
 	return;
@@ -606,8 +622,6 @@ static FvwmWindow *__restore_focus_after_unmap(
 static void __activate_window_by_command(
 	F_CMD_ARGS, int is_focus_by_flip_focus_cmd)
 {
-	int dx;
-	int dy;
 	int cx;
 	int cy;
 	Bool do_not_warp;
@@ -654,28 +668,42 @@ static void __activate_window_by_command(
 		}
 		else
 		{
-			cx = fw->frame_g.x + fw->frame_g.width/2;
-			cy = fw->frame_g.y + fw->frame_g.height/2;
+			cx = fw->g.frame.x + fw->g.frame.width/2;
+			cy = fw->g.frame.y + fw->g.frame.height/2;
 		}
-		dx = (cx + Scr.Vx)/Scr.MyDisplayWidth*Scr.MyDisplayWidth;
-		dy = (cy +Scr.Vy)/Scr.MyDisplayHeight*Scr.MyDisplayHeight;
-		MoveViewport(dx,dy,True);
+		if (
+			cx < 0 || cx >= Scr.MyDisplayWidth ||
+			cy < 0 || cy >= Scr.MyDisplayHeight)
+		{
+			int dx;
+			int dy;
+
+			dx = ((cx + Scr.Vx) / Scr.MyDisplayWidth) *
+				Scr.MyDisplayWidth;
+			dy = ((cy + Scr.Vy) / Scr.MyDisplayHeight) *
+				Scr.MyDisplayHeight;
+			MoveViewport(dx, dy, True);
+		}
+#if 0 /* can not happen */
 		/* If the window is still not visible, make it visible! */
-		if (fw->frame_g.x + fw->frame_g.height < 0 ||
-		    fw->frame_g.y + fw->frame_g.width < 0 ||
-		    fw->frame_g.x > Scr.MyDisplayWidth ||
-		    fw->frame_g.y > Scr.MyDisplayHeight)
+		if (fw->g.frame.x + fw->g.frame.width < 0 ||
+		    fw->g.frame.y + fw->g.frame.height < 0 ||
+		    fw->g.frame.x >= Scr.MyDisplayWidth ||
+		    fw->g.frame.y >= Scr.MyDisplayHeight)
 		{
 			frame_setup_window(
-				fw, 0, 0, fw->frame_g.width, fw->frame_g.height,
-				False);
-			if (FP_DO_WARP_POINTER_ON_FOCUS_FUNC(
-				    FW_FOCUS_POLICY(fw)))
+				fw, 0, 0, fw->g.frame.width,
+				fw->g.frame.height, False);
+			if (
+				FP_DO_WARP_POINTER_ON_FOCUS_FUNC(
+					FW_FOCUS_POLICY(fw)))
 			{
-				FWarpPointer(
-					dpy, None, Scr.Root, 0, 0, 0, 0, 2, 2);
+				FWarpPointerUpdateEvpos(
+					exc->x.elast, dpy, None, Scr.Root, 0,
+					0, 0, 0, 2, 2);
 			}
 		}
+#endif
 	}
 	UngrabEm(GRAB_NORMAL);
 
@@ -1190,12 +1218,14 @@ void CMD_WarpToWindow(F_CMD_ARGS)
 		{
 			int wx;
 			int wy;
-			unsigned int ww;
-			unsigned int wh;
+			int ww;
+			int wh;
 
 			if (!XGetGeometry(
-				    dpy, exc->w.w, &JunkRoot, &wx, &wy, &ww,
-				    &wh, &JunkBW, &JunkDepth))
+				    dpy, exc->w.w, &JunkRoot, &wx, &wy,
+				    (unsigned int*)&ww, (unsigned int*)&wh,
+				    (unsigned int*)&JunkBW,
+				    (unsigned int*)&JunkDepth))
 			{
 				return;
 			}
@@ -1224,7 +1254,8 @@ void CMD_WarpToWindow(F_CMD_ARGS)
 				y += wh;
 			}
 		}
-		FWarpPointer(dpy, None, exc->w.w, 0, 0, 0, 0, x, y);
+		FWarpPointerUpdateEvpos(
+			exc->x.elast, dpy, None, exc->w.w, 0, 0, 0, 0, x, y);
 	}
 
 	return;

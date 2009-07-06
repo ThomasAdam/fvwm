@@ -89,6 +89,8 @@
 #define MIN_VERTICAL_SPACING            -100 /* pixels */
 /* maximum for above value */
 #define MAX_VERTICAL_SPACING             100 /* pixels */
+/* maximum for above value */
+#define MAX_MENU_MARGIN                   50 /* pixels */
 /* width of a tab in the item format of a menu */
 #define MENU_TAB_WIDTH                     8 /* spaces */
 /* This is the tile width or height for V and H gradients. I guess this should
@@ -185,7 +187,8 @@
 /* maximum number of segemnts in a vector button */
 #define MAX_TITLE_BUTTON_VECTOR_LINES 10000
 
-/*** window placement (MinOverlap(Percent)Placement) ***/
+/*** window placement ***/
+/** MinOverlap(Percent)Placement **/
 /** Now these values are configurable by using styles **/
 /* The following factors represent the amount of area that these types of
  * windows are counted as.  For example, by default the area of ONTOP windows
@@ -209,6 +212,12 @@
 #define PLACEMENT_AVOID_COVER_95           6
 #define PLACEMENT_AVOID_COVER_85           4
 #define PLACEMENT_AVOID_COVER_75           1
+#define PLACEMENT_FALLBACK_CASCADE_STEP   20
+/** Other placement related values **/
+/* default string for position placement */
+#define DEFAULT_PLACEMENT_POSITION_STRING   "0 0"
+#define DEFAULT_PLACEMENT_POS_CENTER_STRING "50-50w 50-50w"
+#define DEFAULT_PLACEMENT_POS_MOUSE_STRING  "m-50w m-50w"
 
 /*** icon layout ***/
 /* width of the relief around the icon and icon title */
@@ -249,9 +258,9 @@
 /* Don't page if the pointer has moved for more than this many pixels between
  * two samples */
 #define MAX_PAGING_MOVE_DISTANCE           5 /* pixels */
-#define DEFAULT_MOVE_RESISTANCE            0 /* ms */
-#define DEFAULT_XIMOVE_RESISTANCE          0 /* pixels */
-#define DEFAULT_SCROLL_RESISTANCE          0 /* ms */
+#define DEFAULT_MOVE_DELAY                 0 /* ms */
+#define DEFAULT_RESIZE_DELAY               -1 /* pixels */
+#define DEFAULT_SCROLL_DELAY               0 /* ms */
 
 /*** layers ***/
 #define DEFAULT_BOTTOM_LAYER               2
@@ -273,7 +282,14 @@
 #define MAX_HANDLE_WIDTH                   (MAX_BORDER_WIDTH)
 
 /*** module configuration ***/
+#define MAX_MODULE_ALIAS_LEN             250 /* bytes */
 #define DEFAULT_MODULE_TIMEOUT            30 /* seconds */
+#define MAX_MODULE_INPUT_TEXT_LEN       1000 /* bytes */
+
+/*** FvwmConsole configuration */
+/* Maximum time FvwmConsole waits for the client to connect. */
+#define FVWMCONSOLE_CONNECTION_TO_SECS    60 /* seconds */
+
 
 /*** misc ***/
 #define DEFAULT_EMULATE_MWM            False

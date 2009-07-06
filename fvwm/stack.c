@@ -20,10 +20,14 @@
 #include <stdio.h>
 #include <signal.h>
 #include <stdarg.h>
-#include "ftime.h"
+#include <limits.h>
 
+#include "libs/ftime.h"
 #include "libs/fvwmlib.h"
-#include <libs/gravity.h>
+#include "libs/gravity.h"
+#include "libs/Grab.h"
+#include "libs/Parse.h"
+#include "libs/defaults.h"
 #include "fvwm.h"
 #include "externs.h"
 #include "cursor.h"
@@ -31,7 +35,7 @@
 #include "bindings.h"
 #include "misc.h"
 #include "screen.h"
-#include "defaults.h"
+#include "module_list.h"
 #include "module_interface.h"
 #include "focus.h"
 #include "stack.h"
@@ -73,10 +77,10 @@ typedef enum
 
 static void __raise_or_lower_window(
 	FvwmWindow *t, stack_mode_t mode, Bool allow_recursion,
-	Bool is_new_window);
+	Bool is_new_window, Bool is_client_request);
 static void raise_or_lower_window(
 	FvwmWindow *t, stack_mode_t mode, Bool allow_recursion,
-	Bool is_new_window);
+	Bool is_new_window, Bool is_client_request);
 #if 0
 static void ResyncFvwmStackRing(void);
 #endif
@@ -121,7 +125,8 @@ static void dump_stack_ring(void)
 void verify_stack_ring_consistency(void)
 {
 	Window root, parent, *children;
-	unsigned int nchildren, i;
+	unsigned int nchildren;
+	int i;
 	FvwmWindow *t1, *t2;
 	int last_layer;
 	int last_index;
@@ -270,7 +275,7 @@ static FvwmWindow *get_transientfor_top_fvwmwindow(FvwmWindow *t)
 }
 
 /*
- * Raise a target and all higher FVWM-managed windows above any
+ * Raise a target and all higher fvwm-managed windows above any
  *  override_redirects:
  *  - locate the highest override_redirect above our target
  *  - put all the FvwmWindows from the target to the highest FvwmWindow
@@ -624,14 +629,298 @@ FvwmWindow *__get_window_to_insert_after(FvwmWindow *fw, stack_mode_t mode)
 	return s;
 }
 
-static Bool __restack_window(
+static void __mark_group_member(
+	FvwmWindow *fw, FvwmWindow *start, FvwmWindow *end)
+{
+	FvwmWindow *t;
+
+	for (t = start; t != end; t = t->stack_next)
+	{
+		if (FW_W(t) == fw->wmhints->window_group ||
+		    (t->wmhints && (t->wmhints->flags & WindowGroupHint) &&
+		     t->wmhints->window_group == fw->wmhints->window_group))
+		{
+			if (IS_IN_TRANSIENT_SUBTREE(t))
+			{
+				/* have to move this one too */
+				SET_IN_TRANSIENT_SUBTREE(fw, 1);
+			}
+		}
+	}
+
+	return;
+
+}
+
+static Bool __mark_transient_subtree_test(
+	FvwmWindow *s, FvwmWindow *start, FvwmWindow *end, int mark_mode,
+	Bool do_ignore_icons, Bool use_window_group_hint)
+{
+	Bool use_group_hint = False;
+	FvwmWindow *r;
+
+	if (IS_IN_TRANSIENT_SUBTREE(s))
+	{
+		return False;
+	}
+	if (use_window_group_hint &&
+	    DO_ICONIFY_WINDOW_GROUPS(s) && s->wmhints &&
+	    (s->wmhints->flags & WindowGroupHint) &&
+	    (s->wmhints->window_group != None) &&
+	    (s->wmhints->window_group != FW_W(s)) &&
+	    (s->wmhints->window_group != Scr.Root))
+	{
+		use_group_hint = True;
+	}
+	if (!IS_TRANSIENT(s) && !use_group_hint)
+	{
+		return False;
+	}
+	if (do_ignore_icons && IS_ICONIFIED(s))
+	{
+		return False;
+	}
+	r = (FvwmWindow *)s->scratch.p;
+	if (IS_TRANSIENT(s))
+	{
+		if (r && IS_IN_TRANSIENT_SUBTREE(r) &&
+		    ((mark_mode == MARK_ALL) ||
+		     __is_restack_transients_needed(
+			     r, (stack_mode_t)mark_mode) == True))
+		{
+			/* have to move this one too */
+			SET_IN_TRANSIENT_SUBTREE(s, 1);
+			/* used for stacking transients */
+			s->scratch.i += r->scratch.i + 1;
+			return True;
+		}
+	}
+	if (use_group_hint && !IS_IN_TRANSIENT_SUBTREE(s))
+	{
+		__mark_group_member(s, start, end);
+		if (IS_IN_TRANSIENT_SUBTREE(s))
+		{
+			/* need another scan through the list */
+			return True;
+		}
+	}
+
+	return False;
+}
+
+/* heavaly borrowed from mark_transient_subtree.  This will mark a subtree as
+ * long as it is straight, and return true if the operation is succussful.  It
+ * will abort and return False as soon as some inconsitance is hit. */
+
+static Bool is_transient_subtree_straight(
+	FvwmWindow *t, int layer, stack_mode_t mode, Bool do_ignore_icons,
+	Bool use_window_group_hint)
+{
+	FvwmWindow *s;
+	FvwmWindow *start;
+	FvwmWindow *end;
+	int min_i;
+	Bool is_in_gap;
+	int mark_mode;
+
+	switch (mode)
+	{
+	case SM_RAISE:
+		mark_mode = MARK_RAISE;
+		break;
+	case SM_LOWER:
+		mark_mode = MARK_LOWER;
+		break;
+	default:
+		return False;
+	}
+
+	if (layer >= 0 && t->layer != layer)
+	{
+		return True;
+	}
+	if (t->stack_prev == NULL || t->stack_next == NULL)
+	{
+		/* the window is not placed correctly in the stack ring
+		* (probably about to be destroyed) */
+		return False;
+	}
+	/* find out on which windows to operate */
+	/* iteration are done reverse (bottom up, since that's the way the
+	 * transients wil be stacked if all is well */
+	if (layer >= 0)
+	{
+		/* only work on the given layer */
+		start = &Scr.FvwmRoot;
+		end = &Scr.FvwmRoot;
+		for (
+			s = Scr.FvwmRoot.stack_prev;
+			s != &Scr.FvwmRoot && s->layer <= layer;
+			s = s->stack_prev)
+		{
+			if (s->layer == layer)
+			{
+				if (start == &Scr.FvwmRoot)
+				{
+					start = s;
+				}
+				end = s->stack_prev;
+			}
+		}
+	}
+	else
+	{
+		/* work on complete window list */
+		start = Scr.FvwmRoot.stack_prev;
+		end = &Scr.FvwmRoot;
+	}
+	/* clean the temporary flag in all windows and precalculate the
+	 * transient frame windows */
+	for (
+		s = Scr.FvwmRoot.stack_next; s != &Scr.FvwmRoot;
+		s = s->stack_next)
+	{
+		SET_IN_TRANSIENT_SUBTREE(s, 0);
+		if (IS_TRANSIENT(s) && (layer < 0 || layer == s->layer))
+		{
+			s->scratch.p = get_transientfor_fvwmwindow(s);
+		}
+		else
+		{
+			s->scratch.p = NULL;
+		}
+	}
+	/* Indicate that no cleening is needed */
+	Scr.FvwmRoot.scratch.i = 1;
+	/* now loop over the windows and mark the ones we need to move */
+	SET_IN_TRANSIENT_SUBTREE(t, 1);
+	min_i = INT_MIN;
+	is_in_gap = False;
+
+	if (mode == SM_LOWER && t != start)
+	{
+		return False;
+	}
+
+	/* check that all transients above the window are in a sorted line
+	 * with no other windows between them */
+	for (s = t->stack_prev; s != end && !(is_in_gap && mode == SM_RAISE);
+	     s = s->stack_prev)
+	{
+		if (
+			__mark_transient_subtree_test(
+				s, start, end, mark_mode,
+				do_ignore_icons,
+				use_window_group_hint))
+		{
+			if (is_in_gap)
+			{
+				return False;
+			}
+			else if (s->scratch.i < min_i)
+			{
+				return False;
+			}
+			min_i = s->scratch.i;
+		}
+		else
+		{
+			is_in_gap = True;
+		}
+	} /* for */
+	if (is_in_gap && mode == SM_RAISE)
+	{
+		return False;
+	}
+	/* check that there are no transients left beneth the window */
+	for (s = start; s != t; s = s->stack_prev)
+	{
+		if (
+			__mark_transient_subtree_test(
+				s, start, end, mark_mode,
+				do_ignore_icons,
+				use_window_group_hint))
+		{
+			return False;
+		}
+	}
+
+	return True;
+}
+
+/* function to test if all windows are at correct place from start. */
+static Bool __is_restack_needed(
 	FvwmWindow *t, stack_mode_t mode, Bool do_restack_transients,
 	Bool is_new_window)
+{
+	if (is_new_window)
+	{
+		return True;
+	}
+	else if (t->stack_prev == NULL || t->stack_next == NULL)
+	{
+		/* the window is about to be destroyed, and has been removed
+		 * from the stack ring. No need to restack. */
+		return False;
+	}
+
+	if (mode == SM_RESTACK)
+	{
+		return True;
+	}
+	if (do_restack_transients)
+	{
+		return !is_transient_subtree_straight(
+			t, t->layer, mode, True, False);
+	}
+	else if (mode == SM_LOWER)
+	{
+		return (t->stack_next != &Scr.FvwmRoot &&
+			t->stack_next->layer == t->layer);
+	}
+	else if (mode == SM_RAISE)
+	{
+		return (t->stack_prev != &Scr.FvwmRoot &&
+			t->stack_prev->layer == t->layer);
+	}
+
+	return True;
+}
+
+static Bool __restack_window(
+	FvwmWindow *t, stack_mode_t mode, Bool do_restack_transients,
+	Bool is_new_window, Bool is_client_request)
 {
 	FvwmWindow *s = NULL;
 	FvwmWindow *r = NULL;
 	FvwmWindow tmp_r;
 	int count;
+
+	if (!__is_restack_needed(
+		    t, mode, do_restack_transients, is_new_window))
+	{
+		/* need to cancel out the effect of any M_RAISE/M_LOWER that
+		 * might already be send out. This is ugly. Better would be to
+		 * not send the messages in the first place. */
+		if (do_restack_transients)
+		{
+			s = t->stack_next;
+			if (s == NULL)
+			{
+				return True;
+			}
+			while (IS_IN_TRANSIENT_SUBTREE(s))
+			{
+				s = s->stack_next;
+			}
+			BroadcastRestack(t->stack_prev, s);
+		}
+
+		/* native/unmanaged windows might have raised. However some
+		 * buggy clients will keep issuing requests if the raise hacks
+		 * are done after processing their requests. */
+		return is_client_request;
+	}
 
 	count = 0;
 	if (do_restack_transients)
@@ -678,12 +967,15 @@ static Bool __restack_window(
 		/* now that the new transient is properly positioned in the
 		 * stack ring, raise/lower it again so that its parent is
 		 * raised/lowered too */
-		raise_or_lower_window(t, mode, True, False);
+		raise_or_lower_window(t, mode, True, False, is_client_request);
 		/* make sure the stacking order is correct - may be the
 		 * sledge-hammer method, but the recursion ist too hard to
 		 * understand. */
 		ResyncXStackingOrder();
-		return True;
+
+		/* if the transient is on the top of the top layer pan frames
+		 * will have ended up under all windows after this. */
+		return (t->stack_prev != &Scr.FvwmRoot);
 	}
 	else
 	{
@@ -697,7 +989,7 @@ static Bool __restack_window(
 }
 
 static Bool __raise_lower_recursion(
-	FvwmWindow *t, stack_mode_t mode)
+	FvwmWindow *t, stack_mode_t mode, Bool is_client_request)
 {
 	FvwmWindow *t2;
 
@@ -731,7 +1023,8 @@ static Bool __raise_lower_recursion(
 				 * other branches. */
 				t->scratch.i = MAX_TRANSIENTS_IN_BRANCH;
 			}
-			__raise_or_lower_window(t2, mode, True, False);
+			__raise_or_lower_window(
+				t2, mode, True, False, is_client_request);
 			if (__is_restack_transients_needed(t2, mode))
 			{
 				/* moving the parent moves our window already */
@@ -745,7 +1038,7 @@ static Bool __raise_lower_recursion(
 
 static void __raise_or_lower_window(
 	FvwmWindow *t, stack_mode_t mode, Bool allow_recursion,
-	Bool is_new_window)
+	Bool is_new_window, Bool is_client_request)
 {
 	FvwmWindow *t2;
 	Bool do_move_transients;
@@ -773,7 +1066,8 @@ static void __raise_or_lower_window(
 		 * window). */
 		if (IS_TRANSIENT(t) && DO_STACK_TRANSIENT_PARENT(t))
 		{
-			if (__raise_lower_recursion(t, mode) == True)
+			if (__raise_lower_recursion(
+				    t, mode, is_client_request) == True)
 			{
 				return;
 			}
@@ -789,14 +1083,15 @@ static void __raise_or_lower_window(
 		do_move_transients = __must_move_transients(t, mode);
 	}
 	if (__restack_window(
-		    t, mode, do_move_transients, is_new_window) == True)
+		    t, mode, do_move_transients, is_new_window,
+		    is_client_request) == True)
 	{
 		return;
 	}
 
 	if (mode == SM_RAISE)
 	{
-		/* This hack raises the target and all higher FVWM windows over
+		/* This hack raises the target and all higher fvwm windows over
 		 * any style grabfocusoff override_redirect windows that may be
 		 * above it. This is used to cope with ill-behaved applications
 		 * that insist on using long-lived override_redirects. */
@@ -836,7 +1131,7 @@ static void __raise_or_lower_window(
 #endif
 			for (t2 = t; t2 != &Scr.FvwmRoot; t2 = t2->stack_prev)
 			{
-				XRaiseWindow (dpy, FW_W_FRAME(t2));
+				XRaiseWindow(dpy, FW_W_FRAME(t2));
 			}
 		}
 		/*  This needs to be done after all the raise hacks.  */
@@ -853,7 +1148,7 @@ static void __raise_or_lower_window(
 
 static void raise_or_lower_window(
 	FvwmWindow *t, stack_mode_t mode, Bool allow_recursion,
-	Bool is_new_window)
+	Bool is_new_window, Bool is_client_request)
 {
 	FvwmWindow *fw;
 
@@ -862,7 +1157,8 @@ static void raise_or_lower_window(
 	{
 		fw->scratch.i = 0;
 	}
-	__raise_or_lower_window(t, mode, allow_recursion, is_new_window);
+	__raise_or_lower_window(
+		t, mode, allow_recursion, is_new_window, is_client_request);
 
 	return;
 }
@@ -904,7 +1200,7 @@ static Bool overlap(FvwmWindow *r, FvwmWindow *s)
 #if 0
 /*
   ResyncFvwmStackRing -
-  Rebuilds the stacking order ring of FVWM-managed windows. For use in cases
+  Rebuilds the stacking order ring of fvwm-managed windows. For use in cases
   where apps raise/lower their own windows in a way that makes it difficult
   to determine exactly where they ended up in the stacking order.
   - Based on code from Matthias Clasen.
@@ -912,7 +1208,8 @@ static Bool overlap(FvwmWindow *r, FvwmWindow *s)
 static void ResyncFvwmStackRing (void)
 {
 	Window root, parent, *children;
-	unsigned int nchildren, i;
+	unsigned int nchildren;
+	int i;
 	FvwmWindow *t1, *t2;
 
 	MyXGrabServer (dpy);
@@ -1019,6 +1316,8 @@ static void BroadcastRestack(FvwmWindow *s1, FvwmWindow *s2)
 	int num;
 	int i;
 	int n;
+	fmodule_list_itr moditr;
+	fmodule *module;
 	unsigned long *body, *bp, length;
 	unsigned long max_wins_per_packet;
 
@@ -1078,9 +1377,11 @@ static void BroadcastRestack(FvwmWindow *s1, FvwmWindow *s2)
 			*(bp++) = FW_W_FRAME(fw);
 			*(bp++) = (unsigned long)fw;
 		}
-		for (i = 0; i < npipes; i++)
+		module_list_itr_init(&moditr);
+		while ( (module = module_list_itr_next(&moditr)) != NULL)
 		{
-			PositiveWrite(i, body, length*sizeof(unsigned long));
+			PositiveWrite(
+				module,body,length*sizeof(unsigned long));
 		}
 		free(body);
 	}
@@ -1089,29 +1390,6 @@ static void BroadcastRestack(FvwmWindow *s1, FvwmWindow *s2)
 #endif
 
 	return;
-}
-
-static void __mark_group_member(
-	FvwmWindow *fw, FvwmWindow *start, FvwmWindow *end)
-{
-	FvwmWindow *t;
-
-	for (t = start; t != end; t = t->stack_next)
-	{
-		if (FW_W(t) == fw->wmhints->window_group ||
-		    (t->wmhints && (t->wmhints->flags & WindowGroupHint) &&
-		     t->wmhints->window_group == fw->wmhints->window_group))
-		{
-			if (IS_IN_TRANSIENT_SUBTREE(t))
-			{
-				/* have to move this one too */
-				SET_IN_TRANSIENT_SUBTREE(fw, 1);
-			}
-		}
-	}
-
-	return;
-
 }
 
 static int collect_transients_recursive(
@@ -1420,7 +1698,8 @@ Bool position_new_window_in_stack_ring(FvwmWindow *t, Bool do_lower)
 		return False;
 	}
 	/* RaiseWindow/LowerWindow will put the window in its layer */
-	raise_or_lower_window(t, (do_lower) ? SM_LOWER : SM_RAISE, False, True);
+	raise_or_lower_window(
+		t, (do_lower) ? SM_LOWER : SM_RAISE, False, True, False);
 
 	return True;
 }
@@ -1428,12 +1707,12 @@ Bool position_new_window_in_stack_ring(FvwmWindow *t, Bool do_lower)
 /* Raise t and its transients to the top of its layer. For the pager to work
  * properly it is necessary that RaiseWindow *always* sends a proper M_RESTACK
  * packet, even if the stacking order didn't change. */
-void RaiseWindow(FvwmWindow *t)
+void RaiseWindow(FvwmWindow *t, Bool is_client_request)
 {
 	BroadcastPacket(
 		M_RAISE_WINDOW, 3, (long)FW_W(t), (long)FW_W_FRAME(t),
 		(unsigned long)t);
-	raise_or_lower_window(t, SM_RAISE, True, False);
+	raise_or_lower_window(t, SM_RAISE, True, False, is_client_request);
 	focus_grab_buttons_on_layer(t->layer);
 #ifdef DEBUG_STACK_RING
 	verify_stack_ring_consistency();
@@ -1441,12 +1720,12 @@ void RaiseWindow(FvwmWindow *t)
 	return;
 }
 
-void LowerWindow(FvwmWindow *t)
+void LowerWindow(FvwmWindow *t, Bool is_client_request)
 {
 	BroadcastPacket(
 		M_LOWER_WINDOW, 3, (long)FW_W(t), (long)FW_W_FRAME(t),
 		(unsigned long)t);
-	raise_or_lower_window(t, SM_LOWER, True, False);
+	raise_or_lower_window(t, SM_LOWER, True, False, is_client_request);
 	focus_grab_buttons_on_layer(t->layer);
 #ifdef DEBUG_STACK_RING
 	verify_stack_ring_consistency();
@@ -1454,9 +1733,9 @@ void LowerWindow(FvwmWindow *t)
 	return;
 }
 
-void RestackWindow(FvwmWindow *t)
+void RestackWindow(FvwmWindow *t, Bool is_client_request)
 {
-	raise_or_lower_window(t, SM_RESTACK, True, False);
+	raise_or_lower_window(t, SM_RESTACK, True, False, is_client_request);
 	focus_grab_buttons_on_layer(t->layer);
 #ifdef DEBUG_STACK_RING
 	verify_stack_ring_consistency();
@@ -1495,7 +1774,7 @@ Bool HandleUnusualStackmodes(
 		}
 		if (do_restack)
 		{
-			RaiseWindow (r);
+			RaiseWindow (r, True);
 		}
 		break;
 	case BottomIf:
@@ -1507,7 +1786,7 @@ Bool HandleUnusualStackmodes(
 		}
 		if (do_restack)
 		{
-			LowerWindow (r);
+			LowerWindow (r, True);
 		}
 		break;
 	case Opposite:
@@ -1616,80 +1895,44 @@ void mark_transient_subtree(
 	}
 	/* clean the temporary flag in all windows and precalculate the
 	 * transient frame windows */
-	for (
-		s = Scr.FvwmRoot.stack_next; s != &Scr.FvwmRoot;
-		s = s->stack_next)
+	if (Scr.FvwmRoot.scratch.i == 0)
 	{
-		SET_IN_TRANSIENT_SUBTREE(s, 0);
-		if (IS_TRANSIENT(s) && (layer < 0 || layer == s->layer))
+		for (
+			s = Scr.FvwmRoot.stack_next; s != &Scr.FvwmRoot;
+			s = s->stack_next)
 		{
-			s->scratch.p = get_transientfor_fvwmwindow(s);
-		}
-		else
-		{
-			s->scratch.p = NULL;
+			SET_IN_TRANSIENT_SUBTREE(s, 0);
+			if (
+				IS_TRANSIENT(s) &&
+				(layer < 0 || layer == s->layer))
+			{
+				s->scratch.p = get_transientfor_fvwmwindow(s);
+			}
+			else
+			{
+				s->scratch.p = NULL;
+			}
 		}
 	}
+	Scr.FvwmRoot.scratch.i = 0;
+
 	/* now loop over the windows and mark the ones we need to move */
 	SET_IN_TRANSIENT_SUBTREE(t, 1);
 	is_finished = False;
 	while (!is_finished)
 	{
-		FvwmWindow *r;
-
 		/* recursively search for all transient windows */
 		is_finished = True;
 		for (s = start; s != end; s = s->stack_next)
 		{
-			Bool use_group_hint = False;
 
-			if (IS_IN_TRANSIENT_SUBTREE(s))
+			if (
+				__mark_transient_subtree_test(
+					s, start, end, mark_mode,
+					do_ignore_icons,
+					use_window_group_hint))
 			{
-				continue;
-			}
-			if (use_window_group_hint &&
-			    DO_ICONIFY_WINDOW_GROUPS(s) && s->wmhints &&
-			    (s->wmhints->flags & WindowGroupHint) &&
-			    (s->wmhints->window_group != None) &&
-			    (s->wmhints->window_group != FW_W(s)) &&
-			    (s->wmhints->window_group != Scr.Root))
-			{
-				use_group_hint = True;
-			}
-			if (!IS_TRANSIENT(s) && !use_group_hint)
-			{
-				continue;
-			}
-			if (do_ignore_icons && IS_ICONIFIED(s))
-			{
-				continue;
-			}
-			r = (FvwmWindow *)s->scratch.p;
-			if (IS_TRANSIENT(s))
-			{
-				if (r && IS_IN_TRANSIENT_SUBTREE(r) &&
-				    ((mark_mode == MARK_ALL) ||
-				     __is_restack_transients_needed(
-					     r, (stack_mode_t)mark_mode) ==
-				     True))
-				{
-					/* have to move this one too */
-					SET_IN_TRANSIENT_SUBTREE(s, 1);
-					/* used for stacking transients */
-					s->scratch.i += r->scratch.i + 1;
-					/* need another scan through the list */
-					is_finished = False;
-					continue;
-				}
-			}
-			if (use_group_hint && !IS_IN_TRANSIENT_SUBTREE(s))
-			{
-				__mark_group_member(s, start, end);
-				if (IS_IN_TRANSIENT_SUBTREE(s))
-				{
-					/* need another scan through the list */
-					is_finished = False;
-				}
+				is_finished = False;
 			}
 		} /* for */
 	} /* while */
@@ -1803,21 +2046,21 @@ Bool is_on_top_of_layer_and_above_unmanaged(FvwmWindow *fw)
 
 void CMD_Raise(F_CMD_ARGS)
 {
-	RaiseWindow(exc->w.fw);
+	RaiseWindow(exc->w.fw, False);
 
 	return;
 }
 
 void CMD_Lower(F_CMD_ARGS)
 {
-	LowerWindow(exc->w.fw);
+	LowerWindow(exc->w.fw, False);
 
 	return;
 }
 
 void CMD_RestackTransients(F_CMD_ARGS)
 {
-	RestackWindow(exc->w.fw);
+	RestackWindow(exc->w.fw, False);
 
 	return;
 }
@@ -1830,11 +2073,11 @@ void CMD_RaiseLower(F_CMD_ARGS)
 	ontop = is_on_top_of_layer_ignore_rom(fw);
 	if (ontop)
 	{
-		LowerWindow(fw);
+		LowerWindow(fw, False);
 	}
 	else
 	{
-		RaiseWindow(fw);
+		RaiseWindow(fw, False);
 	}
 
 	return;

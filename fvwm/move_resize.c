@@ -37,6 +37,9 @@
 #include "libs/fvwmlib.h"
 #include "libs/FScreen.h"
 #include "libs/Picture.h"
+#include "libs/Grab.h"
+#include "libs/Parse.h"
+#include "libs/Graphics.h"
 #include "fvwm.h"
 #include "externs.h"
 #include "cursor.h"
@@ -45,7 +48,8 @@
 #include "misc.h"
 #include "screen.h"
 #include "menus.h"
-#include "move_resize.h"
+#include "menuparameters.h"
+#include "module_list.h"
 #include "module_interface.h"
 #include "focus.h"
 #include "borders.h"
@@ -61,14 +65,11 @@
 #include "colormaps.h"
 #include "update.h"
 #include "stack.h"
+#include "move_resize.h"
+#include "functions.h"
+#include "style.h"
 
 /* ----- move globals ----- */
-
-#define SNAP_NONE    0x00
-#define SNAP_WINDOWS 0x01
-#define SNAP_ICONS   0x02
-#define SNAP_SAME    0x04
-#define SNAP_SCREEN  0x08
 
 #define MOVE_NORMAL  0x00
 #define MOVE_PAGE    0x01
@@ -272,74 +273,146 @@ void switch_move_resize_grid(Bool state)
 	return;
 }
 
-/* The vars are named for the x-direction, but this is used for both x and y */
-static int GetOnePositionArgument(
-	char *s1,int x,int w,int *pFinalX,float factor, int max, Bool is_x)
+static int ParsePositionArgumentSuffix(
+	float *ret_factor, char *suffix, float wfactor, float sfactor)
 {
-	int val;
-	int cch = strlen(s1);
-	Bool add_pointer_position = False;
+	int n;
 
-	if (cch == 0)
+	switch (*suffix)
 	{
-		return 0;
+	case 'p':
+	case 'P':
+		*ret_factor = 1.0;
+		n = 1;
+		break;
+	case 'w':
+	case 'W':
+		*ret_factor = wfactor;
+		n = 1;
+		break;
+	default:
+		*ret_factor = sfactor;
+		n = 0;
+		break;
 	}
-	if (s1[cch-1] == 'p')
+
+	return n;
+}
+
+static int __get_shift(int val, float factor)
+{
+	int shift;
+
+	if (val >= 0)
 	{
-		factor = 1;  /* Use pixels, so don't multiply by factor */
-		s1[cch-1] = '\0';
-	}
-	if (strcmp(s1,"w") == 0)
-	{
-		*pFinalX = x;
-	}
-	else if (sscanf(s1,"w-%d",&val) == 1)
-	{
-		*pFinalX = x - (int)(val*factor + 0.5);
-	}
-	else if (sscanf(s1,"w+%d",&val) == 1 || sscanf(s1,"w%d",&val) == 1 )
-	{
-		*pFinalX = x + (int)(val*factor + 0.5);
-	}
-	else if (sscanf(s1,"m-%d",&val) == 1)
-	{
-		add_pointer_position = True;
-		*pFinalX = -(int)(val*factor + 0.5);
-	}
-	else if (sscanf(s1,"m+%d",&val) == 1 || sscanf(s1,"m%d",&val) == 1 )
-	{
-		add_pointer_position = True;
-		*pFinalX = (int)(val*factor + 0.5);
-	}
-	else if (sscanf(s1,"-%d",&val) == 1)
-	{
-		*pFinalX = max-w - (int)(val*factor + 0.5);
-	}
-	else if (sscanf(s1,"+%d",&val) == 1 || sscanf(s1,"%d",&val) == 1)
-	{
-		*pFinalX = (int)(val*factor + 0.5);
+		shift = (int)(val * factor + 0.5);
 	}
 	else
 	{
+		shift = (int)(val * factor - 0.5);
+	}
+
+	return shift;
+}
+
+/* The vars are named for the x-direction, but this is used for both x and y */
+static int GetOnePositionArgument(
+	char *s1, int window_pos, int window_size, int *pFinalPos,
+	float sfactor, int screen_size, int screen_pos, Bool is_x)
+{
+	int final_pos;
+	float wfactor;
+
+	if (s1 == 0 || *s1 == 0)
+	{
 		return 0;
 	}
-	if (add_pointer_position)
+	wfactor = (float)window_size / 100;
+	/* get start position */
+	switch (*s1)
 	{
-		int x = 0;
-		int y = 0;
+	case 'w':
+	case 'W':
+		final_pos = window_pos;
+		s1++;
+		break;
+	case 'm':
+	case 'M':
+	{
+	        int x;
+		int y;
 
-		if (FQueryPointer(
+		if (
+			FQueryPointer(
 			    dpy, Scr.Root, &JunkRoot, &JunkChild, &JunkX,
 			    &JunkY, &x, &y, &JunkMask) == False)
 		{
 			/* pointer is on a different screen - that's okay here
 			 */
+			final_pos = 0;
 		}
 		else
 		{
-			*pFinalX += (is_x) ? x : y;
+			final_pos = (is_x) ? x : y;
 		}
+		s1++;
+		break;
 	}
+	default:
+		final_pos = screen_pos;
+		if (*s1 != 0)
+		{
+			int val;
+			int n;
+			float f;
+
+			/* parse value */
+			if (sscanf(s1, "-%d%n", &val, &n) >= 1)
+			{
+				/* i.e. -1, -+1 or --1 */
+				final_pos += (screen_size - window_size);
+				val = -val;
+			}
+			else if (
+				sscanf(s1, "+%d%n", &val, &n) >= 1 ||
+				sscanf(s1, "%d%n", &val, &n) >= 1)
+			{
+				/* i.e. 1, +1, ++1 or +-1 */
+			}
+			else
+			{
+				/* syntax error, ignore rest of string */
+				break;
+			}
+			s1 += n;
+			/* parse suffix */
+			n = ParsePositionArgumentSuffix(
+				&f, s1, wfactor, sfactor);
+			s1 += n;
+			final_pos += __get_shift(val, f);
+		}
+		break;
+	}
+	/* loop over shift arguments */
+	while (*s1 != 0)
+	{
+		int val;
+		int n;
+		float f;
+
+		/* parse value */
+		if (sscanf(s1, "%d%n", &val, &n) < 1)
+		{
+			/* syntax error, ignore rest of string */
+			break;
+		}
+		s1 += n;
+		/* parse suffix */
+		n = ParsePositionArgumentSuffix(&f, s1, wfactor, sfactor);
+		s1 += n;
+		final_pos += __get_shift(val, f);
+	}
+	*pFinalPos = final_pos;
 
 	return 1;
 }
@@ -351,20 +424,22 @@ static int GetOnePositionArgument(
  *   10p 5p          Absolute pixel position
  *   10p -0p         Absolute pixel position, from bottom
  *  w+5  w-10p       Relative position, right 5%, up ten pixels
- *  w+5  w-10p       Pointer relative position, right 5%, up ten pixels
+ *  m+5  m-10p       Pointer relative position, right 5%, up ten pixels
  * Returns 2 when x & y have parsed without error, 0 otherwise
  */
-static int GetMoveArguments(
+int GetMoveArguments(
 	char **paction, int w, int h, int *pFinalX, int *pFinalY,
-	Bool *fWarp, Bool *fPointer)
+	Bool *fWarp, Bool *fPointer, Bool fKeep)
 {
 	char *s1 = NULL;
 	char *s2 = NULL;
 	char *warp = NULL;
 	char *action;
 	char *naction;
-	int scrWidth = Scr.MyDisplayWidth;
-	int scrHeight = Scr.MyDisplayHeight;
+	int scr_x = 0;
+	int scr_y = 0;
+	int scr_w = Scr.MyDisplayWidth;
+	int scr_h = Scr.MyDisplayHeight;
 	int retval = 0;
 
 	if (!paction)
@@ -380,6 +455,29 @@ static int GetMoveArguments(
 		free(s1);
 		return 0;
 	}
+	if (s1 && StrEquals(s1, "screen"))
+	{
+		char *token;
+		int scr;
+		fscreen_scr_arg arg;
+		fscreen_scr_arg* parg;
+
+		free(s1);
+		token = PeekToken(action, &action);
+		scr = FScreenGetScreenArgument(token, FSCREEN_SPEC_PRIMARY);
+		if (scr == FSCREEN_XYPOS)
+		{
+			arg.xypos.x = *pFinalX;
+			arg.xypos.y = *pFinalY;
+			parg = &arg;
+		}
+		else
+		{
+			parg = NULL;
+		}
+		FScreenGetScrRect(parg, scr, &scr_x, &scr_y, &scr_w, &scr_h);
+		action = GetNextToken(action, &s1);
+	}
 	action = GetNextToken(action, &s2);
 	if (fWarp)
 	{
@@ -394,23 +492,25 @@ static int GetMoveArguments(
 	if (s1 != NULL && s2 != NULL)
 	{
 		retval = 0;
-		if (StrEquals(s1, "keep"))
+		if (fKeep == True && StrEquals(s1, "keep"))
 		{
 			retval++;
 		}
-		else if (GetOnePositionArgument(
-				 s1, *pFinalX, w, pFinalX, (float)scrWidth/100,
-				 scrWidth, True))
+		else if (
+			GetOnePositionArgument(
+				s1, *pFinalX, w, pFinalX, (float)scr_w / 100,
+				scr_w, scr_x, True))
 		{
 			retval++;
 		}
-		if (StrEquals(s2, "keep"))
+		if (fKeep == True && StrEquals(s2, "keep"))
 		{
 			retval++;
 		}
-		else if (GetOnePositionArgument(
-				 s2, *pFinalY, h, pFinalY,
-				 (float)scrHeight/100, scrHeight, False))
+		else if (
+			GetOnePositionArgument(
+				s2, *pFinalY, h, pFinalY, (float)scr_h / 100,
+				scr_h, scr_y, False))
 		{
 			retval++;
 		}
@@ -450,44 +550,91 @@ static int ParseOneResizeArgument(
 	char *arg, int scr_size, int base_size, int size_inc, int add_size,
 	int *ret_size)
 {
-	int unit_table[3];
-	int value;
-	int suffix;
+	float factor;
+	int val;
+	int add_base_size = 0;
+	int cch = strlen(arg);
+	int tmp_size;
 
+	if (cch == 0)
+	{
+		return 0;
+	}
 	if (StrEquals(arg, "keep"))
 	{
-		/* do not change width */
+		/* do not change size */
+		return 1;
+	}
+	if (arg[cch-1] == 'p')
+	{
+		factor = 1;
+		arg[cch-1] = '\0';
+	}
+	else if (arg[cch-1] == 'c')
+	{
+		factor = size_inc;
+		add_base_size = base_size;
+		arg[cch-1] = '\0';
 	}
 	else
 	{
-		if (GetSuffixedIntegerArguments(
-			    arg, NULL, &value, 1, "pc", &suffix) < 1)
+		factor = (float)scr_size / 100.0;
+	}
+	if (strcmp(arg,"w") == 0)
+	{
+		/* do not change size */
+	}
+	else if (sscanf(arg,"w-%d",&val) == 1)
+	{
+		tmp_size = (int)(val * factor + 0.5);
+		if (tmp_size < *ret_size)
 		{
-			return 0;
+			*ret_size -= tmp_size;
 		}
 		else
 		{
-			/* convert the value/suffix pairs to pixels */
-			unit_table[0] = scr_size;
-			unit_table[1] = 100;
-			unit_table[2] = 100 * size_inc;
-			*ret_size = SuffixToPercentValue(
-				value, suffix, unit_table);
-			if (*ret_size < 0)
-			{
-				*ret_size += scr_size;
-			}
-			else
-			{
-				if (suffix == 2)
-				{
-					/* account for base width and border
-					 * size */
-					*ret_size += base_size;
-				}
-				*ret_size += add_size;
-			}
+			*ret_size = 0;
 		}
+	}
+	else if (sscanf(arg,"w+%d",&val) == 1 || sscanf(arg,"w%d",&val) == 1)
+	{
+		tmp_size = (int)(val * factor + 0.5);
+		if (-tmp_size < *ret_size)
+		{
+			*ret_size += tmp_size;
+		}
+		else
+		{
+			*ret_size = 0;
+		}
+	}
+	else if (sscanf(arg,"-%d",&val) == 1)
+	{
+		tmp_size = (int)(val * factor + 0.5);
+		if (tmp_size < scr_size + add_size)
+		{
+			*ret_size = scr_size - tmp_size + add_size;
+		}
+		else
+		{
+			*ret_size = 0;
+		}
+	}
+	else if (sscanf(arg,"+%d",&val) == 1 || sscanf(arg,"%d",&val) == 1)
+	{
+		tmp_size = (int)(val * factor + 0.5);
+		if (-tmp_size < add_size + add_base_size)
+		{
+			*ret_size = tmp_size + add_size + add_base_size;
+		}
+		else
+		{
+			*ret_size = 0;
+		}
+	}
+	else
+	{
+		return 0;
 	}
 
 	return 1;
@@ -525,7 +672,8 @@ static int GetResizeArguments(
 		int nx = x + *pFinalW - 1;
 		int ny = y + *pFinalH - 1;
 
-		n = GetMoveArguments(&naction, 0, 0, &nx, &ny, NULL, NULL);
+		n = GetMoveArguments(
+			&naction, 0, 0, &nx, &ny, NULL, NULL, True);
 		if (n < 2)
 		{
 			return 0;
@@ -580,7 +728,7 @@ static int GetResizeArguments(
 		h_add = sb->total_size.height;
 	}
 	s1 = NULL;
-		if (token != NULL)
+	if (token != NULL)
 	{
 		s1 = safestrdup(token);
 	}
@@ -618,8 +766,8 @@ static int GetResizeArguments(
 
 static int GetResizeMoveArguments(
 	char **paction, int w_base, int h_base, int w_inc, int h_inc,
-	size_borders *sb, int *pFinalX, int *pFinalY, int *pFinalW,
-	int *pFinalH, Bool *fWarp, Bool *fPointer)
+	size_borders *sb, int *pFinalX, int *pFinalY,
+	int *pFinalW, int *pFinalH, Bool *fWarp, Bool *fPointer)
 {
 	char *action = *paction;
 	direction_t dir;
@@ -637,7 +785,7 @@ static int GetResizeMoveArguments(
 	}
 	if (GetMoveArguments(
 		    &action, *pFinalW, *pFinalH, pFinalX, pFinalY, fWarp,
-		    NULL) < 2)
+		    NULL, True) < 2)
 	{
 		return 0;
 	}
@@ -886,19 +1034,21 @@ static Bool resize_move_window(F_CMD_ARGS)
 	FvwmWindow *fw = exc->w.fw;
 	Window w = exc->w.w;
 
-	if (!is_function_allowed(F_MOVE, NULL, fw, True, False))
+	if (!is_function_allowed(F_MOVE, NULL, fw, RQORIG_PROGRAM_US, False))
 	{
 		return False;
 	}
-	if (!is_function_allowed(F_RESIZE, NULL, fw, True, True))
+	if (!is_function_allowed(F_RESIZE, NULL, fw, RQORIG_PROGRAM_US, True))
 	{
 		return False;
 	}
 
 	/* gotta have a window */
 	w = FW_W_FRAME(fw);
-	if (!XGetGeometry(dpy, w, &JunkRoot, &x, &y, (unsigned int *)&FinalW,
-			  (unsigned int *)&FinalH, &JunkBW, &JunkDepth))
+	if (!XGetGeometry(
+		    dpy, w, &JunkRoot, &x, &y, (unsigned int*)&FinalW,
+		    (unsigned int*)&FinalH, (unsigned int*)&JunkBW,
+		    (unsigned int*)&JunkDepth))
 	{
 		XBell(dpy, 0);
 		return False;
@@ -927,16 +1077,14 @@ static Bool resize_move_window(F_CMD_ARGS)
 			fw, PART_BUTTONS, (fw == Scr.Hilite), True, CLEAR_ALL,
 			NULL, NULL);
 	}
-	dx = FinalX - fw->frame_g.x;
-	dy = FinalY - fw->frame_g.y;
+	dx = FinalX - fw->g.frame.x;
+	dy = FinalY - fw->g.frame.y;
 	/* size will be less or equal to requested */
-	constrain_size(
-		fw, NULL, (unsigned int *)&FinalW, (unsigned int *)&FinalH, 0,
-		0, 0);
+	constrain_size(fw, NULL, &FinalW, &FinalH, 0, 0, 0);
 	if (IS_SHADED(fw))
 	{
 		frame_setup_window(
-			fw, FinalX, FinalY, FinalW, fw->frame_g.height, False);
+			fw, FinalX, FinalY, FinalW, fw->g.frame.height, False);
 	}
 	else
 	{
@@ -949,13 +1097,13 @@ static Bool resize_move_window(F_CMD_ARGS)
 	}
 	if (IS_MAXIMIZED(fw))
 	{
-		fw->max_g.x += dx;
-		fw->max_g.y += dy;
+		fw->g.max.x += dx;
+		fw->g.max.y += dy;
 	}
 	else
 	{
-		fw->normal_g.x += dx;
-		fw->normal_g.y += dy;
+		fw->g.normal.x += dx;
+		fw->g.normal.y += dy;
 	}
 	has_focus = (fw == get_focus_window())? True : False;
 	update_absolute_geometry(fw);
@@ -1028,8 +1176,8 @@ static void InteractiveMove(
 	MyXGrabServer(dpy);
 	if (!XGetGeometry(
 		    dpy, w, &JunkRoot, &origDragX, &origDragY,
-		    (unsigned int *)&DragWidth, (unsigned int *)&DragHeight,
-		    &JunkBW,  &JunkDepth))
+		    (unsigned int*)&DragWidth, (unsigned int*)&DragHeight,
+		    (unsigned int*)&JunkBW, (unsigned int*)&JunkDepth))
 	{
 		MyXUngrabServer(dpy);
 		return;
@@ -1083,7 +1231,7 @@ static void InteractiveMove(
 	}
 	__move_loop(
 		exc, XOffset, YOffset, DragWidth, DragHeight, FinalX, FinalY,
-		do_move_opaque);
+		do_move_opaque, CRS_MOVE);
 	if (!Scr.gs.do_hide_position_window)
 	{
 		XUnmapWindow(dpy,Scr.SizeWindow);
@@ -1125,7 +1273,7 @@ static void AnimatedMoveAnyWindow(
 	XEvent evdummy;
 	unsigned int draw_parts = PART_NONE;
 
-	if (!is_function_allowed(F_MOVE, NULL, fw, True, False))
+	if (!is_function_allowed(F_MOVE, NULL, fw, RQORIG_PROGRAM_US, False))
 	{
 		return;
 	}
@@ -1142,8 +1290,13 @@ static void AnimatedMoveAnyWindow(
 
 	if (startX < 0 || startY < 0)
 	{
-		if (!XGetGeometry(dpy, w, &JunkRoot, &currentX, &currentY,
-				  &JunkWidth, &JunkHeight, &JunkBW, &JunkDepth))
+		if (
+			!XGetGeometry(
+				dpy, w, &JunkRoot, &currentX, &currentY,
+				(unsigned int*)&JunkWidth,
+				(unsigned int*)&JunkHeight,
+				(unsigned int*)&JunkBW,
+				(unsigned int*)&JunkDepth))
 		{
 			XBell(dpy, 0);
 			return;
@@ -1185,12 +1338,18 @@ static void AnimatedMoveAnyWindow(
 			/* don't waste time in the same spot */
 			continue;
 		}
+		if (pmrtp != NULL)
+		{
+			update_transparent_menu_bg(
+				pmrtp, lastX, lastY, currentX, currentY,
+				endX, endY);
+		}
 		XMoveWindow(dpy,w,currentX,currentY);
 		if (pmrtp != NULL)
 		{
 			repaint_transparent_menu(
 				pmrtp, first,
-				currentX, currentY, endX, endY);
+				currentX, currentY, endX, endY, True);
 		}
 		else if (draw_parts != PART_NONE)
 		{
@@ -1230,20 +1389,20 @@ static void AnimatedMoveAnyWindow(
 			 * about their location */
 			SendConfigureNotify(
 				fw, currentX, currentY,
-				fw->frame_g.width,
-				fw->frame_g.height, 0, False);
+				fw->g.frame.width,
+				fw->g.frame.height, 0, False);
 #ifdef FVWM_DEBUG_MSGS
 			fvwm_msg(DBG,"AnimatedMoveAnyWindow",
 				 "Sent ConfigureNotify (w == %d, h == %d)",
-				 fw->frame_g.width,
-				 fw->frame_g.height);
+				 fw->g.frame.width,
+				 fw->g.frame.height);
 #endif
 		}
 		XFlush(dpy);
 		if (fw)
 		{
-			fw->frame_g.x = currentX;
-			fw->frame_g.y = currentY;
+			fw->g.frame.x = currentX;
+			fw->g.frame.y = currentY;
 			update_absolute_geometry(fw);
 			maximize_adjust_offset(fw);
 			BroadcastConfig(M_CONFIGURE_WINDOW, fw);
@@ -1263,12 +1422,18 @@ static void AnimatedMoveAnyWindow(
 			    &evdummy))
 		{
 			/* finish the move immediately */
+			if (pmrtp != NULL)
+			{
+				update_transparent_menu_bg(
+					pmrtp, lastX, lastY,
+					currentX, currentY, endX, endY);
+			}
 			XMoveWindow(dpy,w,endX,endY);
 			if (pmrtp != NULL)
 			{
 				repaint_transparent_menu(
 					pmrtp, first,
-					endX, endY, endX, endY);
+					endX, endY, endX, endY, True);
 			}
 			break;
 		}
@@ -1494,10 +1659,13 @@ void __move_icon(
 	if (has_icon_picture)
 	{
 		XMoveWindow(dpy, FW_W_ICON_PIXMAP(fw), gp.x, gp.y);
-		XMapWindow(dpy, FW_W_ICON_PIXMAP(fw));
-		if (has_icon_title)
+		if (fw->Desk == Scr.CurrentDesk)
 		{
-			XMapWindow(dpy, FW_W_ICON_TITLE(fw));
+			XMapWindow(dpy, FW_W_ICON_PIXMAP(fw));
+			if (has_icon_title)
+			{
+				XMapWindow(dpy, FW_W_ICON_TITLE(fw));
+			}
 		}
 	}
 	if (do_warp_pointer)
@@ -1515,7 +1683,7 @@ static void __move_window(F_CMD_ARGS, Bool do_animate, int mode)
 	int n;
 	int x;
 	int y;
-	unsigned int width, height;
+	int width, height;
 	int page_x, page_y;
 	Bool fWarp = False;
 	Bool fPointer = False;
@@ -1524,7 +1692,7 @@ static void __move_window(F_CMD_ARGS, Bool do_animate, int mode)
 	FvwmWindow *fw = exc->w.fw;
 	Window w;
 
-	if (!is_function_allowed(F_MOVE, NULL, fw, True, False))
+	if (!is_function_allowed(F_MOVE, NULL, fw, RQORIG_PROGRAM_US, False))
 	{
 		return;
 	}
@@ -1541,9 +1709,16 @@ static void __move_window(F_CMD_ARGS, Bool do_animate, int mode)
 		{
 			w = FW_W_ICON_TITLE(fw);
 		}
+		if (w == None && (mode == MOVE_PAGE || mode == MOVE_SCREEN))
+		{
+			w = FW_W_FRAME(fw);
+		}
 	}
-	if (!XGetGeometry(dpy, w, &JunkRoot, &x, &y, &width, &height,
-			  &JunkBW, &JunkDepth))
+	if (
+		!XGetGeometry(
+			dpy, w, &JunkRoot, &x, &y, (unsigned int*)&width,
+			(unsigned int*)&height, (unsigned int*)&JunkBW,
+			(unsigned int*)&JunkDepth))
 	{
 		return;
 	}
@@ -1612,7 +1787,7 @@ static void __move_window(F_CMD_ARGS, Bool do_animate, int mode)
 		FinalY = y;
 		n = GetMoveArguments(
 			&action, width, height, &FinalX, &FinalY, &fWarp,
-			&fPointer);
+			&fPointer, True);
 
 		if (n != 2 || fPointer)
 		{
@@ -1626,16 +1801,17 @@ static void __move_window(F_CMD_ARGS, Bool do_animate, int mode)
 
 	if (w == FW_W_FRAME(fw))
 	{
-		dx = FinalX - fw->frame_g.x;
-		dy = FinalY - fw->frame_g.y;
+		dx = FinalX - fw->g.frame.x;
+		dy = FinalY - fw->g.frame.y;
 		if (do_animate)
 		{
 			AnimatedMoveFvwmWindow(
-				fw, w, -1, -1, FinalX, FinalY, fWarp, -1, NULL);
+				fw, w, -1, -1, FinalX, FinalY, fWarp, -1,
+				NULL);
 		}
 		frame_setup_window(
-			fw, FinalX, FinalY, fw->frame_g.width,
-			fw->frame_g.height, True);
+			fw, FinalX, FinalY, fw->g.frame.width,
+			fw->g.frame.height, True);
 		if (fWarp & !do_animate)
 		{
 			FWarpPointer(
@@ -1644,13 +1820,13 @@ static void __move_window(F_CMD_ARGS, Bool do_animate, int mode)
 		}
 		if (IS_MAXIMIZED(fw))
 		{
-			fw->max_g.x += dx;
-			fw->max_g.y += dy;
+			fw->g.max.x += dx;
+			fw->g.max.y += dy;
 		}
 		else
 		{
-			fw->normal_g.x += dx;
-			fw->normal_g.y += dy;
+			fw->g.normal.x += dx;
+			fw->g.normal.y += dy;
 		}
 		update_absolute_geometry(fw);
 		maximize_adjust_offset(fw);
@@ -1698,47 +1874,74 @@ void CMD_MoveToScreen(F_CMD_ARGS)
 /* This function does the SnapAttraction stuff. If takes x and y coordinates
  * (*px and *py) and returns the snapped values. */
 static void DoSnapAttract(
-	FvwmWindow *fw, unsigned int Width, unsigned int Height,
-	int *px, int *py)
+	FvwmWindow *fw, int Width, int Height, int *px, int *py)
 {
 	int nyt,nxl,dist,closestLeft,closestRight,closestBottom,closestTop;
-	rectangle self, other;
-	FvwmWindow *tmp;
-	rectangle g;
-	Bool rc;
+	rectangle self;
 
 	/* resist based on window edges */
-	closestTop = Scr.SnapAttraction;
-	closestBottom = Scr.SnapAttraction;
-	closestRight = Scr.SnapAttraction;
-	closestLeft = Scr.SnapAttraction;
+	closestTop = fw->snap_proximity;
+	closestBottom = fw->snap_proximity;
+	closestRight = fw->snap_proximity;
+	closestLeft = fw->snap_proximity;
 	nxl = -99999;
 	nyt = -99999;
 	self.x = *px;
 	self.y = *py;
 	self.width = Width;
 	self.height = Height;
-	rc = get_visible_icon_title_geometry(fw, &g);
-	if (rc == True)
 	{
-		self.height += g.height;
+		rectangle g;
+		Bool rc;
+
+		rc = get_visible_icon_title_geometry(fw, &g);
+		if (rc == True)
+		{
+			self.height += g.height;
+		}
+	}
+
+	/*
+	 * Snap grid handling
+	 */
+	if (fw->snap_grid_x > 1 && nxl == -99999)
+	{
+		if (*px != *px / fw->snap_grid_x * fw->snap_grid_x)
+		{
+			*px = (*px + ((*px >= 0) ?
+				      fw->snap_grid_x : -fw->snap_grid_x) /
+			       2) / fw->snap_grid_x * fw->snap_grid_x;
+		}
+	}
+	if (fw->snap_grid_y > 1 && nyt == -99999)
+	{
+		if (*py != *py / fw->snap_grid_y * fw->snap_grid_y)
+		{
+			*py = (*py + ((*py >= 0) ?
+				      fw->snap_grid_y : -fw->snap_grid_y) /
+			       2) / fw->snap_grid_y * fw->snap_grid_y;
+		}
 	}
 
 	/*
 	 * snap attraction
 	 */
 	/* snap to other windows */
-	if ((Scr.SnapMode & (SNAP_ICONS | SNAP_WINDOWS | SNAP_SAME)) &&
-	    Scr.SnapAttraction > 0)
+	if ((fw->snap_mode & (SNAP_ICONS | SNAP_WINDOWS | SNAP_SAME)) &&
+	    fw->snap_proximity > 0)
 	{
+		FvwmWindow *tmp;
+
 		for (tmp = Scr.FvwmRoot.next; tmp; tmp = tmp->next)
 		{
+			rectangle other;
+
 			if (fw->Desk != tmp->Desk || fw == tmp)
 			{
 				continue;
 			}
 			/* check snapping type */
-			switch (Scr.SnapMode)
+			switch (fw->snap_mode)
 			{
 			case 1:  /* SameType */
 				if (IS_ICONIFIED(tmp) != IS_ICONIFIED(fw))
@@ -1769,149 +1972,143 @@ static void DoSnapAttract(
 			/* prevent that window snaps off screen */
 			if (other.x <= 0)
 			{
-				other.x -= Scr.SnapAttraction + 10000;
-				other.width += Scr.SnapAttraction + 10000;
+				other.x -= fw->snap_proximity + 10000;
+				other.width += fw->snap_proximity + 10000;
 			}
 			if (other.y <= 0)
 			{
-				other.y -= Scr.SnapAttraction + 10000;
-				other.height += Scr.SnapAttraction + 10000;
+				other.y -= fw->snap_proximity + 10000;
+				other.height += fw->snap_proximity + 10000;
 			}
-			if (other .x + other.width >= Scr.MyDisplayWidth)
+			if (other.x + other.width >= Scr.MyDisplayWidth)
 			{
-				other.width += Scr.SnapAttraction + 10000;
+				other.width += fw->snap_proximity + 10000;
 			}
-			if (other .y + other.height >= Scr.MyDisplayHeight)
+			if (other.y + other.height >= Scr.MyDisplayHeight)
 			{
-				other.height += Scr.SnapAttraction + 10000;
+				other.height += fw->snap_proximity + 10000;
 			}
 
 			/* snap horizontally */
-			if (!((other.y + (int)other.height) < (*py) ||
-			      (other.y) > (*py + (int)self.height) ))
+			if (
+				other.y + other.height > *py &&
+				other.y < *py + self.height)
 			{
-				dist = abs(other.x - (*px + (int)self.width));
+				dist = abs(other.x - (*px + self.width));
 				if (dist < closestRight)
 				{
 					closestRight = dist;
-					if (*px + (int)self.width >= other.x &&
-					    *px + (int)self.width <
-					    other.x + Scr.SnapAttraction)
+					if (*px + self.width >= other.x &&
+					    *px + self.width <
+					    other.x + fw->snap_proximity)
 					{
-						nxl = other.x - (int)self.width;
+						nxl = other.x - self.width;
 					}
-					if (*px + (int)self.width >=
-					    other.x - Scr.SnapAttraction &&
-					    *px + (int)self.width < other.x)
+					if (*px + self.width >=
+					    other.x - fw->snap_proximity &&
+					    *px + self.width < other.x)
 					{
-						nxl = other.x - (int)self.width;
+						nxl = other.x - self.width;
 					}
 				}
-				dist = abs(other.x + (int)other.width - *px);
+				dist = abs(other.x + other.width - *px);
 				if (dist < closestLeft)
 				{
 					closestLeft = dist;
-					if (*px <= other.x + (int)other.width &&
-					    *px > other.x + (int)other.width -
-					    Scr.SnapAttraction)
+					if (*px <= other.x + other.width &&
+					    *px > other.x + other.width -
+					    fw->snap_proximity)
 					{
-						nxl = other.x +
-							(int)other.width;
+						nxl = other.x + other.width;
 					}
-					if (*px <= other.x + (int)other.width +
-					    Scr.SnapAttraction &&
-					    *px > other.x + (int)other.width)
+					if (*px <= other.x + other.width +
+					    fw->snap_proximity &&
+					    *px > other.x + other.width)
 					{
-						nxl = other.x +
-							(int)other.width;
+						nxl = other.x + other.width;
 					}
 				}
-			} /* horizontally */
+			}
 			/* snap vertically */
-			if (!((other.x + (int)other.width) < (*px) ||
-			      (other.x) > (*px + (int)self.width)))
+			if (
+				other.x + other.width > *px &&
+				other.x < *px + self.width)
 			{
-				dist = abs(other.y - (*py + (int)self.height));
+				dist = abs(other.y - (*py + self.height));
 				if (dist < closestBottom)
 				{
 					closestBottom = dist;
-					if (*py + (int)self.height >= other.y &&
-					    *py + (int)self.height < other.y +
-					    Scr.SnapAttraction)
+					if (*py + self.height >= other.y &&
+					    *py + self.height < other.y +
+					    fw->snap_proximity)
 					{
-						nyt = other.y -
-							(int)self.height;
+						nyt = other.y - self.height;
 					}
-					if (*py + (int)self.height >=
-					    other.y - Scr.SnapAttraction &&
-					    *py + (int)self.height < other.y)
+					if (*py + self.height >=
+					    other.y - fw->snap_proximity &&
+					    *py + self.height < other.y)
 					{
-						nyt = other.y -
-							(int)self.height;
+						nyt = other.y - self.height;
 					}
 				}
-				dist = abs(other.y + (int)other.height - *py);
+				dist = abs(other.y + other.height - *py);
 				if (dist < closestTop)
 				{
 					closestTop = dist;
 					if (*py <=
-					    other.y + (int)other.height &&
-					    *py > other.y + (int)other.height -
-					    Scr.SnapAttraction)
+					    other.y + other.height &&
+					    *py > other.y + other.height -
+					    fw->snap_proximity)
 					{
-						nyt = other.y +
-							(int)other.height;
+						nyt = other.y + other.height;
 					}
-					if (*py <= other.y + (int)other.height +
-					    Scr.SnapAttraction &&
-					    *py > other.y + (int)other.height)
+					if (*py <= other.y + other.height +
+					    fw->snap_proximity &&
+					    *py > other.y + other.height)
 					{
-						nyt = other.y +
-							(int)other.height;
+						nyt = other.y + other.height;
 					}
 				}
-			} /* vertically */
+			}
 		} /* for */
 	} /* snap to other windows */
 
 	/* snap to screen egdes */
-	if ((Scr.SnapMode & SNAP_SCREEN) && Scr.SnapAttraction > 0)
+	if ((fw->snap_mode & SNAP_SCREEN) && fw->snap_proximity > 0)
 	{
 		/* horizontally */
 		if (!(Scr.MyDisplayWidth < (*px) ||
-		      (*px + (int)self.width) < 0))
+		      (*px + self.width) < 0))
 		{
-			dist = abs(Scr.MyDisplayHeight -
-				   (*py + (int)self.height));
+			dist = abs(Scr.MyDisplayHeight - (*py + self.height));
 			if (dist < closestBottom)
 			{
 				closestBottom = dist;
-				if (*py + (int)self.height >=
+				if (*py + self.height >=
 				    Scr.MyDisplayHeight &&
-				    *py + (int)self.height <
-				    Scr.MyDisplayHeight + Scr.SnapAttraction)
+				    *py + self.height <
+				    Scr.MyDisplayHeight + fw->snap_proximity)
 				{
 					nyt = Scr.MyDisplayHeight -
-						(int)self.height;
+						self.height;
 				}
-				if (*py + (int)self.height >=
-				    Scr.MyDisplayHeight - Scr.SnapAttraction &&
-				    *py + (int)self.height <
-				    Scr.MyDisplayHeight)
+				if (*py + self.height >=
+				    Scr.MyDisplayHeight - fw->snap_proximity &&
+				    *py + self.height < Scr.MyDisplayHeight)
 				{
 					nyt = Scr.MyDisplayHeight -
-						(int)self.height;
+						self.height;
 				}
 			}
 			dist = abs(*py);
 			if (dist < closestTop)
 			{
 				closestTop = dist;
-				if ((*py <= 0)&&(*py > - Scr.SnapAttraction))
+				if ((*py <= 0)&&(*py > - fw->snap_proximity))
 				{
 					nyt = 0;
 				}
-				if ((*py <=  Scr.SnapAttraction)&&(*py > 0))
+				if ((*py <=  fw->snap_proximity)&&(*py > 0))
 				{
 					nyt = 0;
 				}
@@ -1919,28 +2116,26 @@ static void DoSnapAttract(
 		} /* horizontally */
 		/* vertically */
 		if (!(Scr.MyDisplayHeight < (*py) ||
-		      (*py + (int)self.height) < 0))
+		      (*py + self.height) < 0))
 		{
-			dist = abs(Scr.MyDisplayWidth - (*px + (int)self.width));
+			dist = abs(
+				Scr.MyDisplayWidth - (*px + self.width));
 			if (dist < closestRight)
 			{
 				closestRight = dist;
 
-				if (*px + (int)self.width >=
-				    Scr.MyDisplayWidth &&
-				    *px + (int)self.width <
-				    Scr.MyDisplayWidth + Scr.SnapAttraction)
+				if (*px + self.width >= Scr.MyDisplayWidth &&
+				    *px + self.width <
+				    Scr.MyDisplayWidth + fw->snap_proximity)
 				{
-					nxl = Scr.MyDisplayWidth -
-						(int)self.width;
+					nxl = Scr.MyDisplayWidth - self.width;
 				}
 
-				if (*px + (int)self.width >=
-				    Scr.MyDisplayWidth - Scr.SnapAttraction &&
-				    *px + (int)self.width < Scr.MyDisplayWidth)
+				if (*px + self.width >=
+				    Scr.MyDisplayWidth - fw->snap_proximity &&
+				    *px + self.width < Scr.MyDisplayWidth)
 				{
-					nxl = Scr.MyDisplayWidth -
-						(int)self.width;
+					nxl = Scr.MyDisplayWidth - self.width;
 				}
 			}
 			dist = abs(*px);
@@ -1949,11 +2144,11 @@ static void DoSnapAttract(
 				closestLeft = dist;
 
 				if ((*px <= 0) &&
-				    (*px > - Scr.SnapAttraction))
+				    (*px > - fw->snap_proximity))
 				{
 					nxl = 0;
 				}
-				if ((*px <= Scr.SnapAttraction) &&
+				if ((*px <= fw->snap_proximity) &&
 				    (*px > 0))
 				{
 					nxl = 0;
@@ -1972,59 +2167,42 @@ static void DoSnapAttract(
 	}
 
 	/*
-	 * Snap grid handling
-	 */
-	if (Scr.SnapGridX > 1 && nxl == -99999)
-	{
-		if (*px != *px / Scr.SnapGridX * Scr.SnapGridX)
-		{
-			*px = (*px + ((*px >= 0) ?
-				      Scr.SnapGridX : -Scr.SnapGridX) / 2) /
-				Scr.SnapGridX * Scr.SnapGridX;
-		}
-	}
-	if (Scr.SnapGridY > 1 && nyt == -99999)
-	{
-		if (*py != *py / Scr.SnapGridY * Scr.SnapGridY)
-		{
-			*py = (*py + ((*py >= 0) ?
-				      Scr.SnapGridY : -Scr.SnapGridY) / 2) /
-				Scr.SnapGridY * Scr.SnapGridY;
-		}
-	}
-
-	/*
 	 * Resist moving windows beyond the edge of the screen
 	 */
-	if (Scr.MoveResistance > 0)
+	if (fw->edge_resistance_move > 0)
 	{
 		/* snap to right edge */
-		if (*px + Width >= Scr.MyDisplayWidth &&
-		    *px + Width < Scr.MyDisplayWidth + Scr.MoveResistance)
+		if (
+			*px + Width >= Scr.MyDisplayWidth &&
+			*px + Width < Scr.MyDisplayWidth +
+			fw->edge_resistance_move)
 		{
 			*px = Scr.MyDisplayWidth - Width;
 		}
 		/* snap to left edge */
-		else if ((*px <= 0) && (*px > -Scr.MoveResistance))
+		else if ((*px <= 0) && (*px > -fw->edge_resistance_move))
 		{
 			*px = 0;
 		}
 		/* snap to bottom edge */
-		if (*py + Height >= Scr.MyDisplayHeight &&
-		    *py + Height < Scr.MyDisplayHeight + Scr.MoveResistance)
+		if (
+			*py + Height >= Scr.MyDisplayHeight &&
+			*py + Height < Scr.MyDisplayHeight +
+			fw->edge_resistance_move)
 		{
 			*py = Scr.MyDisplayHeight - Height;
 		}
 		/* snap to top edge */
-		else if (*py <= 0 && *py > -Scr.MoveResistance)
+		else if (*py <= 0 && *py > -fw->edge_resistance_move)
 		{
 			*py = 0;
 		}
 	}
 	/* Resist moving windows between xineramascreens */
-	if (Scr.XiMoveResistance > 0 && FScreenIsEnabled())
+	if (fw->edge_resistance_xinerama_move > 0 && FScreenIsEnabled())
 	{
-		int scr_x0, scr_y0, scr_x1, scr_y1;
+		int scr_x0, scr_y0;
+		int scr_x1, scr_y1;
 		Bool do_recalc_rectangle = False;
 
 		FScreenGetResistanceRect(
@@ -2034,14 +2212,16 @@ static void DoSnapAttract(
 		/* snap to right edge */
 		if (scr_x1 < Scr.MyDisplayWidth &&
 		    *px + Width >= scr_x1 && *px + Width <
-		    scr_x1 + Scr.XiMoveResistance)
+		    scr_x1 + fw->edge_resistance_xinerama_move)
 		{
 			*px = scr_x1 - Width;
 			do_recalc_rectangle = True;
 		}
 		/* snap to left edge */
-		else if (scr_x0 > 0 &&
-			 *px <= scr_x0 && scr_x0 - *px < Scr.XiMoveResistance)
+		else if (
+			scr_x0 > 0 &&
+			*px <= scr_x0 && scr_x0 - *px <
+			fw->edge_resistance_xinerama_move)
 		{
 			*px = scr_x0;
 			do_recalc_rectangle = True;
@@ -2058,13 +2238,15 @@ static void DoSnapAttract(
 		/* snap to bottom edge */
 		if (scr_y1 < Scr.MyDisplayHeight &&
 		    *py + Height >= scr_y1 && *py + Height <
-		    scr_y1 + Scr.XiMoveResistance)
+		    scr_y1 + fw->edge_resistance_xinerama_move)
 		{
 			*py = scr_y1 - Height;
 		}
 		/* snap to top edge */
-		else if (scr_y0 > 0 &&
-			 *py <= scr_y0 && scr_y0 - *py < Scr.XiMoveResistance)
+		else if (
+			scr_y0 > 0 &&
+			*py <= scr_y0 && scr_y0 - *py <
+			fw->edge_resistance_xinerama_move)
 		{
 			*py = scr_y0;
 		}
@@ -2082,18 +2264,18 @@ static void DoSnapAttract(
  */
 Bool __move_loop(
 	const exec_context_t *exc, int XOffset, int YOffset, int Width,
-	int Height, int *FinalX, int *FinalY,Bool do_move_opaque)
+	int Height, int *FinalX, int *FinalY, Bool do_move_opaque, int cursor)
 {
 	extern Window bad_window;
-	Bool finished = False;
-	Bool aborted = False;
+	Bool is_finished = False;
+	Bool is_aborted = False;
 	int xl,xl2,yt,yt2,delta_x,delta_y,paged;
 	unsigned int button_mask = 0;
 	FvwmWindow fw_copy;
 	int dx = Scr.EdgeScrollX ? Scr.EdgeScrollX : Scr.MyDisplayWidth;
 	int dy = Scr.EdgeScrollY ? Scr.EdgeScrollY : Scr.MyDisplayHeight;
-	int vx = Scr.Vx;
-	int vy = Scr.Vy;
+	const int vx = Scr.Vx;
+	const int vy = Scr.Vy;
 	int xl_orig = 0;
 	int yt_orig = 0;
 	int cnx = 0;
@@ -2108,6 +2290,7 @@ Bool __move_loop(
 	int orig_icon_x = 0;
 	int orig_icon_y = 0;
 	Bool do_snap = True;
+	Bool was_snapped = False;
 	/* if Alt is initially pressed don't enable no-snap until Alt is
 	 * released */
 	Bool nosnap_enabled = False;
@@ -2117,7 +2300,7 @@ Bool __move_loop(
 	unsigned int draw_parts = PART_NONE;
 	XEvent e;
 
-	if (!GrabEm(CRS_MOVE, GRAB_NORMAL))
+	if (!GrabEm(cursor, GRAB_NORMAL))
 	{
 		XBell(dpy, 0);
 		return False;
@@ -2142,8 +2325,11 @@ Bool __move_loop(
 	{
 		move_w = FW_W_FRAME(fw);
 	}
-	if (!XGetGeometry(dpy, move_w, &JunkRoot, &x_bak, &y_bak,
-			  &JunkWidth, &JunkHeight, &JunkBW,&JunkDepth))
+	if (
+		!XGetGeometry(
+			dpy, move_w, &JunkRoot, &x_bak, &y_bak,
+			(unsigned int*)&JunkWidth, (unsigned int*)&JunkHeight,
+			(unsigned int*)&JunkBW, (unsigned int*)&JunkDepth))
 	{
 		/* This is allright here since the window may not be mapped
 		 * yet. */
@@ -2195,10 +2381,11 @@ Bool __move_loop(
 
 	memset(&e, 0, sizeof(e));
 
-	// Unset the placed by button mask.
-	// If the move is canceled this will remain as zero.
+	/* Unset the placed by button mask.
+	 * If the move is canceled this will remain as zero.
+	 */
 	fw->placed_by_button = 0;
-	while (!finished && bad_window != FW_W(fw))
+	while (!is_finished && bad_window != FW_W(fw))
 	{
 		int rc = 0;
 		int old_xl;
@@ -2219,7 +2406,7 @@ Bool __move_loop(
 			fev_get_last_event(&le);
 			rc = HandlePaging(
 				&le, dx, dy, &xl, &yt, &delta_x, &delta_y,
-				False, False, True);
+				False, False, True, fw->edge_delay_ms_move);
 			if (rc == 1)
 			{
 				/* Fake an event to force window reposition */
@@ -2237,6 +2424,7 @@ Bool __move_loop(
 				{
 					DoSnapAttract(
 						fw, Width, Height, &xl, &yt);
+					was_snapped = True;
 				}
 				fev_make_null_event(&e, dpy);
 				e.type = MotionNotify;
@@ -2317,7 +2505,7 @@ Bool __move_loop(
 			Keyboard_shortcuts(
 				&e, fw, &x_virtual_offset,
 				&y_virtual_offset, ButtonRelease);
-			
+
 			is_fake_event = (e.type != KeyPress);
 		}
 		switch (e.type)
@@ -2341,8 +2529,8 @@ Bool __move_loop(
 				{
 					if (do_move_opaque)
 					{
-						*FinalX = fw->frame_g.x;
-						*FinalY = fw->frame_g.y;
+						*FinalX = fw->g.frame.x;
+						*FinalY = fw->g.frame.y;
 					}
 				}
 				else
@@ -2350,8 +2538,8 @@ Bool __move_loop(
 					*FinalX = orig_icon_x;
 					*FinalY = orig_icon_y;
 				}
-				aborted = True;
-				finished = True;
+				is_aborted = True;
+				is_finished = True;
 			}
 			break;
 		case ButtonPress:
@@ -2412,16 +2600,16 @@ Bool __move_loop(
 					}
 					if (!IS_ICONIFIED(fw))
 					{
-						*FinalX = fw->frame_g.x;
-						*FinalY = fw->frame_g.y;
+						*FinalX = fw->g.frame.x;
+						*FinalY = fw->g.frame.y;
 					}
 					else
 					{
 						*FinalX = orig_icon_x;
 						*FinalY = orig_icon_y;
 					}
-					aborted = True;
-					finished = True;
+					is_aborted = True;
+					is_finished = True;
 				}
 				break;
 			}
@@ -2431,7 +2619,9 @@ Bool __move_loop(
 				fw->placed_by_button = e.xbutton.button;
 			}
 			if (!do_move_opaque)
+			{
 				switch_move_resize_grid(False);
+			}
 			xl2 = e.xbutton.x_root + XOffset + x_virtual_offset;
 			yt2 = e.xbutton.y_root + YOffset + y_virtual_offset;
 			/* ignore the position of the button release if it was
@@ -2447,20 +2637,21 @@ Bool __move_loop(
 				yt = yt2;
 			}
 			if (xl != xl_orig || yt != yt_orig || vx != Scr.Vx ||
-			    vy != Scr.Vy)
+			    vy != Scr.Vy || was_snapped)
 			{
 				/* only snap if the window actually moved! */
 				if (do_snap)
 				{
 					DoSnapAttract(
 						fw, Width, Height, &xl, &yt);
+					was_snapped = True;
 				}
 			}
 
 			*FinalX = xl;
 			*FinalY = yt;
 
-			finished = True;
+			is_finished = True;
 			break;
 
 		case MotionNotify:
@@ -2496,11 +2687,12 @@ Bool __move_loop(
 			if (do_snap)
 			{
 				DoSnapAttract(fw, Width, Height, &xl, &yt);
+				was_snapped = True;
 			}
 
 			/* check Paging request once and only once after
-			 * outline redrawn
-			 * redraw after paging if needed - mab */
+			 * outline redrawn redraw after paging if needed
+			 * - mab */
 			for (paged = 0; paged <= 1; paged++)
 			{
 				if (!do_move_opaque)
@@ -2538,7 +2730,8 @@ Bool __move_loop(
 					HandlePaging(
 						&le, dx, dy, &xl, &yt,
 						&delta_x, &delta_y, False,
-						False, False);
+						False, False,
+						fw->edge_delay_ms_move);
 					if (delta_x)
 					{
 						x_virtual_offset = 0;
@@ -2554,6 +2747,7 @@ Bool __move_loop(
 						DoSnapAttract(
 							fw, Width, Height,
 							&xl, &yt);
+						was_snapped = True;
 					}
 					if (!delta_x && !delta_y)
 					{
@@ -2612,8 +2806,8 @@ Bool __move_loop(
 		{
 			if (!IS_ICONIFIED(fw))
 			{
-				fw_copy.frame_g.x = xl;
-				fw_copy.frame_g.y = yt;
+				fw_copy.g.frame.x = xl;
+				fw_copy.g.frame.y = yt;
 			}
 			if (xl != old_xl || yt != old_yt)
 			{
@@ -2636,19 +2830,19 @@ Bool __move_loop(
 				FlushAllMessageQueues();
 			}
 		}
-	} /* while (!finished) */
+	} /* while (!is_finished) */
 
 	if (!Scr.gs.do_hide_position_window)
 	{
 		XUnmapWindow(dpy,Scr.SizeWindow);
 	}
-	if (aborted || bad_window == FW_W(fw))
+	if (is_aborted || bad_window == FW_W(fw))
 	{
 		if (vx != Scr.Vx || vy != Scr.Vy)
 		{
 			MoveViewport(vx, vy, False);
 		}
-		if (aborted && do_move_opaque)
+		if (is_aborted && do_move_opaque)
 		{
 			XMoveWindow(dpy, move_w, x_bak, y_bak);
 			if (draw_parts != PART_NONE)
@@ -2664,10 +2858,11 @@ Bool __move_loop(
 		if (bad_window == FW_W(fw))
 		{
 			XUnmapWindow(dpy, move_w);
+			border_undraw_decorations(fw);
 			XBell(dpy, 0);
 		}
 	}
-	if (!aborted && bad_window != FW_W(fw) && IS_ICONIFIED(fw))
+	if (!is_aborted && bad_window != FW_W(fw) && IS_ICONIFIED(fw))
 	{
 		SET_ICON_MOVED(fw, 1);
 	}
@@ -2756,97 +2951,46 @@ void CMD_HideGeometryWindow(F_CMD_ARGS)
 	return;
 }
 
-
 void CMD_SnapAttraction(F_CMD_ARGS)
 {
-	int val;
-	char *token;
+	char *cmd;
+	size_t len;
 
-	if (GetIntegerArguments(action, &action, &val, 1) != 1)
-	{
-		Scr.SnapAttraction = DEFAULT_SNAP_ATTRACTION;
-		Scr.SnapMode = DEFAULT_SNAP_ATTRACTION_MODE;
-		return;
-	}
-	Scr.SnapAttraction = val;
-	if (val < 0)
-	{
-		Scr.SnapAttraction = DEFAULT_SNAP_ATTRACTION;
-	}
-	if (val == 0)
-	{
-		return;
-	}
-
-	token = PeekToken(action, &action);
-	if (token == NULL)
-	{
-		return;
-	}
-
-	if (StrEquals(token,"All"))
-	{
-		Scr.SnapMode = SNAP_ICONS | SNAP_WINDOWS;
-	}
-	else if (StrEquals(token,"SameType"))
-	{
-		Scr.SnapMode = SNAP_SAME;
-	}
-	else if (StrEquals(token,"Icons"))
-	{
-		Scr.SnapMode = SNAP_ICONS;
-	}
-	else if (StrEquals(token,"Windows"))
-	{
-		Scr.SnapMode = SNAP_WINDOWS;
-	}
-	if (Scr.SnapMode == 0)
-	{
-		Scr.SnapMode = DEFAULT_SNAP_ATTRACTION_MODE;
-	}
-	else
-	{
-		token = PeekToken(action, &action);
-		if (token == NULL)
-		{
-			return;
-		}
-	}
-
-	if (StrEquals(token, "Screen"))
-	{
-		Scr.SnapMode |= SNAP_SCREEN;
-	}
-	else
-	{
-		fvwm_msg(ERR, "SetSnapAttraction", "Invalid argument: %s",
-			 token);
-	}
+	len = strlen(action);
+	len += 99;
+	cmd = safemalloc(len);
+	sprintf(cmd, "Style * SnapAttraction %s", action);
+	fvwm_msg(
+		OLD, "CMD_SnapAttraction",
+		"The command SnapAttraction is obsolete. Please use the"
+		" following command instead:");
+	fvwm_msg(OLD, "", cmd);
+	execute_function(
+		cond_rc, exc, cmd,
+		FUNC_DONT_REPEAT | FUNC_DONT_EXPAND_COMMAND);
+	free(cmd);
 
 	return;
 }
 
 void CMD_SnapGrid(F_CMD_ARGS)
 {
-	int val[2];
+	char *cmd;
+	size_t len;
 
-	if (GetIntegerArguments(action, NULL, &val[0], 2) != 2)
-	{
-		Scr.SnapGridX = DEFAULT_SNAP_GRID_X;
-		Scr.SnapGridY = DEFAULT_SNAP_GRID_Y;
-		return;
-	}
-
-	Scr.SnapGridX = val[0];
-	if (Scr.SnapGridX < 1)
-	{
-		Scr.SnapGridX = DEFAULT_SNAP_GRID_X;
-	}
-	Scr.SnapGridY = val[1];
-	if (Scr.SnapGridY < 1)
-	{
-		Scr.SnapGridY = DEFAULT_SNAP_GRID_Y;
-	}
+	len = strlen(action);
+	len += 99;
+	cmd = safemalloc(len);
+	sprintf(cmd, "Style * SnapGrid %s", action);
+	fvwm_msg(
+		OLD, "CMD_SnapGrid",
+		"The command SnapGrid is obsolete. Please use the following"
+		" command instead:");
+	fvwm_msg(OLD, "", cmd);
+	execute_function(
+		cond_rc, exc, cmd,
+		FUNC_DONT_REPEAT | FUNC_DONT_EXPAND_COMMAND);
+	free(cmd);
 
 	return;
 }
@@ -3099,7 +3243,6 @@ static void __resize_get_refpos(
  *      y_root   - the Y corrdinate in the root window
  *      x_off    - x offset of pointer from border (input/output)
  *      y_off    - y offset of pointer from border (input/output)
- *      fw       - the current fvwm window
  *      drag     - resize internal structure
  *      orig     - resize internal structure
  *      xmotionp - pointer to xmotion in resize_window
@@ -3108,7 +3251,7 @@ static void __resize_get_refpos(
  */
 static void __resize_step(
 	const exec_context_t *exc, int x_root, int y_root, int *x_off,
-	int *y_off, rectangle *drag, rectangle *orig, int *xmotionp,
+	int *y_off, rectangle *drag, const rectangle *orig, int *xmotionp,
 	int *ymotionp, Bool do_resize_opaque, Bool is_direction_fixed)
 {
 	int action = 0;
@@ -3218,8 +3361,7 @@ static void __resize_step(
 		/* round up to nearest OK size to keep pointer inside
 		 * rubberband */
 		constrain_size(
-			exc->w.fw, exc->x.elast, (unsigned int *)&drag->width,
-			(unsigned int *)&drag->height,
+			exc->w.fw, exc->x.elast, &drag->width, &drag->height,
 			*xmotionp, *ymotionp, CS_ROUND_UP);
 		if (*xmotionp == 1)
 		{
@@ -3254,7 +3396,8 @@ static void __resize_step(
 static Bool __resize_window(F_CMD_ARGS)
 {
 	extern Window bad_window;
-	Bool finished = False, is_done = False, is_aborted = False;
+	FvwmWindow *fw = exc->w.fw;
+	Bool is_finished = False, is_done = False, is_aborted = False;
 	Bool do_send_cn = False;
 	Bool do_resize_opaque;
 	Bool do_warp_to_border;
@@ -3264,13 +3407,17 @@ static Bool __resize_window(F_CMD_ARGS)
 	Bool called_from_title = False;
 	int x,y,delta_x,delta_y,stashed_x,stashed_y;
 	Window ResizeWindow;
+	int dx = Scr.EdgeScrollX ? Scr.EdgeScrollX : Scr.MyDisplayWidth;
+	int dy = Scr.EdgeScrollY ? Scr.EdgeScrollY : Scr.MyDisplayHeight;
+	const int vx = Scr.Vx;
+	const int vy = Scr.Vy;
 	int n;
 	unsigned int button_mask = 0;
 	rectangle sdrag;
 	rectangle sorig;
 	rectangle *drag = &sdrag;
-	rectangle *orig = &sorig;
-	rectangle start_g;
+	const rectangle *orig = &sorig;
+	const window_g g_backup = fw->g;
 	int ymotion = 0;
 	int xmotion = 0;
 	int was_maximized;
@@ -3282,7 +3429,6 @@ static Bool __resize_window(F_CMD_ARGS)
 	size_borders b;
 	frame_move_resize_args mr_args = NULL;
 	long evmask;
-	FvwmWindow *fw = exc->w.fw;
 	XEvent ev;
 	int ref_x;
 	int ref_y;
@@ -3304,21 +3450,10 @@ static Bool __resize_window(F_CMD_ARGS)
 	}
 	button_mask &= DEFAULT_ALL_BUTTONS_MASK;
 
-	if (!is_function_allowed(F_RESIZE, NULL, fw, True, True))
+	if (!is_function_allowed(F_RESIZE, NULL, fw, RQORIG_PROGRAM_US, True))
 	{
 		XBell(dpy, 0);
 		return False;
-	}
-
-	was_maximized = IS_MAXIMIZED(fw);
-	SET_MAXIMIZED(fw, 0);
-	if (was_maximized)
-	{
-		/* must redraw the buttons now so that the 'maximize' button
-		 * does not stay depressed. */
-		border_draw_decorations(
-			fw, PART_BUTTONS, (fw == Scr.Hilite), True, CLEAR_ALL,
-			NULL, NULL);
 	}
 
 	if (IS_SHADED(fw) || !IS_MAPPED(fw))
@@ -3333,11 +3468,19 @@ static Bool __resize_window(F_CMD_ARGS)
 	}
 
 	/* no suffix = % of screen, 'p' = pixels, 'c' = increment units */
-	drag->width = fw->frame_g.width;
-	drag->height = fw->frame_g.height;
+	if (IS_SHADED(fw))
+	{
+		get_unshaded_geometry(fw, drag);
+	}
+	else
+	{
+		drag->width = fw->g.frame.width;
+		drag->height = fw->g.frame.height;
+	}
+
 	get_window_borders(fw, &b);
 	n = GetResizeArguments(
-		&action, fw->frame_g.x, fw->frame_g.y,
+		&action, fw->g.frame.x, fw->g.frame.y,
 		fw->hints.base_width, fw->hints.base_height,
 		fw->hints.width_inc, fw->hints.height_inc,
 		&b, &(drag->width), &(drag->height),
@@ -3348,23 +3491,38 @@ static Bool __resize_window(F_CMD_ARGS)
 		rectangle new_g;
 
 		/* size will be less or equal to requested */
-		new_g = fw->frame_g;
-		constrain_size(
-			fw, NULL, (unsigned int *)&drag->width,
-			(unsigned int *)&drag->height, xmotion, ymotion, 0);
-		gravity_resize(
-			fw->hints.win_gravity, &new_g,
-			drag->width - new_g.width, drag->height - new_g.height);
 		if (IS_SHADED(fw))
 		{
+			rectangle shaded_g;
+
+			get_unshaded_geometry(fw, &new_g);
+			SET_MAXIMIZED(fw, 0);
+			constrain_size(
+				fw, NULL, &drag->width, &drag->height, xmotion,
+				ymotion, 0);
+			gravity_resize(
+				fw->hints.win_gravity, &new_g,
+				drag->width - new_g.width,
+				drag->height - new_g.height);
+			fw->g.normal = new_g;
+			get_shaded_geometry(fw, &shaded_g, &new_g);
 			frame_setup_window(
-				fw, fw->frame_g.x, fw->frame_g.y, drag->width,
-				fw->frame_g.height, False);
+				fw, shaded_g.x, shaded_g.y, shaded_g.width,
+				shaded_g.height, False);
 		}
 		else
 		{
+			new_g = fw->g.frame;
+			SET_MAXIMIZED(fw, 0);
+			constrain_size(
+				fw, NULL, &drag->width, &drag->height, xmotion,
+				ymotion, 0);
+			gravity_resize(
+				fw->hints.win_gravity, &new_g,
+				drag->width - new_g.width,
+				drag->height - new_g.height);
 			frame_setup_window(
-				fw, fw->frame_g.x, fw->frame_g.y, drag->width,
+				fw, new_g.x, new_g.y, drag->width,
 				drag->height, False);
 		}
 		update_absolute_geometry(fw);
@@ -3372,6 +3530,17 @@ static Bool __resize_window(F_CMD_ARGS)
 		GNOME_SetWinArea(fw);
 		ResizeWindow = None;
 		return True;
+	}
+
+	was_maximized = IS_MAXIMIZED(fw);
+	SET_MAXIMIZED(fw, 0);
+	if (was_maximized)
+	{
+		/* must redraw the buttons now so that the 'maximize' button
+		 * does not stay depressed. */
+		border_draw_decorations(
+			fw, PART_BUTTONS, (fw == Scr.Hilite), True, CLEAR_ALL,
+			NULL, NULL);
 	}
 
 	if (Scr.bo.do_install_root_cmap)
@@ -3399,9 +3568,9 @@ static Bool __resize_window(F_CMD_ARGS)
 		MyXGrabServer(dpy);
 	}
 	if (!XGetGeometry(
-		    dpy, (Drawable) ResizeWindow, &JunkRoot, &drag->x, &drag->y,
-		    (unsigned int *)&drag->width, (unsigned int *)&drag->height,
-		    &JunkBW, &JunkDepth))
+		    dpy, (Drawable)ResizeWindow, &JunkRoot, &drag->x, &drag->y,
+		    (unsigned int*)&drag->width, (unsigned int*)&drag->height,
+		    (unsigned int*)&JunkBW, (unsigned int*)&JunkDepth))
 	{
 		UngrabEm(GRAB_NORMAL);
 		if (!do_resize_opaque)
@@ -3419,7 +3588,7 @@ static Bool __resize_window(F_CMD_ARGS)
 	if (do_resize_opaque)
 	{
 		mr_args = frame_create_move_resize_args(
-			fw, FRAME_MR_OPAQUE, &fw->frame_g, &fw->frame_g, 0,
+			fw, FRAME_MR_OPAQUE, &fw->g.frame, &fw->g.frame, 0,
 			DIR_NONE);
 	}
 	else
@@ -3428,8 +3597,7 @@ static Bool __resize_window(F_CMD_ARGS)
 	}
 	MyXGrabKeyboard(dpy);
 
-	*orig = *drag;
-	start_g = *drag;
+	sorig = *drag;
 	ymotion = 0;
 	xmotion = 0;
 
@@ -3439,7 +3607,7 @@ static Bool __resize_window(F_CMD_ARGS)
 		position_geometry_window(NULL);
 		XMapRaised(dpy, Scr.SizeWindow);
 	}
-	DisplaySize(fw, exc->x.elast, orig->width, orig->height,True,True);
+	DisplaySize(fw, exc->x.elast, orig->width, orig->height, True, True);
 
 	if (dir != DIR_NONE)
 	{
@@ -3537,8 +3705,8 @@ static Bool __resize_window(F_CMD_ARGS)
 			break;
 		}
 		__resize_get_refpos(
-			&ref_x, &ref_y, xmotion, ymotion, fw->frame_g.width,
-			fw->frame_g.height, fw);
+			&ref_x, &ref_y, xmotion, ymotion, fw->g.frame.width,
+			fw->g.frame.height, fw);
 	}
 	x_off = 0;
 	y_off = 0;
@@ -3600,7 +3768,7 @@ static Bool __resize_window(F_CMD_ARGS)
 
 	/* loop to resize */
 	memset(&ev, 0, sizeof(ev));
-	while (!finished && bad_window != FW_W(fw))
+	while (!is_finished && bad_window != FW_W(fw))
 	{
 		int rc = 0;
 
@@ -3609,8 +3777,8 @@ static Bool __resize_window(F_CMD_ARGS)
 		       (!FPending(dpy) || !FCheckMaskEvent(dpy, evmask, &ev)))
 		{
 			rc = HandlePaging(
-				&ev, Scr.EdgeScrollX, Scr.EdgeScrollY, &x, &y,
-				&delta_x, &delta_y, False, False, True);
+				&ev, dx, dy, &x, &y, &delta_x, &delta_y, False,
+				False, True, fw->edge_delay_ms_resize);
 			if (rc == 1)
 			{
 				/* Fake an event to force window reposition */
@@ -3720,7 +3888,7 @@ static Bool __resize_window(F_CMD_ARGS)
 			}
 			else
 			{
-				finished = True;
+				is_finished = True;
 				do_send_cn = True;
 				break;
 			}
@@ -3731,42 +3899,13 @@ static Bool __resize_window(F_CMD_ARGS)
 			{
 				is_aborted = True;
 				do_send_cn = True;
-				finished = True;
-				/* return pointer if aborted resize was invoked
-				 * with key */
-				if (stashed_x >= 0)
-				{
-					FWarpPointer(
-						dpy, None, Scr.Root, 0, 0, 0,
-						0, stashed_x, stashed_y);
-				}
-				if (was_maximized)
-				{
-					/* since we aborted the resize, the
-					 * window is still maximized */
-					SET_MAXIMIZED(fw, 1);
-				}
-				if (do_resize_opaque)
-				{
-					int xo;
-					int yo;
-
-					xo = 0;
-					yo = 0;
-					xmotion = 1;
-					ymotion = 1;
-					__resize_step(
-						exc, start_g.x, start_g.y,
-						&xo, &yo, &start_g, orig,
-						&xmotion, &ymotion,
-						do_resize_opaque, True);
-				}
+				is_finished = True;
 			}
 			is_done = True;
 			break;
 
 		case ButtonRelease:
-			finished = True;
+			is_finished = True;
 			is_done = True;
 			break;
 
@@ -3787,15 +3926,15 @@ static Bool __resize_window(F_CMD_ARGS)
 					is_direction_fixed);
 				/* need to move the viewport */
 				HandlePaging(
-					&ev, Scr.EdgeScrollX, Scr.EdgeScrollY,
-					&x, &y, &delta_x, &delta_y, False,
-					False, False);
+					&ev, dx, dy, &x, &y, &delta_x,
+					&delta_y, False, False, False,
+					fw->edge_delay_ms_resize);
 			}
 			/* redraw outline if we paged - mab */
 			if (delta_x != 0 || delta_y != 0)
 			{
-				orig->x -= delta_x;
-				orig->y -= delta_y;
+				sorig.x -= delta_x;
+				sorig.y -= delta_y;
 				drag->x -= delta_x;
 				drag->y -= delta_y;
 
@@ -3862,15 +4001,57 @@ static Bool __resize_window(F_CMD_ARGS)
 	{
 		XUnmapWindow(dpy, Scr.SizeWindow);
 	}
-	if (!is_aborted && bad_window != FW_W(fw))
+	if (is_aborted || bad_window == FW_W(fw))
+	{
+		/* return pointer if aborted resize was invoked with key */
+		if (stashed_x >= 0)
+		{
+			FWarpPointer(
+				dpy, None, Scr.Root, 0, 0, 0, 0, stashed_x,
+				stashed_y);
+		}
+		if (was_maximized)
+		{
+			/* since we aborted the resize, the window is still
+			 * maximized */
+			SET_MAXIMIZED(fw, 1);
+		}
+		if (do_resize_opaque)
+		{
+			int xo;
+			int yo;
+			rectangle g;
+
+			xo = 0;
+			yo = 0;
+			xmotion = 1;
+			ymotion = 1;
+			g = sorig;
+			__resize_step(
+				exc, sorig.x, sorig.y, &xo, &yo, &g, orig,
+				&xmotion, &ymotion, do_resize_opaque, True);
+		}
+		if (vx != Scr.Vx || vy != Scr.Vy)
+		{
+			MoveViewport(vx, vy, False);
+		}
+		/* restore all geometry-related info */
+		fw->g = g_backup;
+		if (bad_window == FW_W(fw))
+		{
+			XUnmapWindow(dpy, FW_W_FRAME(fw));
+			border_undraw_decorations(fw);
+			XBell(dpy, 0);
+		}
+	}
+	else if (!is_aborted && bad_window != FW_W(fw))
 	{
 		rectangle new_g;
 
 		/* size will be >= to requested */
 		constrain_size(
-			fw, exc->x.elast, (unsigned int *)&drag->width,
-			(unsigned int *)&drag->height, xmotion, ymotion,
-			CS_ROUND_UP);
+			fw, exc->x.elast, &drag->width, &drag->height,
+			xmotion, ymotion, CS_ROUND_UP);
 		if (IS_SHADED(fw))
 		{
 			get_shaded_geometry(fw, &new_g, drag);
@@ -3891,8 +4072,8 @@ static Bool __resize_window(F_CMD_ARGS)
 		}
 		if (IS_SHADED(fw))
 		{
-			fw->normal_g.width = drag->width;
-			fw->normal_g.height = drag->height;
+			fw->g.normal.width = drag->width;
+			fw->g.normal.height = drag->height;
 		}
 	}
 	if (is_aborted && was_maximized)
@@ -3901,12 +4082,6 @@ static Bool __resize_window(F_CMD_ARGS)
 		border_draw_decorations(
 			fw, PART_BUTTONS, (fw == Scr.Hilite), True, CLEAR_ALL,
 			NULL, NULL);
-	}
-	if (bad_window == FW_W(fw))
-	{
-		XUnmapWindow(dpy, FW_W_FRAME(fw));
-		border_undraw_decorations(fw);
-		XBell(dpy, 0);
 	}
 	if (Scr.bo.do_install_root_cmap)
 	{
@@ -3934,7 +4109,7 @@ static Bool __resize_window(F_CMD_ARGS)
 
 		if (is_aborted)
 		{
-			g = start_g;
+			g = sorig;
 		}
 		else
 		{
@@ -3950,7 +4125,6 @@ static Bool __resize_window(F_CMD_ARGS)
 	update_absolute_geometry(fw);
 	maximize_adjust_offset(fw);
 	GNOME_SetWinArea(fw);
-
 	if (is_aborted)
 	{
 		return False;
@@ -4048,9 +4222,9 @@ static void move_sticky_window_to_same_page(
 }
 
 static void MaximizeHeight(
-	FvwmWindow *win, unsigned int win_width, int win_x,
-	unsigned int *win_height, int *win_y, Bool grow_up, Bool grow_down,
-	int top_border, int bottom_border, int *layers)
+	FvwmWindow *win, int win_width, int win_x, int *win_height,
+	int *win_y, Bool grow_up, Bool grow_down, int top_border,
+	int bottom_border, int *layers)
 {
 	FvwmWindow *cwin;
 	int x11, x12, x21, x22;
@@ -4123,9 +4297,9 @@ static void MaximizeHeight(
 }
 
 static void MaximizeWidth(
-	FvwmWindow *win, unsigned int *win_width, int *win_x,
-	unsigned int win_height, int win_y, Bool grow_left, Bool grow_right,
-	int left_border, int right_border, int *layers)
+	FvwmWindow *win, int *win_width, int *win_x, int win_height,
+	int win_y, Bool grow_left, Bool grow_right, int left_border,
+	int right_border, int *layers)
 {
 	FvwmWindow *cwin;
 	int x11, x12, x21, x22;
@@ -4203,7 +4377,7 @@ static void unmaximize_fvwm_window(
 	rectangle new_g;
 
 	SET_MAXIMIZED(fw, 0);
-	get_relative_geometry(&new_g, &fw->normal_g);
+	get_relative_geometry(&new_g, &fw->g.normal);
 	if (IS_SHADED(fw))
 	{
 		get_shaded_geometry(fw, &new_g, &new_g);
@@ -4228,16 +4402,15 @@ static void maximize_fvwm_window(
 	FvwmWindow *fw, rectangle *geometry)
 {
 	SET_MAXIMIZED(fw, 1);
-	fw->max_g_defect.width = 0;
-	fw->max_g_defect.height = 0;
+	fw->g.max_defect.width = 0;
+	fw->g.max_defect.height = 0;
 	constrain_size(
-		fw, NULL, (unsigned int*)&(geometry->width),
-		(unsigned int *)&(geometry->height), 0, 0,
+		fw, NULL, &geometry->width, &geometry->height, 0, 0,
 		CS_UPDATE_MAX_DEFECT);
-	fw->max_g = *geometry;
+	fw->g.max = *geometry;
 	if (IS_SHADED(fw))
 	{
-		get_shaded_geometry(fw, geometry, &fw->max_g);
+		get_shaded_geometry(fw, geometry, &fw->g.max);
 	}
 	frame_setup_window(
 		fw, geometry->x, geometry->y, geometry->width,
@@ -4247,10 +4420,10 @@ static void maximize_fvwm_window(
 	update_absolute_geometry(fw);
 	/* remember the offset between old and new position in case the
 	 * maximized  window is moved more than the screen width/height. */
-	fw->max_offset.x = fw->normal_g.x - fw->max_g.x;
-	fw->max_offset.y = fw->normal_g.y - fw->max_g.y;
+	fw->g.max_offset.x = fw->g.normal.x - fw->g.max.x;
+	fw->g.max_offset.y = fw->g.normal.y - fw->g.max.y;
 #if 0
-fprintf(stderr,"%d %d %d %d, max_offset.x = %d, max_offset.y = %d, %d %d %d %d\n", fw->max_g.x, fw->max_g.y, fw->max_g.width, fw->max_g.height, fw->max_offset.x, fw->max_offset.y, fw->normal_g.x,  fw->normal_g.y, fw->normal_g.width, fw->normal_g.height);
+fprintf(stderr,"%d %d %d %d, g.max_offset.x = %d, g.max_offset.y = %d, %d %d %d %d\n", fw->g.max.x, fw->g.max.y, fw->g.max.width, fw->g.max.height, fw->g.max_offset.x, fw->g.max_offset.y, fw->g.normal.x, fw->g.normal.y, fw->g.normal.width, fw->g.normal.height);
 #endif
 
     return;
@@ -4278,11 +4451,14 @@ void CMD_Maximize(F_CMD_ARGS)
 	Bool ignore_working_area = False;
 	int layers[2] = { -1, -1 };
 	Bool global_flag_parsed = False;
-	int  scr_x, scr_y, scr_w, scr_h;
+	int  scr_x, scr_y;
+	int scr_w, scr_h;
 	rectangle new_g;
 	FvwmWindow *fw = exc->w.fw;
 
-	if (!is_function_allowed(F_MAXIMIZE, NULL, fw, True, False))
+	if (
+		!is_function_allowed(
+			F_MAXIMIZE, NULL, fw, RQORIG_PROGRAM_US, False))
 	{
 		XBell(dpy, 0);
 		return;
@@ -4351,10 +4527,10 @@ void CMD_Maximize(F_CMD_ARGS)
 	}
 
 	/* find the new page and geometry */
-	new_g.x = fw->frame_g.x;
-	new_g.y = fw->frame_g.y;
-	new_g.width = fw->frame_g.width;
-	new_g.height = fw->frame_g.height;
+	new_g.x = fw->g.frame.x;
+	new_g.y = fw->g.frame.y;
+	new_g.width = fw->g.frame.width;
+	new_g.height = fw->g.frame.height;
 	get_page_offset_check_visible(&page_x, &page_y, fw);
 
 	/* Check if we should constrain rectangle to some Xinerama screen */
@@ -4362,8 +4538,8 @@ void CMD_Maximize(F_CMD_ARGS)
 	{
 		fscreen_scr_arg fscr;
 
-		fscr.xypos.x = fw->frame_g.x + fw->frame_g.width  / 2 - page_x;
-		fscr.xypos.y = fw->frame_g.y + fw->frame_g.height / 2 - page_y;
+		fscr.xypos.x = fw->g.frame.x + fw->g.frame.width  / 2 - page_x;
+		fscr.xypos.y = fw->g.frame.y + fw->g.frame.height / 2 - page_y;
 		FScreenGetScrRect(
 			&fscr, FSCREEN_XYPOS, &scr_x, &scr_y, &scr_w, &scr_h);
 	}
@@ -4480,9 +4656,8 @@ void CMD_Maximize(F_CMD_ARGS)
 		if (grow_up || grow_down)
 		{
 			MaximizeHeight(
-				fw, new_g.width, new_g.x,
-				(unsigned int *)&new_g.height, &new_g.y,
-				grow_up, grow_down, page_y + scr_y,
+				fw, new_g.width, new_g.x, &new_g.height,
+				&new_g.y, grow_up, grow_down, page_y + scr_y,
 				page_y + scr_y + scr_h, layers);
 		}
 		else if (val2 > 0)
@@ -4493,8 +4668,8 @@ void CMD_Maximize(F_CMD_ARGS)
 		if (grow_left || grow_right)
 		{
 			MaximizeWidth(
-				fw, (unsigned int *)&new_g.width, &new_g.x,
-				new_g.height, new_g.y, grow_left, grow_right,
+				fw, &new_g.width, &new_g.x, new_g.height,
+				new_g.y, grow_left, grow_right,
 				page_x + scr_x, page_x + scr_x + scr_w,
 				layers);
 		}
@@ -4533,17 +4708,17 @@ void CMD_ResizeMaximize(F_CMD_ARGS)
 	FvwmWindow *fw = exc->w.fw;
 
 	/* keep a copy of the old geometry */
-	normal_g = fw->normal_g;
+	normal_g = fw->g.normal;
 	/* resize the window normally */
 	was_resized = __resize_window(F_PASS_ARGS);
 	if (was_resized == True)
 	{
 		/* set the new geometry as the maximized geometry and restore
 		 * the old normal geometry */
-		max_g = fw->normal_g;
+		max_g = fw->g.normal;
 		max_g.x -= Scr.Vx;
 		max_g.y -= Scr.Vy;
-		fw->normal_g = normal_g;
+		fw->g.normal = normal_g;
 		/* and mark it as maximized */
 		maximize_fvwm_window(fw, &max_g);
 	}
@@ -4560,17 +4735,17 @@ void CMD_ResizeMoveMaximize(F_CMD_ARGS)
 	FvwmWindow *fw = exc->w.fw;
 
 	/* keep a copy of the old geometry */
-	normal_g = fw->normal_g;
+	normal_g = fw->g.normal;
 	/* resize the window normally */
 	was_resized = resize_move_window(F_PASS_ARGS);
 	if (was_resized == True)
 	{
 		/* set the new geometry as the maximized geometry and restore
 		 * the old normal geometry */
-		max_g = fw->normal_g;
+		max_g = fw->g.normal;
 		max_g.x -= Scr.Vx;
 		max_g.y -= Scr.Vy;
-		fw->normal_g = normal_g;
+		fw->g.normal = normal_g;
 		/* and mark it as maximized */
 		maximize_fvwm_window(fw, &max_g);
 	}
@@ -4596,10 +4771,10 @@ int stick_across_pages(F_CMD_ARGS, int toggle)
 	}
 	else
 	{
-		if (!IsRectangleOnThisPage(&fw->frame_g, Scr.CurrentDesk))
+		if (!IsRectangleOnThisPage(&fw->g.frame, Scr.CurrentDesk))
 		{
 			action = "";
-			__move_window(F_PASS_ARGS, FALSE, MOVE_PAGE);
+			__move_window(F_PASS_ARGS, False, MOVE_PAGE);
 		}
 		SET_STICKY_ACROSS_PAGES(fw, 1);
 	}

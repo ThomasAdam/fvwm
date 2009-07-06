@@ -39,13 +39,13 @@ char *stripcpy( const char *source );
 
 
 /**
- * Return TRUE if the two strings are equal.  Case is ignored.
+ * Return 1 if the two strings are equal.  Case is ignored.
  **/
 int StrEquals( const char *s1, const char *s2 );
 
 
 /**
- * Return TRUE if the string has the given prefix.  Case is ignored.
+ * Return 1 if the string has the given prefix.  Case is ignored.
  **/
 int StrHasPrefix( const char* string, const char* prefix );
 
@@ -56,5 +56,20 @@ int StrHasPrefix( const char* string, const char* prefix );
  * You should allocate dest yourself, at least strlen(source) * 2 + 3.
  **/
 char *QuoteString(char *dest, const char *source);
+
+/**
+ * Adds delim around the source and escapes all characters in escape with
+ * the corresponding escaper. The dest string must be preallocated.
+ * delim should be included in escape with a proper escaper.
+ * Returns a pointer to the end of dest.
+ **/
+char *QuoteEscapeString(char *dest, const char *source, char delim,
+			const char *escape, const char *escaper);
+
+/**
+ * Calculates the lenght needed by a escaped by QuoteEscapeString
+ * the corresponding escaper.
+ **/
+unsigned int QuoteEscapeStringLength(const char *source, const char *escape);
 
 #endif

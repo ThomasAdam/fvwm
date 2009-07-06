@@ -48,11 +48,6 @@
 #define WithdrawnState 0
 #endif
 
-#ifndef TRUE
-#define TRUE    1
-#define FALSE   0
-#endif
-
 /* ---------------------------- global macros ------------------------------ */
 
 /*
@@ -239,6 +234,10 @@ typedef struct
 		unsigned has_no_icon_title : 1;
 		unsigned has_override_size : 1;
 		unsigned has_stippled_title : 1;
+		unsigned has_stippled_icon_title : 1;
+		/* default has to be 0, therefore no_, not in macros */
+		unsigned has_no_sticky_stippled_title : 1;
+		unsigned has_no_sticky_stippled_icon_title : 1;
 		unsigned icon_override : 2;
 #define NO_ACTIVE_ICON_OVERRIDE 0
 #define ICON_OVERRIDE           1
@@ -247,10 +246,10 @@ typedef struct
 		unsigned is_bottom_title_rotated : 1;
 		unsigned is_fixed : 1;
 		unsigned is_fixed_ppos : 1;
-	        unsigned is_uniconifiable : 1;
-	        unsigned is_unmaximizable : 1;
-	        unsigned is_unclosable : 1;
-	        unsigned is_maximize_fixed_size_disallowed : 1;
+		unsigned is_uniconifiable : 1;
+		unsigned is_unmaximizable : 1;
+		unsigned is_unclosable : 1;
+		unsigned is_maximize_fixed_size_disallowed : 1;
 		unsigned is_icon_sticky_across_pages : 1;
 		unsigned is_icon_sticky_across_desks : 1;
 		unsigned is_icon_suppressed : 1;
@@ -400,6 +399,20 @@ typedef struct
 	unsigned has_ewmh_init_wm_desktop : 2;
 } window_flags;
 
+
+/* Actions allowed by modules. */
+typedef struct action_flags
+{
+	unsigned is_movable : 1;
+	unsigned is_deletable : 1;
+	unsigned is_destroyable : 1;
+	unsigned is_closable : 1;
+	unsigned is_maximizable : 1;
+	unsigned is_resizable : 1;
+	unsigned is_iconifiable : 1;
+} action_flags;
+
+
 /* Window name data structure for window conditions: a list of lists
    of names to match, the boolean operation on the matches being an
    AND of ORs. */
@@ -455,8 +468,26 @@ typedef struct WindowConditionMask
 	int placed_by_button_set_mask;
 } WindowConditionMask;
 
+typedef struct pl_penalty_struct
+{
+	float normal;
+	float ontop;
+	float icon;
+	float sticky;
+	float below;
+	float strut;
+} pl_penalty_struct;
+
+typedef struct pl_percent_penalty_struct
+{
+	int p99;
+	int p95;
+	int p85;
+	int p75;
+} pl_percent_penalty_struct;
+
 /* only style.c and add_window.c are allowed to access this struct! */
-typedef struct
+typedef struct style_flags
 {
 	common_flags_t common;
 	unsigned do_decorate_transient : 1;
@@ -488,7 +519,7 @@ typedef struct
 #define PLACE_TILECASCADE       0x5
 #define PLACE_CASCADE_B         0x6
 #define PLACE_MINOVERLAP        0x7
-#define PLACE_CENTER		0x8
+#define PLACE_POSITION          0x8
 #define PLACE_MASK              0xF
 	unsigned placement_mode : 4;
 	unsigned ewmh_placement_mode : 2; /* see ewmh.h */
@@ -500,16 +531,23 @@ typedef struct
 	unsigned do_save_under : 1;
 	unsigned do_start_iconic : 1;
 	unsigned do_start_lowered : 1;
+ 	unsigned do_start_shaded : 1;
+ 	unsigned start_shaded_dir : 3;
 	unsigned has_border_width : 1;
 	unsigned has_color_back : 1;
 	unsigned has_color_fore : 1;
 	unsigned has_color_back_hi : 1;
 	unsigned has_color_fore_hi : 1;
 	unsigned has_decor : 1;
+	unsigned has_edge_delay_ms_move : 1;
+	unsigned has_edge_delay_ms_resize : 1;
+	unsigned has_edge_resistance_move : 1;
+	unsigned has_edge_resistance_xinerama_move : 1;
 	unsigned has_handle_width : 1;
 	unsigned has_icon : 1;
 	unsigned has_icon_boxes : 1;
 	unsigned has_icon_size_limits : 1;
+	unsigned has_min_window_size : 1;
 	unsigned has_max_window_size : 1;
 	unsigned has_icon_background_padding : 1;
 	unsigned has_icon_background_relief : 1;
@@ -521,6 +559,8 @@ typedef struct
 	unsigned has_no_handles : 1;
 	unsigned has_no_title : 1;
 	unsigned has_ol_decor : 1;
+	unsigned has_snap_grid : 1;
+	unsigned has_snap_attraction : 1;
 #if 0
 	unsigned has_condition_mask : 1;
 #endif
@@ -548,13 +588,16 @@ typedef struct
 	unsigned use_start_on_page_for_transient : 1;
 	unsigned use_start_on_screen : 1;
 	unsigned manual_placement_honors_starts_on_page : 1;
+	unsigned um_placement_honors_starts_on_page : 1;
 	unsigned capture_honors_starts_on_page : 1;
 	unsigned recapture_honors_starts_on_page : 1;
 	unsigned has_placement_penalty : 1;
 	unsigned has_placement_percentage_penalty : 1;
+	unsigned has_placement_position_string : 1;
+	unsigned has_initial_map_command_string : 1;
 } style_flags;
 
-typedef struct
+typedef struct style_id_t
 {
 #ifdef USE_EWMH_WINDOW_TYPE
 	unsigned has_ewmh_window_type:1;
@@ -606,8 +649,8 @@ typedef struct window_style
 #define ICON_RESIZE_TYPE_MASK      0x3
 	unsigned icon_resize_type : 2;
 	unsigned char icon_background_padding;
-	char icon_background_relief;
-	char icon_title_relief;
+	signed char icon_background_relief;
+	signed char icon_title_relief;
 	char *icon_font;
 	char *window_font;
 	char *fore_color_name;
@@ -629,13 +672,30 @@ typedef struct window_style
 	int start_page_x;
 	int start_page_y;
 	int start_screen;
+	int min_window_width;
+	int min_window_height;
 	int max_window_width;
 	int max_window_height;
 	int shade_anim_steps;
+#if 1 /*!!!*/
+	/* attractiveness of window edges */
+	int snap_proximity;
+	/* mode of snap attraction */
+	int snap_mode;
+	/* snap grid size */
+	int snap_grid_x;
+	int snap_grid_y;
+	int edge_delay_ms_move;
+	int edge_delay_ms_resize;
+	int edge_resistance_move;
+	int edge_resistance_xinerama_move;
+#endif
 	icon_boxes *icon_boxes;
 	float norm_placement_penalty;
-	float placement_penalty[6];
-	int placement_percentage_penalty[4];
+	pl_penalty_struct pl_penalty;
+	pl_percent_penalty_struct pl_percent_penalty;
+	char *pl_position_string;
+	char *initial_map_command_string;
 	style_flags flags;
 	style_flags flag_default;
 	style_flags flag_mask;
@@ -662,6 +722,9 @@ typedef struct FvwmWindow
 	FlocaleNameString icon_name;
 	char *visible_name;
 	char *visible_icon_name;
+	/* if non-null: Use this instead of any other names for matching
+	   styles */
+	char *style_name;
 	int name_count;
 	int icon_name_count;
 	/* next fvwm window */
@@ -771,6 +834,11 @@ typedef struct FvwmWindow
 	} attr_backup;
 	/* normal hints */
 	XSizeHints hints;
+	struct
+	{
+		int width_inc;
+		int height_inc;
+	} orig_hints;
 	/* WM hints */
 	XWMHints *wmhints;
 	XClassHint class;
@@ -779,7 +847,7 @@ typedef struct FvwmWindow
 	 * CONFIGARGSNEW macro in module_interface.c, libs/vpacket.h and too!
 	 */
 	int Desk;
-	/* Where (if at all) was it focussed */
+	/* Where (if at all) was it focused */
 	int FocusDesk;
 	/* Desk to deiconify to, for StubbornIcons */
 	int DeIconifyDesk;
@@ -788,17 +856,7 @@ typedef struct FvwmWindow
 	FvwmPicture *mini_icon;
 	char *icon_bitmap_file;
 
-	rectangle frame_g;
-	/* absolute geometry when not maximized */
-	rectangle normal_g;
-	/* maximized window geometry */
-	rectangle max_g;
-	/* defect between maximized geometry before and after constraining
-	 * size. */
-	size_rect max_g_defect;
-	/* original delta between normalized and maximized window, used to
-	 * keep unmaximized window at same screen position */
-	position max_offset;
+	struct window_g g;
 	long *mwm_hints;
 	int ol_hints;
 	int functions;
@@ -839,10 +897,25 @@ typedef struct FvwmWindow
 	char icon_background_relief;
 	char icon_title_relief;
 
+	int min_window_width;
+	int min_window_height;
 	int max_window_width;
 	int max_window_height;
 	int shade_anim_steps;
 	unsigned char grabbed_buttons;
+#if 1 /*!!!*/
+	/* attractiveness of window edges */
+	int snap_proximity;
+	/* mode of snap attraction */
+	int snap_mode;
+	/* snap grid size */
+	int snap_grid_x;
+	int snap_grid_y;
+	int edge_delay_ms_move;
+	int edge_delay_ms_resize;
+	int edge_resistance_move;
+	int edge_resistance_xinerama_move;
+#endif
 
 #define FM_NO_INPUT        0
 #define FM_PASSIVE         1
@@ -850,10 +923,10 @@ typedef struct FvwmWindow
 #define FM_GLOBALLY_ACTIVE 3
 	unsigned char focus_model;
 
-	float placement_penalty[6];
-	int placement_percentage_penalty[4];
+	pl_penalty_struct pl_penalty;
+	pl_percent_penalty_struct pl_percent_penalty;
 
-        unsigned char placed_by_button;
+	unsigned char placed_by_button;
 
 #define EWMH_WINDOW_TYPE_NONE_ID      0
 #define EWMH_WINDOW_TYPE_DESKTOP_ID   1
@@ -900,5 +973,6 @@ typedef struct FvwmWindow
 /* ---------------------------- interface functions ------------------------ */
 
 void SetMWM_INFO(Window window);
+void fvmm_deinstall_signals(void);
 
 #endif /* FVWM_H */

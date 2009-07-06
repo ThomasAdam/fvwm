@@ -6,31 +6,31 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307	 USA
  */
 /* This module is based on Twm, but has been siginificantly modified
  * by Rob Nation
  */
 /*
- *       Copyright 1988 by Evans & Sutherland Computer Corporation,
- *                          Salt Lake City, Utah
+ *	 Copyright 1988 by Evans & Sutherland Computer Corporation,
+ *			    Salt Lake City, Utah
  *  Portions Copyright 1989 by the Massachusetts Institute of Technology
- *                        Cambridge, Massachusetts
+ *			  Cambridge, Massachusetts
  *
- *                           All Rights Reserved
+ *			     All Rights Reserved
  *
  *    Permission to use, copy, modify, and distribute this software and
- *    its documentation  for  any  purpose  and  without  fee is hereby
- *    granted, provided that the above copyright notice appear  in  all
- *    copies and that both  that  copyright  notice  and  this  permis-
- *    sion  notice appear in supporting  documentation,  and  that  the
+ *    its documentation	 for  any  purpose  and	 without  fee is hereby
+ *    granted, provided that the above copyright notice appear	in  all
+ *    copies and that both  that  copyright  notice  and  this	permis-
+ *    sion  notice appear in supporting	 documentation,	 and  that  the
  *    names of Evans & Sutherland and M.I.T. not be used in advertising
- *    in publicity pertaining to distribution of the  software  without
+ *    in publicity pertaining to distribution of the  software	without
  *    specific, written prior permission.
  *
  *    EVANS & SUTHERLAND AND M.I.T. DISCLAIM ALL WARRANTIES WITH REGARD
@@ -39,7 +39,7 @@
  *    M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL  DAM-
  *    AGES OR  ANY DAMAGES WHATSOEVER  RESULTING FROM LOSS OF USE, DATA
  *    OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- *    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE
+ *    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION	 WITH  THE  USE
  *    OR PERFORMANCE OF THIS SOFTWARE.
  */
 
@@ -56,6 +56,9 @@
 #include "libs/PictureUtils.h"
 #include "libs/charmap.h"
 #include "libs/wcontext.h"
+#include "libs/Grab.h"
+#include "libs/Strings.h"
+#include "libs/XResource.h"
 #include "fvwm.h"
 #include "externs.h"
 #include "cursor.h"
@@ -128,8 +131,8 @@ static void delete_client_context(FvwmWindow *fw)
 /*
  *
  *  Procedure:
- *      CaptureOneWindow
- *      CaptureAllWindows
+ *	CaptureOneWindow
+ *	CaptureAllWindows
  *
  *   Decorates windows at start-up and during recaptures
  *
@@ -162,8 +165,11 @@ static void CaptureOneWindow(
 	/* Grab the server to make sure the window does not die during the
 	 * recapture. */
 	MyXGrabServer(dpy);
-	if (!XGetGeometry(dpy, FW_W(fw), &JunkRoot, &JunkX, &JunkY, &JunkWidth,
-			  &JunkHeight, &JunkBW,  &JunkDepth))
+	if (
+		!XGetGeometry(
+			dpy, FW_W(fw), &JunkRoot, &JunkX, &JunkY,
+			(unsigned int*)&JunkWidth, (unsigned int*)&JunkHeight,
+			(unsigned int*)&JunkBW, (unsigned int*)&JunkDepth))
 	{
 		/* The window has already died, do not recapture it! */
 		MyXUngrabServer(dpy);
@@ -335,15 +341,15 @@ static void hide_screen(
 /*
  *
  *  Procedure:
- *      MappedNotOverride - checks to see if we should really
- *              put a fvwm frame on the window
+ *	MappedNotOverride - checks to see if we should really
+ *		put a fvwm frame on the window
  *
  *  Returned Value:
- *      TRUE    - go ahead and frame the window
- *      FALSE   - don't frame the window
+ *	1   - go ahead and frame the window
+ *	0   - don't frame the window
  *
  *  Inputs:
- *      w       - the window to check
+ *	w	- the window to check
  *
  */
 
@@ -359,7 +365,7 @@ static int MappedNotOverride(
 	win_opts->initial_state = DontCareState;
 	if ((w==Scr.NoFocusWin)||(!XGetWindowAttributes(dpy, w, &wa)))
 	{
-		return False;
+		return 0;
 	}
 	if (XGetWindowProperty(
 		    dpy,w,_XA_WM_STATE,0L,3L,False,_XA_WM_STATE,
@@ -374,7 +380,9 @@ static int MappedNotOverride(
 	if (wa.override_redirect == True)
 	{
 		XSelectInput(dpy, w, XEVMASK_ORW);
+		XFlush(dpy);
 	}
+
 	return (((win_opts->initial_state == IconicState) ||
 		 (wa.map_state != IsUnmapped)) &&
 		(wa.override_redirect != True));
@@ -400,7 +408,7 @@ static void do_recapture(F_CMD_ARGS, Bool fSingle)
 	 */
 	XAllowEvents(dpy, AsyncPointer, CurrentTime);
 	discard_events(
-		ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|\
+		ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|	\
 		PointerMotionMask|KeyPressMask|KeyReleaseMask);
 #ifdef DEBUG_STACK_RING
 	verify_stack_ring_consistency();
@@ -473,6 +481,12 @@ static void setup_window_structure(
 			*pfw, HAS_EWMH_INIT_STICKY_STATE(savewin));
 		CLEAR_USER_STATES(*pfw, ~0);
 		SET_USER_STATES(*pfw, GET_USER_STATES(savewin));
+	}
+	else
+	{
+		/* make sure that new windows *remember* being shaded with
+		 * title dir last */
+		SET_USED_TITLE_DIR_FOR_SHADING(*pfw,1);
 	}
 
 	(*pfw)->cmap_windows = (Window *)NULL;
@@ -777,13 +791,69 @@ void setup_icon_title_parameters(FvwmWindow *fw, window_style *pstyle)
 	return;
 }
 
+void setup_numeric_vals(FvwmWindow *fw, window_style *pstyle)
+{
+	/****** window shading ******/
+	fw->shade_anim_steps = pstyle->shade_anim_steps;
+
+	/****** snapattraction, snapgrid, paging ******/
+	fw->snap_proximity = pstyle->snap_proximity;
+	fw->snap_mode = pstyle->snap_mode;
+	fw->snap_grid_x = pstyle->snap_grid_x;
+	fw->snap_grid_y = pstyle->snap_grid_y;
+	if (pstyle->flags.has_edge_delay_ms_move)
+	{
+		fw->edge_delay_ms_move = pstyle->edge_delay_ms_move;
+	}
+	else
+	{
+		fw->edge_delay_ms_move = DEFAULT_MOVE_DELAY;
+	}
+	if (pstyle->flags.has_edge_delay_ms_resize)
+	{
+		fw->edge_delay_ms_resize = pstyle->edge_delay_ms_resize;
+	}
+	else
+	{
+		fw->edge_delay_ms_resize = DEFAULT_RESIZE_DELAY;
+	}
+	fw->edge_resistance_move = pstyle->edge_resistance_move;
+	fw->edge_resistance_xinerama_move =
+		pstyle->edge_resistance_xinerama_move;
+
+	return;
+}
+
 static void setup_frame_window(
 	FvwmWindow *fw)
 {
 	XSetWindowAttributes attributes;
 	int valuemask;
+	int depth;
+	Visual *visual;
+	FRenderPictFormat *format;
 
-	valuemask = CWBackingStore | CWBackPixmap | CWEventMask | CWSaveUnder;
+	valuemask = CWBackingStore | CWBackPixmap | CWEventMask | CWSaveUnder
+		| CWCursor;
+
+	/* This adds preliminary support for ARGB windows in fvwm. It should
+	   evolve to proper ARGB support in frames, menus and modules */
+	format=FRenderFindVisualFormat(dpy, fw->attr_backup.visual);
+	if (format != NULL && format->type == FRenderPictTypeDirect &&
+		format->direct.alphaMask > 0)
+	{
+		depth = fw->attr_backup.depth;
+		visual = fw->attr_backup.visual;
+		attributes.colormap = fw->attr_backup.colormap;
+		attributes.background_pixel = -1;
+		attributes.border_pixel = -1;
+		valuemask |= CWColormap | CWBackPixel | CWBorderPixel;
+	}
+	else
+	{
+		depth = CopyFromParent;
+		visual = CopyFromParent;
+	}
 	attributes.backing_store = NotUseful;
 	attributes.background_pixmap = None;
 	attributes.cursor = Scr.FvwmCursors[CRS_DEFAULT];
@@ -791,9 +861,9 @@ static void setup_frame_window(
 	attributes.save_under = False;
 	/* create the frame window, child of root, grandparent of client */
 	FW_W_FRAME(fw) = XCreateWindow(
-		dpy, Scr.Root, fw->frame_g.x, fw->frame_g.y,
-		fw->frame_g.width, fw->frame_g.height, 0, CopyFromParent,
-		InputOutput, CopyFromParent, valuemask | CWCursor, &attributes);
+		dpy, Scr.Root, fw->g.frame.x, fw->g.frame.y,
+		fw->g.frame.width, fw->g.frame.height, 0, depth,
+		InputOutput, visual, valuemask, &attributes);
 	XSaveContext(dpy, FW_W(fw), FvwmContext, (caddr_t) fw);
 	XSaveContext(dpy, FW_W_FRAME(fw), FvwmContext, (caddr_t) fw);
 
@@ -953,8 +1023,8 @@ static void setup_parent_window(FvwmWindow *fw)
 	get_window_borders(fw, &b);
 	FW_W_PARENT(fw) = XCreateWindow(
 		dpy, FW_W_FRAME(fw), b.top_left.width, b.top_left.height,
-		fw->frame_g.width - b.total_size.width,
-		fw->frame_g.height - b.total_size.height,
+		fw->g.frame.width - b.total_size.width,
+		fw->g.frame.height - b.total_size.height,
 		0, CopyFromParent, InputOutput, CopyFromParent, valuemask,
 		&attributes);
 
@@ -1455,6 +1525,64 @@ static void setup_key_and_button_grabs(FvwmWindow *fw)
 	return;
 }
 
+static void __add_window_handle_x_resources(FvwmWindow *fw)
+{
+	int client_argc = 0;
+	char **client_argv = NULL;
+	XrmValue rm_value;
+	XrmDatabase db = NULL;
+	static XrmOptionDescRec table [] = {
+		{"-xrn", NULL, XrmoptionResArg, (caddr_t) NULL},
+		{"-xrm", NULL, XrmoptionResArg, (caddr_t) NULL},
+	};
+	/* Get global X resources */
+	MergeXResources(dpy, &db, False);
+	/* Find out if the client requested a specific style on the command
+	 * line.
+	 */
+	if (XGetCommand(dpy, FW_W(fw), &client_argv, &client_argc))
+	{
+		if (client_argc > 0 && client_argv != NULL)
+		{
+			/* command line takes precedence over all */
+			MergeCmdLineResources(
+				&db, table, 2, fw->class.res_name,
+				&client_argc, client_argv, True);
+		}
+	}
+
+
+	/* parse the database values */
+	if (GetResourceString(db, "fvwmstyle", fw->class.res_name, &rm_value)
+	    && rm_value.size != 0)
+	{
+		char *style_name;
+		int name_len;
+		style_name = rm_value.addr;
+		name_len = rm_value.size-1;
+		/* Trim spaces at the start of the name */
+		while (name_len>0 && isspace(*style_name))
+		{
+			style_name++;
+			name_len--;
+		}
+		/* Trim spaces at the end of the name */
+		while (name_len>0 && isspace(*(style_name+name_len-1)))
+		{
+			name_len--;
+		}
+		if (name_len>0) {
+			fw->style_name = (char*)safemalloc(sizeof(char)*
+							   (name_len+1));
+			memcpy(fw->style_name,style_name,name_len);
+			fw->style_name[name_len] = 0;
+		}
+	}
+	XFreeStringList(client_argv);
+	XrmDestroyDatabase(db);
+	return;
+}
+
 /* ---------------------------- interface functions ------------------------ */
 
 void setup_visible_name(FvwmWindow *fw, Bool is_icon)
@@ -1594,7 +1722,7 @@ void setup_window_font(
 		if (S_HAS_WINDOW_FONT(SCF(*pstyle)) &&
 		    SGET_WINDOW_FONT(*pstyle) &&
 		    (fw->title_font =
-		     FlocaleLoadFont(dpy, SGET_WINDOW_FONT(*pstyle), "FVWM")))
+		     FlocaleLoadFont(dpy, SGET_WINDOW_FONT(*pstyle), "fvwm")))
 		{
 			SET_USING_DEFAULT_WINDOW_FONT(fw, 0);
 		}
@@ -1638,7 +1766,7 @@ void setup_icon_font(
 	{
 		if (S_HAS_ICON_FONT(SCF(*pstyle)) && SGET_ICON_FONT(*pstyle) &&
 		    (fw->icon_font =
-		     FlocaleLoadFont(dpy, SGET_ICON_FONT(*pstyle), "FVWM")))
+		     FlocaleLoadFont(dpy, SGET_ICON_FONT(*pstyle), "fvwm")))
 		{
 			SET_USING_DEFAULT_ICON_FONT(fw, 0);
 		}
@@ -1748,8 +1876,8 @@ void setup_style_and_decor(
 	setup_icon_background_parameters(fw, pstyle);
 	setup_icon_title_parameters(fw, pstyle);
 
-	/****** window shading ******/
-	fw->shade_anim_steps = pstyle->shade_anim_steps;
+	/****** some numeric values ******/
+	setup_numeric_vals(fw, pstyle);
 
 	/****** GNOME style hints ******/
 	if (!S_DO_IGNORE_GNOME_HINTS(SCF(*pstyle)))
@@ -1776,6 +1904,16 @@ void change_icon_boxes(FvwmWindow *fw, window_style *pstyle)
 
 void setup_frame_size_limits(FvwmWindow *fw, window_style *pstyle)
 {
+	if (SHAS_MIN_WINDOW_SIZE(&pstyle->flags))
+	{
+		fw->min_window_width = SGET_MIN_WINDOW_WIDTH(*pstyle);
+		fw->min_window_height = SGET_MIN_WINDOW_HEIGHT(*pstyle);
+	}
+	else
+	{
+		fw->min_window_width = 0;
+		fw->min_window_height = 0;
+	}
 	if (SHAS_MAX_WINDOW_SIZE(&pstyle->flags))
 	{
 		fw->max_window_width = SGET_MAX_WINDOW_WIDTH(*pstyle);
@@ -1792,38 +1930,22 @@ void setup_frame_size_limits(FvwmWindow *fw, window_style *pstyle)
 
 void setup_placement_penalty(FvwmWindow *fw, window_style *pstyle)
 {
-	int i;
-
 	if (!SHAS_PLACEMENT_PENALTY(&pstyle->flags))
 	{
-		SSET_NORMAL_PLACEMENT_PENALTY(*pstyle, 1);
-		SSET_ONTOP_PLACEMENT_PENALTY(*pstyle, PLACEMENT_AVOID_ONTOP);
-		SSET_ICON_PLACEMENT_PENALTY(*pstyle, PLACEMENT_AVOID_ICON);
-		SSET_STICKY_PLACEMENT_PENALTY(*pstyle, PLACEMENT_AVOID_STICKY);
-		SSET_BELOW_PLACEMENT_PENALTY(*pstyle, PLACEMENT_AVOID_BELOW);
-		SSET_EWMH_STRUT_PLACEMENT_PENALTY(
-			*pstyle, PLACEMENT_AVOID_EWMH_STRUT);
+		pl_penalty_struct *p;
+
+		p = SGET_PLACEMENT_PENALTY_PTR(*pstyle);
+		*p = default_pl_penalty;
 	}
 	if (!SHAS_PLACEMENT_PERCENTAGE_PENALTY(&pstyle->flags))
 	{
-		SSET_99_PLACEMENT_PERCENTAGE_PENALTY(
-			*pstyle, PLACEMENT_AVOID_COVER_99);
-		SSET_95_PLACEMENT_PERCENTAGE_PENALTY(
-			*pstyle, PLACEMENT_AVOID_COVER_95);
-		SSET_85_PLACEMENT_PERCENTAGE_PENALTY(
-			*pstyle, PLACEMENT_AVOID_COVER_85);
-		SSET_75_PLACEMENT_PERCENTAGE_PENALTY(
-			*pstyle, PLACEMENT_AVOID_COVER_75);
+		pl_percent_penalty_struct *p;
+
+		p = SGET_PLACEMENT_PERCENTAGE_PENALTY_PTR(*pstyle);
+		*p = default_pl_percent_penalty;
 	}
-	for (i = 0; i < 6; i++)
-	{
-		fw->placement_penalty[i] = (*pstyle).placement_penalty[i];
-	}
-	for (i = 0; i < 4; i++)
-	{
-		fw->placement_percentage_penalty[i] =
-			(*pstyle).placement_percentage_penalty[i];
-	}
+	fw->pl_penalty = (*pstyle).pl_penalty;
+	fw->pl_percent_penalty = (*pstyle).pl_percent_penalty;
 
 	return;
 }
@@ -1956,6 +2078,19 @@ Bool validate_transientfor(FvwmWindow *fw)
 			FW_W_TRANSIENTFOR(fw) = Scr.Root;
 			return False;
 		}
+		/* Check for transient loops */
+		while (XFindContext(
+			       dpy, FW_W_TRANSIENTFOR(cw), FvwmContext,
+			       (caddr_t *)&cw) != XCNOENT &&
+		       IS_TRANSIENT(cw))
+		{
+			if (FW_W_TRANSIENTFOR(cw) == FW_W(fw) || cw == fw)
+			{
+				/* loop detected, ignore the hint */
+				FW_W_TRANSIENTFOR(fw) = Scr.Root;
+				return False;
+			}
+		}
 	}
 	else if (!XGetWindowAttributes(dpy, w, &wa) ||
 		 wa.map_state != IsViewable)
@@ -1986,12 +2121,12 @@ Bool setup_transientfor(FvwmWindow *fw)
 /*
  *
  *  Procedure:
- *      AddWindow - add a new window to the fvwm list
+ *	AddWindow - add a new window to the fvwm list
  *
  */
 FvwmWindow *AddWindow(
-	const exec_context_t *exc, FvwmWindow *ReuseWin,
-	initial_window_options_t * win_opts)
+	const char **ret_initial_map_command, const exec_context_t *exc,
+	FvwmWindow *ReuseWin, initial_window_options_t * win_opts)
 {
 	/* new fvwm window structure */
 	register FvwmWindow *fw;
@@ -2020,14 +2155,15 @@ FvwmWindow *AddWindow(
 	fw = tmp;
 
 	/****** Make sure the client window still exists.  We don't want to
-	 * leave an orphan frame window if it doesn't.  Since we now have the
+	 * leave an orphan frame window if it doesn't.	Since we now have the
 	 * server grabbed, the window can't disappear later without having been
 	 * reparented, so we'll get a DestroyNotify for it.  We won't have
 	 * gotten one for anything up to here, however. ******/
 	MyXGrabServer(dpy);
 	if (XGetGeometry(
-		    dpy, w, &JunkRoot, &JunkX, &JunkY, &JunkWidth, &JunkHeight,
-		    &JunkBW,  &JunkDepth) == 0)
+		    dpy, w, &JunkRoot, &JunkX, &JunkY,
+		    (unsigned int*)&JunkWidth, (unsigned int*)&JunkHeight,
+		    (unsigned int*)&JunkBW, (unsigned int*)&JunkDepth) == 0)
 	{
 		if (Scr.bo.do_display_new_window_names)
 		{
@@ -2043,6 +2179,7 @@ FvwmWindow *AddWindow(
 	setup_class_and_resource(fw);
 
 	/****** style setup ******/
+	__add_window_handle_x_resources(fw);
 	/* get merged styles */
 	lookup_style(fw, &style);
 	sflags = SGET_FLAGS_POINTER(style);
@@ -2060,6 +2197,10 @@ FvwmWindow *AddWindow(
 				fw->class.res_class);
 		}
 		free_window_names(fw, True, True);
+		if (fw->style_name)
+		{
+			free(fw->style_name);
+		}
 		free(fw);
 		MyXUngrabServer(dpy);
 		return AW_UNMANAGED;
@@ -2071,7 +2212,7 @@ FvwmWindow *AddWindow(
 
 	/****** basic style and decor ******/
 	/* If the window is in the NoTitle list, or is a transient, dont
-	 * decorate it.  If its a transient, and DecorateTransients was
+	 * decorate it.	 If its a transient, and DecorateTransients was
 	 * specified, decorate anyway. */
 	setup_transientfor(fw);
 	if (win_opts->flags.is_menu)
@@ -2101,6 +2242,11 @@ FvwmWindow *AddWindow(
 			fw->class.res_class);
 	}
 
+	/****** InitialMapCommand ******/
+	*ret_initial_map_command =
+		(style.flags.has_initial_map_command_string) ?
+		SGET_INITIAL_MAP_COMMAND_STRING(style) : NULL;
+
 	/****** state setup ******/
 	setup_icon_boxes(fw, &style);
 	SET_ICONIFIED(fw, 0);
@@ -2108,8 +2254,8 @@ FvwmWindow *AddWindow(
 	SET_MAXIMIZED(fw, 0);
 	/*
 	 * Reparenting generates an UnmapNotify event, followed by a MapNotify.
-	 * Set the map state to FALSE to prevent a transition back to
-	 * WithdrawnState in HandleUnmapNotify.  Map state gets set corrected
+	 * Set the map state to 0 to prevent a transition back to
+	 * WithdrawnState in HandleUnmapNotify.	 Map state gets set corrected
 	 * again in HandleMapNotify.
 	 */
 	SET_MAPPED(fw, 0);
@@ -2157,34 +2303,33 @@ FvwmWindow *AddWindow(
 	{
 		/* read the requested absolute geometry */
 		gravity_translate_to_northwest_geometry_no_bw(
-			fw->hints.win_gravity, fw, &fw->normal_g,
-			&fw->normal_g);
+			fw->hints.win_gravity, fw, &fw->g.normal,
+			&fw->g.normal);
 		gravity_resize(
-			fw->hints.win_gravity, &fw->normal_g,
+			fw->hints.win_gravity, &fw->g.normal,
 			b.total_size.width, b.total_size.height);
-		fw->frame_g = fw->normal_g;
-		fw->frame_g.x -= Scr.Vx;
-		fw->frame_g.y -= Scr.Vy;
+		fw->g.frame = fw->g.normal;
+		fw->g.frame.x -= Scr.Vx;
+		fw->g.frame.y -= Scr.Vy;
 
 		/****** calculate frame size ******/
 		setup_frame_size_limits(fw, &style);
 		constrain_size(
-			fw, NULL, (unsigned int *)&fw->frame_g.width,
-			(unsigned int *)&fw->frame_g.height, 0, 0, 0);
+			fw, NULL, &fw->g.frame.width,
+			&fw->g.frame.height, 0, 0, 0);
 
 		/****** maximize ******/
 		if (state_args.do_max)
 		{
 			SET_MAXIMIZED(fw, 1);
 			constrain_size(
-				fw, NULL, (unsigned int *)&fw->max_g.width,
-				(unsigned int *)&fw->max_g.height, 0, 0,
-				CS_UPDATE_MAX_DEFECT);
-			get_relative_geometry(&fw->frame_g, &fw->max_g);
+				fw, NULL, &fw->g.max.width, &fw->g.max.height,
+				0, 0, CS_UPDATE_MAX_DEFECT);
+			get_relative_geometry(&fw->g.frame, &fw->g.max);
 		}
 		else
 		{
-			get_relative_geometry(&fw->frame_g, &fw->normal_g);
+			get_relative_geometry(&fw->g.frame, &fw->g.normal);
 		}
 	}
 	else
@@ -2200,8 +2345,8 @@ FvwmWindow *AddWindow(
 			SET_SHADED(fw, 0);
 		}
 		/* Tentative size estimate */
-		fw->frame_g.width = wattr.width + b.total_size.width;
-		fw->frame_g.height = wattr.height + b.total_size.height;
+		fw->g.frame.width = wattr.width + b.total_size.width;
+		fw->g.frame.height = wattr.height + b.total_size.height;
 
 		/****** calculate frame size ******/
 		setup_frame_size_limits(fw, &style);
@@ -2220,12 +2365,12 @@ FvwmWindow *AddWindow(
 		wattr.y = attr_g.y;
 
 		/* set up geometry */
-		fw->frame_g.x = wattr.x;
-		fw->frame_g.y = wattr.y;
-		fw->frame_g.width = wattr.width + b.total_size.width;
-		fw->frame_g.height = wattr.height + b.total_size.height;
+		fw->g.frame.x = wattr.x;
+		fw->g.frame.y = wattr.y;
+		fw->g.frame.width = wattr.width + b.total_size.width;
+		fw->g.frame.height = wattr.height + b.total_size.height;
 		gravity_constrain_size(
-			fw->hints.win_gravity, fw, &fw->frame_g, 0);
+			fw->hints.win_gravity, fw, &fw->g.frame, 0);
 		update_absolute_geometry(fw);
 	}
 
@@ -2275,13 +2420,13 @@ FvwmWindow *AddWindow(
 		SET_FORCE_NEXT_PN(fw, 1);
 		mr_args = frame_create_move_resize_args(
 			fw, FRAME_MR_FORCE_SETUP_NO_W | FRAME_MR_DONT_DRAW,
-			NULL, &fw->frame_g, 0, DIR_NONE);
+			NULL, &fw->g.frame, 0, DIR_NONE);
 	}
 	else
 	{
 		mr_args = frame_create_move_resize_args(
 			fw, FRAME_MR_FORCE_SETUP | FRAME_MR_DONT_DRAW, NULL,
-			&fw->frame_g, 0, DIR_NONE);
+			&fw->g.frame, 0, DIR_NONE);
 	}
 	frame_move_resize(fw, mr_args);
 	frame_free_move_resize_args(fw, mr_args);
@@ -2329,7 +2474,7 @@ FvwmWindow *AddWindow(
 		stick_page = is_window_sticky_across_pages(fw);
 		stick_desk = is_window_sticky_across_desks(fw);
 		if ((stick_page &&
-		     !IsRectangleOnThisPage(&fw->frame_g, Scr.CurrentDesk)) ||
+		     !IsRectangleOnThisPage(&fw->g.frame, Scr.CurrentDesk)) ||
 		    (stick_desk && fw->Desk != Scr.CurrentDesk))
 		{
 			/* If it's sticky and the user didn't ask for an
@@ -2360,15 +2505,15 @@ FvwmWindow *AddWindow(
 		FWarpPointer(
 			dpy, Scr.Root, Scr.Root, 0, 0, Scr.MyDisplayWidth,
 			Scr.MyDisplayHeight,
-			fw->frame_g.x + (fw->frame_g.width>>1),
-			fw->frame_g.y + (fw->frame_g.height>>1));
+			fw->g.frame.x + (fw->g.frame.width>>1),
+			fw->g.frame.y + (fw->g.frame.height>>1));
 		e.xany.type = ButtonPress;
 		e.xbutton.button = 1;
 		e.xbutton.state = Button1Mask;
-		e.xbutton.x_root = fw->frame_g.x + (fw->frame_g.width>>1);
-		e.xbutton.y_root = fw->frame_g.y + (fw->frame_g.height>>1);
-		e.xbutton.x = (fw->frame_g.width>>1);
-		e.xbutton.y = (fw->frame_g.height>>1);
+		e.xbutton.x_root = fw->g.frame.x + (fw->g.frame.width>>1);
+		e.xbutton.y_root = fw->g.frame.y + (fw->g.frame.height>>1);
+		e.xbutton.x = (fw->g.frame.width>>1);
+		e.xbutton.y = (fw->g.frame.height>>1);
 		e.xbutton.subwindow = None;
 		e.xany.window = FW_W(fw);
 		fev_fake_event(&e);
@@ -2395,7 +2540,7 @@ FvwmWindow *AddWindow(
 	GNOME_SetWinArea(fw);
 
 	/****** windowshade ******/
-	if (state_args.do_shade)
+	if (state_args.do_shade || SDO_START_SHADED(sflags))
 	{
 		rectangle big_g;
 		rectangle new_g;
@@ -2405,7 +2550,14 @@ FvwmWindow *AddWindow(
 		{
 			state_args.shade_dir = GET_TITLE_DIR(fw);
 		}
-		big_g = (IS_MAXIMIZED(fw)) ? fw->max_g : fw->frame_g;
+		/* If we've set a style for StartShaded, ensure we override
+		 * the state for it here. -- TA.
+		 */
+		if (SDO_START_SHADED(sflags) && !state_args.do_shade)
+		{
+			state_args.shade_dir = SGET_STARTS_SHADED_DIR(style);
+		}
+		big_g = (IS_MAXIMIZED(fw)) ? fw->g.max : fw->g.frame;
 		new_g = big_g;
 		get_shaded_geometry_with_dir(
 			fw, &new_g, &new_g, state_args.shade_dir);
@@ -2421,19 +2573,24 @@ FvwmWindow *AddWindow(
 	{
 		/* TK always wants some special treatment: If the window is
 		 * simply mapped, the tk menus come up at funny Y coordinates.
-		 * Tell it it's geometry *again* to work around this problem. */
+		 * Tell it it's geometry *again* to work around this problem.
+		 */
 		SendConfigureNotify(
-			fw, fw->frame_g.x, fw->frame_g.y, fw->frame_g.width,
-			fw->frame_g.height, 0, False);
+			fw, fw->g.frame.x, fw->g.frame.y, fw->g.frame.width,
+			fw->g.frame.height, 0, False);
 	}
-	if (HAS_EWMH_INIT_MAXVERT_STATE(fw) == EWMH_STATE_HAS_HINT ||
-	    HAS_EWMH_INIT_MAXHORIZ_STATE(fw) == EWMH_STATE_HAS_HINT)
+	if (
+		HAS_EWMH_INIT_MAXVERT_STATE(fw) == EWMH_STATE_HAS_HINT ||
+		HAS_EWMH_INIT_MAXHORIZ_STATE(fw) == EWMH_STATE_HAS_HINT)
 	{
 		int h;
 		int v;
 		char cmd[256];
 
-		if (is_function_allowed(F_MAXIMIZE, NULL, fw, True, False))
+		if (
+			is_function_allowed(
+				F_MAXIMIZE, NULL, fw, RQORIG_PROGRAM_US,
+				False))
 		{
 			h = (HAS_EWMH_INIT_MAXHORIZ_STATE(fw) ==
 			     EWMH_STATE_HAS_HINT) ? 100 : 0;
@@ -2448,10 +2605,12 @@ FvwmWindow *AddWindow(
 	{
 		EWMH_fullscreen(fw);
 	}
-	if (!XGetGeometry(dpy, FW_W(fw), &JunkRoot, &JunkX, &JunkY, &JunkWidth,
-			  &JunkHeight, &JunkBW,  &JunkDepth))
+	if (!XGetGeometry(
+		    dpy, FW_W(fw), &JunkRoot, &JunkX, &JunkY,
+		    (unsigned int*)&JunkWidth, (unsigned int*)&JunkHeight,
+		    (unsigned int*)&JunkBW, (unsigned int*)&JunkDepth))
 	{
-		/* The window has disappeared somehow.  For some reason we do
+		/* The window has disappeared somehow.	For some reason we do
 		 * not always get a DestroyNotify on the window, so make sure
 		 * it is destroyed. */
 		destroy_window(fw);
@@ -2465,16 +2624,16 @@ FvwmWindow *AddWindow(
 /*
  *
  *  Procedure:
- *      FetchWMProtocols - finds out which protocols the window supports
+ *	FetchWMProtocols - finds out which protocols the window supports
  *
  *  Inputs:
- *      tmp - the fvwm window structure to use
+ *	tmp - the fvwm window structure to use
  *
  */
 void FetchWmProtocols(FvwmWindow *tmp)
 {
 	Atom *protocols = NULL, *ap;
-	long *l_protocols;
+	unsigned long *l_protocols;
 	int i, n;
 	Atom atype;
 	int aformat;
@@ -2543,10 +2702,10 @@ void FetchWmProtocols(FvwmWindow *tmp)
 /*
  *
  *  Procedure:
- *      GetWindowSizeHints - gets application supplied size info
+ *	GetWindowSizeHints - gets application supplied size info
  *
  *  Inputs:
- *      tmp - the fvwm window structure to use
+ *	tmp - the fvwm window structure to use
  *
  */
 
@@ -2555,16 +2714,35 @@ void GetWindowSizeHints(FvwmWindow *fw)
 	long supplied = 0;
 	char *broken_cause ="";
 	XSizeHints orig_hints;
+	Status rc;
 
-	if (HAS_OVERRIDE_SIZE_HINTS(fw) ||
-	    !XGetWMNormalHints(dpy, FW_W(fw), &fw->hints, &supplied))
+	fw->orig_hints.width_inc = 1;
+	fw->orig_hints.height_inc = 1;
+	rc = XGetWMNormalHints(dpy, FW_W(fw), &orig_hints, &supplied);
+	if (rc == 0)
 	{
 		fw->hints.flags = 0;
 		memset(&orig_hints, 0, sizeof(orig_hints));
 	}
 	else
 	{
-		memcpy(&orig_hints, &fw->hints, sizeof(orig_hints));
+		fw->hints = orig_hints;
+		if (fw->hints.flags & PResizeInc)
+		{
+			fw->orig_hints.width_inc = fw->hints.width_inc;
+			fw->orig_hints.height_inc = fw->hints.height_inc;
+		}
+		if (HAS_OVERRIDE_SIZE_HINTS(fw))
+		{
+			/* ignore the WMNormal hints */
+			fw->hints.flags &= ~(PMinSize | PMaxSize | PResizeInc);
+			fw->hints.min_width = 0;
+			fw->hints.min_height = 0;
+			fw->hints.max_width = 0;
+			fw->hints.max_height = 0;
+			fw->hints.width_inc = 1;
+			fw->hints.height_inc = 1;
+		}
 	}
 
 	/* Beat up our copy of the hints, so that all important field are
@@ -2762,13 +2940,13 @@ void GetWindowSizeHints(FvwmWindow *fw)
 		/*
 		** The math looks like this:
 		**
-		**   minAspectX    maxAspectX
+		**   minAspectX	   maxAspectX
 		**   ---------- <= ----------
-		**   minAspectY    maxAspectY
+		**   minAspectY	   maxAspectY
 		**
 		** If that is multiplied out, this must be satisfied:
 		**
-		**   minAspectX * maxAspectY <=  maxAspectX * minAspectY
+		**   minAspectX * maxAspectY <=	 maxAspectX * minAspectY
 		**
 		** So, what to do if this isn't met?  Ignoring it entirely
 		** seems safest.
@@ -2836,6 +3014,10 @@ void GetWindowSizeHints(FvwmWindow *fw)
 				}
 			}
 		}
+#undef maxAspectX
+#undef maxAspectY
+#undef minAspectX
+#undef minAspectY
 	}
 
 	if (*broken_cause != 0)
@@ -3065,6 +3247,11 @@ void destroy_window(FvwmWindow *fw)
 
 	free_window_names(fw, True, True);
 
+	if (fw->style_name)
+	{
+		free(fw->style_name);
+		fw->style_name = NULL;
+	}
 	if (fw->class.res_name && fw->class.res_name != NoResource)
 	{
 		XFree ((char *)fw->class.res_name);
@@ -3121,7 +3308,7 @@ void destroy_window(FvwmWindow *fw)
 /*
  *
  *  Procedure:
- *      RestoreWithdrawnLocation
+ *	RestoreWithdrawnLocation
  *
  *  Puts windows back where they were before fvwm took over
  *
@@ -3241,7 +3428,7 @@ void RestoreWithdrawnLocation(
 /*
  *
  *  Procedure:
- *      Reborder - Removes fvwm border windows
+ *	Reborder - Removes fvwm border windows
  *
  */
 void Reborder(void)

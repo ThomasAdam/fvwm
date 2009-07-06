@@ -9,20 +9,20 @@ moduledir = @FVWM_MODULEDIR@
 module_PROGRAMS = FvwmCommandS
 module_DATA = FvwmCommand.sh FvwmCommand.pm
 
-FvwmCommandS_SOURCES = FvwmCommandS.c FvwmCommand.h
-FvwmCommand_SOURCES = FvwmCommand.c FvwmCommand.h
+FvwmCommandS_SOURCES = FvwmCommandS.c FvwmCommand.h fifos.c
+FvwmCommand_SOURCES = FvwmCommand.c FvwmCommand.h fifos.c
 
 FvwmCommand.sh: findcmd.pl $(top_srcdir)/fvwm/functable.c
 	if test -n "$(PERL)" -a -x "$(PERL)"; then \
 		$(PERL) $(srcdir)/findcmd.pl $(bindir) -sh \
 		< $(top_srcdir)/fvwm/functable.c > $@; \
-	else echo '# Did not find perl during FVWM install' > $@; fi
+	else echo '# Did not find perl during fvwm install' > $@; fi
 
 FvwmCommand.pm: findcmd.pl $(top_srcdir)/fvwm/functable.c
 	if test -n "$(PERL)" -a -x "$(PERL)"; then \
 		$(PERL) $(srcdir)/findcmd.pl $(bindir) \
 		< $(top_srcdir)/fvwm/functable.c > $@; \
-	else echo '# Did not find perl during FVWM install' > $@; fi
+	else echo '# Did not find perl during fvwm install' > $@; fi
 
 CLEANFILES = FvwmCommand.sh FvwmCommand.pm
 

@@ -1,19 +1,172 @@
-2005-10-24  Viktor Griph  <griph@dd.chalmers.se>
+2009-03-17  Mikhael Goikhman  <migo@homemail.com>
 
-	* FAQ: 
-	Changed CenterWindow function in Q7.14 to work with oversized windows.
+	* COMMANDS:
+	regenerated (by create-commands)
 
-2005-10-18  Viktor Griph  <griph@dd.chalmers.se>
+	* todo-2.6:
+	close items E.11, E.12
 
-	* DEVELOPERS (Preparations): 
-	fixed a typo
+2009-02-27  Thomas Adam   <thomas.adam22@gmail.com>
 
-2005-08-24  Dominik Vogt  <dominik.vogt@gmx.de>
+	* todo-2.6:
+	Deprecate the "Closed recently" section, since this file is updated so
+	infrequently, the term "recently" was in 2005, when at the time of
+	writing, it's 2009.  Instead, add all closed bugs under "Closed" from
+	now on.
+
+2009-02-23  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
+
+	* ANNOUNCE:
+	updated for 2.5.27 release
+
+2008-05-07  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
+
+	* ANNOUNCE:
+	updated for 2.5.25 release
+
+2008-01-08  Viktor Griph  <griph(at)dd(dot)chalmers(dot)se>
+
+	* DEVELOPERS:
+	add instructions on how to update the html documentation
+
+2007-11-24  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
+
+	* DEVELOPERS:
+	updated release instructions
+
+	* ANNOUNCE:
+	updated for 2.5.24 release
+
+2007-09-01  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
+
+	* DEVELOPERS:
+	updated release instructions
+
+	* ANNOUNCE:
+	updated for 2.5.23 release
+
+2007-08-28  Viktor Griph  <griph(at)dd(dot)chalmers(dot)se>
+
+	* ANNOUNCE:
+	updated
+
+2007-08-28  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
+
+	* ANNOUNCE:
+	updated
+
+2007-08-07  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
+
+	* BUGS:
+	* todo-2.6:
+	* FAQ:
+	write fvwm in lower case
+
+2007-08-05  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
+
+	* fvwm.lsm.in:
+	removed FVWMNAMEUCASE
+
+2007-01-20  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
+
+	* ANNOUNCE:
+	updated for 2.5.22 release
+
+2007-01-15  Viktor Griph  <griph(at)dd(dot)chalmers(dot)se>
+
+	* ANNOUNCE:
+	updated for 2.5.20 release
+
+2007-01-06  Viktor Griph  <griph(at)dd(dot)chalmers(dot)se>
+
+	* todo-2.6 (todo):
+	close C.5. Tested placement with gtk+2 sample app, works well.
+
+2006-12-09  Viktor Griph  <griph(at)dd(dot)chalmers(dot)se>
+
+	* ANNOUNCE:
+	updated for 2.5.19 release
+
+2006-12-08  Viktor Griph  <griph(at)dd(dot)chalmers(dot)se>
+
+	* todo-2.6 (todo):
+	added B11: bug #1647, default charset selection.
+
+	* FAQ:
+	updated some outdated URLs.
+
+2006-09-17  Viktor Griph  <griph(at)dd(dot)chalmers(dot)se>
+
+	* todo-2.6:
+	finished C.23
+
+2006-09-11  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
+
+	* ANNOUNCE:
+	updated for 2.5.18 release
+
+2006-07-19  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
+
+	* ANNOUNCE:
+	updated for 2.5.17 release
+
+2006-07-13  Viktor Griph  <griph(at)dd(dot)chalmers(dot)se>
+
+	* todo-vars:
+	add a line indicating the need for a 'raw'-filter.
+
+2006-03-21  Serge Koksharov  <gentoosiast dog yandex dot ru>
+
+	* CONVENTIONS:
+	* FAQ:
+	corrected typos
+
+2006-02-11  Mikhael Goikhman  <migo@homemail.com>
+
+	* todo-vars:
+	add specification of fvwm variables
+
+2006-02-10  Mikhael Goikhman  <migo@homemail.com>
+
+	* COMMANDS:
+	regenerated (by create-commands)
+	* FAQ (5.2):
+	fix small typo
+
+2006-02-09  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
+
+	* FAQ (Q5.2):
+	updated instructions for submitting patches
+
+2006-01-20  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
+
+	* ANNOUNCE:
+	updated for 2.5.16 release
+
+2006-01-14  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* ANNOUNCE:
 	updated for 2.5.14 release
 
-2005-07-16  Dominik Vogt  <dominik.vogt@gmx.de>
+	* DEVELOPERS:
+	Updated.
+
+2005-10-24  Viktor Griph  <griph(at)dd(dot)chalmers(dot)se>
+
+	* FAQ:
+	Changed CenterWindow function in Q7.14 to work with oversized windows.
+
+2005-10-18  Viktor Griph  <griph(at)dd(dot)chalmers(dot)se>
+
+	* DEVELOPERS (Preparations):
+	fixed a typo
+
+2005-08-24  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
+
+	* ANNOUNCE:
+	updated for 2.5.14 release
+
+2005-07-16  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* DEVELOPERS:
 	updated for gcc-3.x
@@ -34,27 +187,27 @@
 	* docs/FAQ (1.7):
 	improve wording
 
-2004-12-12  Dominik Vogt  <dominik.vogt@gmx.de>
+2004-12-12  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ: (5.16)
 	added
 
-2004-10-10  Dominik Vogt  <dominik.vogt@gmx.de>
+2004-10-10  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (7.17):
 	Updated
 
-2004-10-06  Dominik Vogt  <dominik.vogt@gmx.de>
+2004-10-06  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* ANNOUNCE:
 	updated for 2.5.12 release
 
-2004-09-30  Dominik Vogt  <dominik.vogt@gmx.de>
+2004-09-30  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* ANNOUNCE:
 	updated for 2.5.11 release
 
-2004-09-10  Dominik Vogt  <dominik.vogt@gmx.de>
+2004-09-10  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (6.9):
 	Added cursor theme question
@@ -65,7 +218,7 @@
 
 	* FAQ (6.8): Fix text to use same number of buttons as subject line.
 
-2004-07-19  Dominik Vogt  <dominik.vogt@gmx.de>
+2004-07-19  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (7.12):
 	updated
@@ -91,22 +244,22 @@
 	new default ~/.fvwm/config file is now recommended instead of
 	still supported ~/.fvwm/.fvwm2rc
 
-2004-04-21  Dominik Vogt  <dominik.vogt@gmx.de>
+2004-04-21  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ:
 	Corrected Q3.3
 
-2004-04-14  Dominik Vogt  <dominik.vogt@gmx.de>
+2004-04-14  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ:
 	Added Q7.18
 
-2004-03-19  Dominik Vogt  <dominik.vogt@gmx.de>
+2004-03-19  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* ANNOUNCE:
 	updated for 2.5.10 release
 
-2004-03-02  Dominik Vogt  <dominik.vogt@gmx.de>
+2004-03-02  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* ANNOUNCE:
 	updated for 2.5.9 release
@@ -116,7 +269,7 @@
 	* FAQ:
 	add emacs type keybindings description.
 
-2004-02-05  Dominik Vogt  <dominik.vogt@gmx.de>
+2004-02-05  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ:
 	added hint on FvwmBacker's caching capabilities using colour sets
@@ -150,7 +303,7 @@
 	* docs/DEVELOPERS:
 	improved instructions a bit
 
-2003-09-28  Dominik Vogt  <dominik.vogt@gmx.de>
+2003-09-28  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (Q7.17):
 	improved autohide script
@@ -174,7 +327,7 @@
 	* COMMANDS:
 	regenerated (by create-commands)
 
-2003-07-06  Dominik Vogt  <dominik.vogt@gmx.de>
+2003-07-06  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* CONVENTIONS:
 	added a draft of project maintenance and coding conventions
@@ -184,7 +337,7 @@
 	* DEVELOPERS:
 	replaced web page regeneration instructions
 
-2003-05-06  Dominik Vogt  <dominik.vogt@gmx.de>
+2003-05-06  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (Q 0.2):
 	redirect XMMS questions to xmms.org
@@ -194,7 +347,7 @@
 	* FAQ:
 	removed link wrappers
 
-2003-04-26  Dominik Vogt  <dominik.vogt@gmx.de>
+2003-04-26  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (Q 4.7):
 	explain how to control FvwmButtons with key presses
@@ -217,17 +370,17 @@
 	* FAQ:
 	Removed spaces before heading in the answer section.
 
-2003-03-11  Dominik Vogt  <dominik.vogt@gmx.de>
+2003-03-11  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (Q 5.13):
 	no XMMS bug reports please
 
-2003-03-10  Dominik Vogt  <dominik.vogt@gmx.de>
+2003-03-10  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (Q 7.13):
 	updated
 
-2003-02-28  Dominik Vogt  <dominik.vogt@gmx.de>
+2003-02-28  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* ANNOUNCE:
 	updated for 2.5.6
@@ -260,7 +413,7 @@
 	don't include outdated 1994 files color_combos and m4_hacks to DIST,
 	include file COMMANDS to DIST
 
-2002-12-02  Dominik Vogt  <dominik.vogt@gmx.de>
+2002-12-02  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* ANNOUNCE:
 	updated for 2.5.5
@@ -287,12 +440,12 @@
 	* ANNOUNCE:
 	added missing 2.5.3 announce
 
-2002-08-23  Dominik Vogt  <dominik.vogt@gmx.de>
+2002-08-23  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* DEVELOPERS:
 	updated
 
-2002-08-16  Dominik Vogt  <dominik.vogt@gmx.de>
+2002-08-16  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* DEVELOPERS (Preparations):
 	* fvwm.lsm.in:
@@ -308,17 +461,17 @@
 
 	* FAQ: Add hot-spot information.
 
-2002-08-06  Dominik Vogt  <dominik.vogt@gmx.de>
+2002-08-06  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* DEVELOPERS:
 	updated building info
 
-2002-08-05  Dominik Vogt  <dominik.vogt@gmx.de>
+2002-08-05  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* DEVELOPERS (Preparations):
 	updated building info
 
-2002-07-21  Dominik Vogt  <dominik.vogt@gmx.de>
+2002-07-21  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (3.15):
 	Updated new DeiconifyAndRearrange function using PlaceAgain
@@ -338,7 +491,7 @@
 	* ANNOUNCE:
 	updated for 2.5.1
 
-2002-03-10  Dominik Vogt  <dominik.vogt@gmx.de>
+2002-03-10  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* DEVELOPERS:
 	updated
@@ -347,22 +500,22 @@
 
 	* DEVELOPERS: Fixed up some typos.
 
-2002-01-29  Dominik Vogt  <dominik.vogt@gmx.de>
+2002-01-29  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ:
 	corrected typos and updated some outdated answers
 
-2002-01-07  Dominik Vogt  <dominik.vogt@gmx.de>
+2002-01-07  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (5.5):
 	updated
 
-2001-12-16  Dominik Vogt  <dominik.vogt@gmx.de>
+2001-12-16  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ:
 	some corrections
 
-2001-11-10  Dominik Vogt  <dominik.vogt@gmx.de>
+2001-11-10  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (6.8):
 	add a comment about the maximum possible number of mouse buttons
@@ -375,12 +528,12 @@
 
 	* ANNOUNCE: PlacedByFvwm
 
-2001-08-05  Dominik Vogt  <dominik.vogt@gmx.de>
+2001-08-05  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (3.4):
 	updatedy
 
-2001-07-28  Dominik Vogt  <dominik.vogt@gmx.de>
+2001-07-28  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ:
 	replaced CurrentScreen with CurrentPage in example
@@ -397,7 +550,7 @@
 
 	* ANNOUNCE: Updated for 2.4.1.
 
-2001-06-28  Dominik Vogt  <dominik.vogt@gmx.de>
+2001-06-28  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* fvwm.lsm.in:
 	* FAQ:
@@ -430,7 +583,7 @@
 	* ANNOUNCE (New utilities):
 	updated
 
-2001-03-24  Dominik Vogt  <dominik.vogt@gmx.de>
+2001-03-24  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* ANNOUNCE (Highlights):
 	typo corrections
@@ -439,7 +592,7 @@
 
 	* ANNOUNCE: Changes.
 
-2001-03-24  Dominik Vogt  <dominik.vogt@gmx.de>
+2001-03-24  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* ANNOUNCE:
 	spell checked and sorted announcement
@@ -456,14 +609,14 @@
 
 	* FAQ: Document when MouseFocusClickRaises changed to a Style.
 
-2001-03-11  Dominik Vogt  <dominik.vogt@gmx.de>
+2001-03-11  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* TODO:
 	* FAQ:
 	* BUGS:
 	replaced lines looking like cvs conflict markers
 
-2001-02-25  Dominik Vogt  <dominik.vogt@gmx.de>
+2001-02-25  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (7.12):
 	small enhancement
@@ -474,7 +627,7 @@
 
 	* FAQ (2.2): Include Dtsession in CDE resources.
 
-2001-01-27  Dominik Vogt  <dominik.vogt@gmx.de>
+2001-01-27  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (5.15):
 	New question about WindowListSkip and modules
@@ -487,19 +640,19 @@
 
 	* FAQ (3.20): enhanced
 
-2000-11-26  Dominik Vogt  <dominik.vogt@gmx.de>
+2000-11-26  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (3.20):
 	how to use different config files for multi head.
 
-2000-11-20  Dominik Vogt  <dominik.vogt@gmx.de>
+2000-11-20  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (0.1):
 	added *the* most frequently asked question in a prominent place
 	(1.1):
 	Updated the 'F' question.
 
-2000-11-18  Dominik Vogt  <dominik.vogt@gmx.de>
+2000-11-18  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (5.5):
 	corrected typo
@@ -540,7 +693,7 @@
 	Some explanation of layers.
 	Clarified the announcement of EscapeFunc.
 
-2000-05-03  Dominik Vogt  <dominik.vogt@gmx.de>
+2000-05-03  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (3.17):
 	added question about Recapture/Refresh
@@ -558,7 +711,7 @@
 	* FAQ (6.6): Added question about backgrounds.
 	6.3: Updated icons question.
 
-2000-03-24  Dominik Vogt  <dominik.vogt@gmx.de>
+2000-03-24  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (5.13):
 	added question about ModuleTimeout command
@@ -567,7 +720,7 @@
 
 	* ANNOUNCE (Highlights): Document FvwmGoodStuff's demise.
 
-2000-02-28  Dominik Vogt  <dominik.vogt@gmx.de>
+2000-02-28  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (3.8):
 	fixed answer
@@ -576,12 +729,12 @@
 
 	* ANNOUNCE: Some more updates and comments.
 
-2000-02-08  Dominik Vogt  <dominik.vogt@gmx.de>
+2000-02-08  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (5.12):
 	new question about why StartsOnPage doesn't work without NoPPosition.
 
-2000-02-04  Dominik Vogt  <dominik.vogt@gmx.de>
+2000-02-04  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ:
 	removed references to old GlobalOpts command
@@ -590,17 +743,17 @@
 	(5.2):
 	updated
 
-2000-01-02  Dominik Vogt  <dominik.vogt@gmx.de>
+2000-01-02  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (3.10):
 	updated
 
-1999-12-16  Dominik Vogt  <dominik.vogt@gmx.de>
+1999-12-16  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* ANNOUNCE:
 	some updates and comments
 
-1999-12-13  Dominik Vogt  <dominik.vogt@gmx.de>
+1999-12-13  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ:
 	fixed typo
@@ -619,31 +772,31 @@
 	* FAQ (CDE): Added link to proceedure that shows how to add one or more
 	window managers to the CDE login menu.
 
-1999-11-25  Dominik Vogt  <dominik.vogt@gmx.de>
+1999-11-25  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ:
 	some updates
 
-1999-11-14  Dominik Vogt  <dominik.vogt@gmx.de>
+1999-11-14  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (7.12):
 	(4.6)
 	FAQ for 'toggling' buttons and menu entries
 	ispell session
 
-1999-09-19  Dominik Vogt  <dominik_vogt@gmx.de>
+1999-09-19  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ: removed some cut-and-paste trash
 	(5.11): FAQ for RaiseOverUnmanaged bug option
 
-1999-08-15  Dominik Vogt  <dominik_vogt@gmx.de>
+1999-08-15  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* Y2K-Compliance:
 	* fvwm.lsm:
 	* FAQ:
 	* BUGS: remaned fvwm2 -> fvwm
 
-1999-08-12  Dominik Vogt  <dominik_vogt@gmx.de>
+1999-08-12  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (3.16): added question on how to shut down Linux from a menu
 
@@ -652,12 +805,12 @@
 	* Makefile.am: remove text and man page generation files,
 	they are now in fvwm-web.
 
-1999-08-08  Dominik Vogt  <dominik_vogt@gmx.de>
+1999-08-08  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (6.1): Added hint on how to bind keys for page or desk flipping
 	as suggested by Paul E. Johnson.
 
-1999-08-01  Dominik Vogt  <dominik_vogt@gmx.de>
+1999-08-01  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (3.15): Corrected hint to work on current page
 	(7.3): Added hint to SkipMapping
@@ -681,7 +834,7 @@ Sun Jul 11 10:42:20 1999  DanEspen  <dje@blue>
 	(We could dispense with the TODO file completely and rely on
 	Jitterbug instead.)
 
-1999-07-04  Dominik Vogt  <dominik_vogt@gmx.de>
+1999-07-04  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* DEVELOPERS: updated realese building procedure
 
@@ -691,15 +844,15 @@ Thu Jul  1 22:32:28 1999  DanEspen  <dje@blue>
 
 	* Moved web stuff into fvwm-web.
 
-1999-06-24  Dominik Vogt  <dominik_vogt@gmx.de>
+1999-06-24  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (3.15): added a hint how to get auto arranging icons
 
-1999-06-23  Dominik Vogt  <dominik_vogt@gmx.de>
+1999-06-23  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (3.14): added a FAQ entry for Eterm icons
 
-1999-06-18  Dominik Vogt  <dominik_vogt@gmx.de>
+1999-06-18  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* index.html: added fvwm-cats link
 
@@ -712,7 +865,7 @@ Tue May 25 20:04:12 1999  DanEspen  <dje@blue>
 	* TODO (Bugfixes): Added note,  part of the "Make GetConfigLine be
  	more intelligent" is done.
 
-1999-05-22  Dominik Vogt  <dominik_vogt@gmx.de>
+1999-05-22  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (5.1): updated
 
@@ -756,15 +909,15 @@ Fri Apr 23 14:37:36 1999  Steve Robbins  <steve@nyongwa.montreal.qc.ca>
 	* FAQ (3.13): document the change of FVWM_CONFIGDIR to
  	$sysconfdir/fvwm.
 
-1999-04-14  Dominik Vogt  <dominik_vogt@gmx.de>
+1999-04-14  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* TODO (Bugfixes): updated
 
-1999-04-08  Dominik Vogt  <dominik_vogt@gmx.de>
+1999-04-08  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* fvwm.lsm (Copying-policy): GPL
 
-1999-04-04  Dominik Vogt  <dominik_vogt@gmx.de>
+1999-04-04  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* TODO: updated
 
@@ -780,7 +933,7 @@ Sun Apr  4 03:03:22 1999  Steve Robbins  <steve@nyongwa.montreal.qc.ca>
 	directories.  Also fixed HTML coding bugs: <h2> and <a> tags were
 	interdigitized.
 
-1999-03-28  Dominik Vogt  <dominik_vogt@gmx.de>
+1999-03-28  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (5.5): added a warning about IgnoreModifiers performace, added
 	instructions to disable modifiers
@@ -821,7 +974,7 @@ Fri Mar 12 00:30:36 1999  Steve Robbins  <steve@nyongwa.montreal.qc.ca>
 	* run_man2html.sh: change `#' to `#!' on first line.  Bug noted by
 	Ram Bhamidipaty.
 
-1999-03-07  Dominik Vogt  <dominik_vogt@gmx.de>
+1999-03-07  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* FAQ (4.2): Fixed typos in example
 	(5.2): Q16 -> Q5.1

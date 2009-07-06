@@ -67,7 +67,6 @@
 #include "libs/fvwmlib.h"  /* for pixmaps routines */
 #include "libs/FScreen.h"
 #include "libs/FShape.h"
-#include "libs/safemalloc.h"
 #include "libs/fvwmsignal.h"
 #include "libs/Colorset.h"
 #include "libs/Flocale.h"
@@ -75,11 +74,15 @@
 #include "libs/FRender.h"
 #include "libs/FRenderInit.h"
 #include "libs/FGettext.h"
+#include "libs/ColorUtils.h"
+#include "libs/Graphics.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
+#include "libs/XError.h"
 
 #include "FvwmTaskBar.h"
 #include "ButtonArray.h"
 #include "List.h"
-#include "Colors.h"
 #include "Mallocs.h"
 #include "Goodies.h"
 #include "Start.h"
@@ -141,7 +144,7 @@ Atom MwmAtom = None;
 static Bool is_dead_pipe = False;
 
 /* Module related information */
-char *Module;
+ModuleArgs *module;
 int  win_width    = 5,
 	win_height   = 5,
 	win_grav,
@@ -153,7 +156,6 @@ int  win_width    = 5,
 	win_title_height = 0,
 	win_is_shaded = 0,
 	button_width = DEFAULT_BTN_WIDTH,
-	Clength,
 	ButPressed   = -1,
 	ButReleased  = -1,
 	Checked      = 0,
@@ -172,7 +174,7 @@ static volatile sig_atomic_t stick_taskbar_alarm = False;
 int UpdateInterval = 30;
 
 int whichButton = -1;
-Bool startButtonPressed = FALSE;
+Bool startButtonPressed = False;
 
 ButtonArray buttons;
 List windows;
@@ -260,8 +262,6 @@ int IsItemIndexIconSuppressed(List *list, int i);
 */
 int main(int argc, char **argv)
 {
-  const char *temp;
-  char *s;
   int i;
 
   FlocaleInit(LC_CTYPE, "", "", "FvwmTaskBar");
@@ -273,38 +273,18 @@ int main(int argc, char **argv)
     ClickAction[i] = DEFAULT_CLICK_N;
   }
 
-  /* Save the program name for error messages and config parsing */
-  temp = argv[0];
-  s=strrchr(argv[0], '/');
-  if (s != NULL)
-    temp = s + 1;
-
-
-  if((argc != 6)&&(argc != 7)) {
-    fprintf(stderr,"%s Version %s should only be executed by fvwm!\n",temp,
+  module = ParseModuleArgs(argc,argv,1); /* use alias if provided */
+  if (module==NULL)
+  {
+    fprintf(stderr,
+            "FvwmTaskBar Version %s should only be executed by fvwm!\n",
 	    VERSION);
     exit(1);
   }
 
-  /* alise support */
-  if (argc == 7 && argv[6] != NULL)
-  {
-    Module = safemalloc(strlen(argv[6])+2);
-    strcpy(Module,"*");
-    strcat(Module, argv[6]);
-    Clength = strlen(Module);
-  }
-  else
-  {
-    Module = safemalloc(strlen(temp)+2);
-    strcpy(Module,"*");
-    strcat(Module, temp);
-    Clength = strlen(Module);
-  }
-
   /* setup fvwm pipes */
-  Fvwm_fd[0] = atoi(argv[1]);
-  Fvwm_fd[1] = atoi(argv[2]);
+  Fvwm_fd[0] = module->to_fvwm;
+  Fvwm_fd[1] = module->from_fvwm;
 
 #ifdef HAVE_SIGACTION
   {
@@ -388,7 +368,7 @@ int main(int argc, char **argv)
 #ifdef FVWM_DEBUG_MSGS
   if ( isTerminated )
   {
-    fprintf(stderr, "%s: Received signal: exiting...\n", Module);
+    fprintf(stderr, "%s: Received signal: exiting...\n", module->name);
   }
 #endif
   return 0;
@@ -936,7 +916,7 @@ void ProcessMessage(unsigned long type,unsigned long *body)
     RedrawWindow(redraw, NULL);
 }
 
-void redraw_buttons()
+void redraw_buttons(void)
 {
   Item *item;
 
@@ -1095,7 +1075,7 @@ void ParseConfig(void)
 {
   char *buf;
 
-  InitGetConfigLine(Fvwm_fd,Module);
+  InitGetConfigLine(Fvwm_fd,CatString3("*",module->name,0));
   while (GetConfigLine(Fvwm_fd,&buf), buf != NULL)
   {
     ParseConfigLine(buf);
@@ -1110,9 +1090,9 @@ static void ParseConfigLine(char *tline)
   while (isspace((unsigned char)*tline))
     tline++;
 
-  if (strncasecmp(tline, Module, Clength) != 0)
+  if (strncasecmp(tline, CatString3("*",module->name,0), module->namelen) != 0)
   {
-    /* Non module spcific option */
+    /* Non module specific options */
     index = GetTokenIndex(tline, configopts, -1, &rest);
     while (*rest && *rest != '\n' && isspace(*rest))
       rest++;
@@ -1142,8 +1122,8 @@ static void ParseConfigLine(char *tline)
   } /* if options */
   else
   {
-    /* option beginning with '*ModuleName' */
-    rest = tline + Clength;
+    /* options beginning with '*ModuleName' */
+    rest = tline + module->namelen+1;
     index = GetTokenIndex(rest, moduleopts, -1, &rest);
     while (*rest && *rest != '\n' && isspace(*rest))
       rest++;
@@ -1158,7 +1138,7 @@ static void ParseConfigLine(char *tline)
     case 2: /* Geometry */
       while (isspace((unsigned char)*rest) && *rest != '\n' && *rest != 0)
 	rest++;
-      UpdateString(&geometry, rest);
+      UpdateString(&geometry, PeekToken(rest, NULL));
       break;
     case 3: /* Fore */
       CopyString(&ForeColor, rest);
@@ -1290,7 +1270,8 @@ static void ParseConfigLine(char *tline)
       if (!GoodiesParseConfig(tline) &&
 	  !StartButtonParseConfig(tline))
       {
-	fprintf(stderr,"%s: unknown configuration option %s", Module, tline);
+	fprintf(stderr,"%s: unknown configuration option %s",
+                module->name, tline);
       }
       break;
     } /* switch */
@@ -1380,7 +1361,7 @@ void CheckForTip(int x, int y)
   int  num, bx, by, trunc;
   char *name;
 
-  if (MouseInStartButton(x, y, &whichButton, &startButtonPressed)) {
+  if (MouseInStartButton(x, y, &whichButton, &startButtonPressed, NULL)) {
     if((!whichButton) && (First_Start_Button->isStartButton))
     {
       if (Tip.type != START_TIP) PopupTipWindow(3, 0, _("Click here to start"));
@@ -1429,6 +1410,7 @@ void HandleButtonRelease(
 	XEvent *evp, Time *NewTimestamp, int *redraw)
 {
 	int  num = 0;
+	int tmp_x;
 	char *tmp;
 
 	*NewTimestamp = evp->xbutton.time;
@@ -1439,23 +1421,22 @@ void HandleButtonRelease(
 	{
 		if (MouseInStartButton(
 			evp->xbutton.x, evp->xbutton.y,
-			&whichButton, &startButtonPressed))
+			&whichButton, &startButtonPressed, &tmp_x))
 		{
 			if (whichButton == ButtonPressed)
 			{
+				rectangle r;
+				Window tmpw;
+				r.x = tmp_x;
+				r.y = 0;
+				r.width = StartAndLaunchButtonsWidth;
+				r.height = StartAndLaunchButtonsHeight;
+				XTranslateCoordinates(
+					dpy, win, Root, r.x, r.y,
+					&r.x, &r.y, &tmpw);
 				if ((First_Start_Button->buttonStartCommand
 				     != NULL) && (startButtonPressed))
 				{
-					rectangle r;
-					Window tmpw;
-					r.x = 0;
-					r.y = 0;
-					r.width =
-						StartAndLaunchButtonsWidth;
-					r.height = StartAndLaunchButtonsHeight;
-					XTranslateCoordinates(
-						dpy, win, Root, r.x, r.y,
-						&r.x, &r.y, &tmpw);
 					tmp = module_expand_action(
 						dpy, screen,
 						First_Start_Button->
@@ -1476,13 +1457,26 @@ void HandleButtonRelease(
 				}
 				else
 				{
+					char *tmp2;
 					tmp = (char *)safemalloc(
 						100 * sizeof(char));
-					/* fix this later */
+					*tmp = 0;
+
 					getButtonCommand(
 						whichButton, tmp,
 						evp->xbutton.button);
-					SendText(Fvwm_fd, tmp, 0);
+					tmp2 = module_expand_action(
+						dpy, screen, tmp, &r, NULL,
+						NULL);
+					if (tmp2)
+					{
+						SendText(Fvwm_fd, tmp2, 0);
+						free(tmp2);
+					}
+					else if (*tmp != 0)
+					{
+						SendText(Fvwm_fd, tmp, 0);
+					}
 					free(tmp);
 				}
 			}
@@ -1522,7 +1516,7 @@ void HandleButtonRelease(
 
 	if (MouseInStartButton(
 		evp->xbutton.x, evp->xbutton.y, &whichButton,
-		&startButtonPressed))
+		&startButtonPressed, NULL))
 	{
 		*redraw = 0;
 		usleep(50000);
@@ -1564,7 +1558,7 @@ void HandleEvents(
 						       * anymore */
 		if (MouseInStartButton(
 			evp->xbutton.x, evp->xbutton.y, &whichButton,
-			&startButtonPressed))
+			&startButtonPressed, NULL))
 		{
 			StartButtonUpdate(NULL, whichButton, BUTTON_DOWN);
 			ButtonPressed = whichButton;
@@ -1716,7 +1710,7 @@ void HandleEvents(
 		*NewTimestamp = evp->xmotion.time;
 		if (MouseInStartButton(
 			evp->xmotion.x, evp->xbutton.y, &whichButton,
-			&startButtonPressed))
+			&startButtonPressed, NULL))
 		{
 			CheckForTip(evp->xmotion.x, evp->xmotion.y);
 			break;
@@ -2127,20 +2121,16 @@ void StartMeUp(void)
    int wy;
 
    if (!(dpy = XOpenDisplay(""))) {
-     fprintf(stderr,"%s: can't open display %s", Module,
+     fprintf(stderr,"%s: can't open display %s", module->name,
 	     XDisplayName(""));
      exit (1);
    }
-   PictureInitCMap(dpy);
-   FScreenInit(dpy);
+   flib_init_graphics(dpy);
    if (XineramaConfig)
    {
      FScreenConfigureModule(XineramaConfig);
      free(XineramaConfig);
    }
-   AllocColorset(0);
-   FShapeInit(dpy);
-   FRenderInit(dpy);
    FlocaleAllocateWinString(&FwinString);
    x_fd = XConnectionNumber(dpy);
    screen= DefaultScreen(dpy);
@@ -2164,14 +2154,15 @@ void StartMeUp(void)
    if (selfont_string == NULL)
      selfont_string = font_string;
 
-   if ((FButtonFont = FlocaleLoadFont(dpy, font_string, Module)) == NULL)
+   if ((FButtonFont = FlocaleLoadFont(dpy, font_string,module->name)) == NULL)
    {
-     fprintf(stderr, "%s: Couldn't load font. Exiting!\n",Module);
+     fprintf(stderr, "%s: Couldn't load font. Exiting!\n",module->name);
      exit(1);
    }
-   if ((FSelButtonFont = FlocaleLoadFont(dpy, selfont_string, Module)) == NULL)
+   if ((FSelButtonFont = FlocaleLoadFont(dpy, selfont_string,module->name))
+                                                                   == NULL)
    {
-     fprintf(stderr, "%s: Couldn't load font. Exiting!\n",Module);
+     fprintf(stderr, "%s: Couldn't load font. Exiting!\n",module->name);
      exit(1);
    }
    LoadGoodiesFont();
@@ -2281,14 +2272,14 @@ void StartMeUp(void)
   {
     XTextProperty nametext;
     char *list[]={NULL,NULL};
-    list[0] = Module+1;
+    list[0] = module->name;
 
-    classhints.res_name= Module+1;
+    classhints.res_name= module->name;
     classhints.res_class= "FvwmTaskBar";
 
     if(!XStringListToTextProperty(list,1,&nametext))
     {
-      fprintf(stderr,"%s: Failed to convert name to XText\n",Module);
+      fprintf(stderr,"%s: Failed to convert name to XText\n",module->name);
       exit(1);
     }
     /* hack to prevent mapping on wrong screen with StartsOnScreen */
@@ -2353,7 +2344,7 @@ void ChangeWindowName(char *str)
 {
   XTextProperty name;
   if (XStringListToTextProperty(&str,1,&name) == 0) {
-    fprintf(stderr,"%s: cannot allocate window name.\n",Module);
+    fprintf(stderr,"%s: cannot allocate window name.\n",module->name);
     return;
   }
   XSetWMName(dpy,win,&name);
@@ -2446,7 +2437,7 @@ static void SleepALittle(void)
 /*
  RevealTaskBar -- Make taskbar fully visible
 */
-void RevealTaskBar()
+void RevealTaskBar(void)
 {
   int new_win_y;
   int inc_y = 2;
@@ -2485,7 +2476,7 @@ void RevealTaskBar()
 /*
  HideTaskbar -- Make taskbar partially visible
 */
-void HideTaskBar()
+void HideTaskBar(void)
 {
   int new_win_y;
   int inc_y = 1;
@@ -2581,6 +2572,6 @@ ErrorHandler(Display *d, XErrorEvent *event)
   if (FRenderGetErrorCodeBase() + FRenderBadPicture == event->error_code)
     return 0;
 
-  PrintXErrorAndCoredump(d, event, Module);
+  PrintXErrorAndCoredump(d, event, module->name);
   return 0;
 }

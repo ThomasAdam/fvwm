@@ -55,6 +55,11 @@
 #include "libs/fvwmsignal.h"
 #include "libs/FScreen.h"
 #include "libs/FRenderInit.h"
+#include "libs/ColorUtils.h"
+#include "libs/Graphics.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
+#include "libs/System.h"
 
 #include "fvwmDragWell.h"
 #include "dragSource.h"
@@ -186,12 +191,13 @@ void drawDragWellButton(DragWellButton *but)
 
 
 /* mouseInButton - returns true if the pointer is in a DragWellButton
- *   returns TRUE(1) if in button and FALSE(0) otherwise.
+ *   returns 1 if in button and 0 otherwise.
  * Arguments:
  *   but - the button to be drawn
  *   x,y - the pointer coords in (DragWellButton->win) coords
  */
-int mouseInButton(DragWellButton *but, int x, int y) {
+int mouseInButton(DragWellButton *but, int x, int y)
+{
   if ((but->wx <=x)&&(x<=(but->wx+but->w)))
     if ((but->wy <=y)&&(y<=(but->wy+but->h)))
       return 1;
@@ -234,7 +240,7 @@ void dragwellAnimate(void)
 
 
 /* Main event loop*/
-void veryLongLoop()
+void veryLongLoop(void)
 {
   int x,y;
   XEvent xev;
@@ -260,7 +266,7 @@ void veryLongLoop()
 	      if (mg.dragDataType==DRAG_DATA_TYPE_PATH)
 		mg.typelist[0] = mg.textUriAtom;
 	      else
-		mg.typelist[0] = XInternAtom(xg.dpy,mg.dragTypeStr,FALSE);
+		mg.typelist[0] = XInternAtom(xg.dpy,mg.dragTypeStr,False);
 	      xdndSrcDoDrag(&dsg,xg.win,mg.action,mg.typelist);
 	    }
 	  }
@@ -443,11 +449,7 @@ void XStartup(char *appName)
 
   xg.appName = (char *) malloc(sizeof(char) * (strlen(appNameStart)+1));
   strcpy(xg.appName,appNameStart); /*save the name of the application*/
-  PictureInitCMap(xg.dpy);
-  FScreenInit(xg.dpy);
-  AllocColorset(0);
-  FShapeInit(xg.dpy);
-  FRenderInit(xg.dpy);
+  flib_init_graphics(xg.dpy);
 
   /*get X stuff*/
   xg.xfd = XConnectionNumber(xg.dpy);
@@ -493,7 +495,7 @@ void XStartup(char *appName)
   dragSrcInit(&dsg,xg.dpy,xg.root,xg.win);
 
   mg.action = dsg.atomSel->xdndActionMove;
-  mg.textUriAtom = XInternAtom(xg.dpy,"text/uri-list",FALSE);
+  mg.textUriAtom = XInternAtom(xg.dpy,"text/uri-list",False);
   mg.typelist = (Atom *) malloc(4*sizeof(Atom));
   mg.typelist[1] = None;
   mg.typelist[2] = None;
@@ -508,7 +510,7 @@ void XStartup(char *appName)
 
 /*getReliefColors - sets up the colors for the dragwell
  *Arguments:*/
-void getReliefColors() {
+void getReliefColors(void) {
   if(xg.dpyDepth < 2) {
     /*for mono display, not well implemented...*/
     xg.fore = GetColor("white");
@@ -532,7 +534,7 @@ void getReliefColors() {
 
 /* createBackground - sets the background of the dragwell window
  *  Arguments:*/
-void createBackground() {
+void createBackground(void) {
   unsigned long gcm;
   XGCValues gcv;
   /*Graphic context stuff*/
@@ -876,7 +878,7 @@ int dummy(DragWellButton *but)
 
 /*createWindow - creates the drag window.
  * Arguments:*/
-void createWindow()
+void createWindow(void)
 {
   unsigned long valuemask;
   XSetWindowAttributes attributes;

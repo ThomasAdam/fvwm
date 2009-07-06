@@ -18,8 +18,8 @@ EXTRA_DIST = $(man_MANS) scanner.l script.y TODO
 
 LDADD = Widgets/libWidgets.a -L$(top_builddir)/libs -lfvwm $(Xft_LIBS) \
 	$(X_LIBS) $(xpm_LIBS) $(Xinerama_LIBS) $(X_PRE_LIBS) -lXext -lX11 \
-	$(X_EXTRA_LIBS) -lm $(Xrender_LIBS) $(iconv_LIBS) $(Bidi_LIBS) \
-	$(png_LIBS) $(intl_LIBS)
+	$(X_EXTRA_LIBS) -lm $(Xrender_LIBS) $(Xcursor_LIBS) $(iconv_LIBS) \
+	$(Bidi_LIBS) $(png_LIBS) $(rsvg_LIBS) $(intl_LIBS)
 
 INCLUDES = -I$(top_srcdir) $(xpm_CFLAGS) $(Xft_CFLAGS) $(X_CFLAGS) \
 	$(Xrender_CFLAGS) $(iconv_CFLAGS) $(Bidi_CFLAGS) $(png_CFLAGS)
@@ -37,7 +37,11 @@ YACC = yacc
 
 syntax:
 	rm -f lex.yy.c y.tab.c y.tab.h script.tab.c script.tab.h || true
-	$(LEX) $(AM_LFLAGS) $(LFLAGS) scanner.l && mv lex.yy.c scanner.c
+	if $(LEX) --nounput --help 2>/dev/null > /dev/null; then \
+		$(LEX) $(AM_LFLAGS) $(LFLAGS) --nounput scanner.l; \
+	else \
+		$(LEX) $(AM_LFLAGS) $(LFLAGS) scanner.l; \
+	fi && mv lex.yy.c scanner.c
 
 	@# detect and prefer bison; bison without -y uses file.tab.[ch] names
 	YACC=$(YACC); if which bison >/dev/null 2>&1; then YACC="bison -y"; fi; \

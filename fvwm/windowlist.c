@@ -35,12 +35,19 @@
 #include "libs/fvwmlib.h"
 #include "libs/FScreen.h"
 #include "libs/FGettext.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
 #include "fvwm.h"
 #include "externs.h"
 #include "functions.h"
 #include "misc.h"
 #include "screen.h"
+#include "menudim.h"
+#include "menuitem.h"
+#include "menuroot.h"
+#include "menustyle.h"
 #include "menus.h"
+#include "menuparameters.h"
 #include "conditional.h"
 #include "stack.h"
 #include "focus.h"
@@ -193,8 +200,8 @@ static int compareReverse(const  FvwmWindow **a, const  FvwmWindow **b)
  * title directly. */
 void CMD_WindowList(F_CMD_ARGS)
 {
-	MenuRoot *mr;
-	MenuParameters mp;
+	struct MenuRoot *mr;
+	struct MenuParameters mp;
 	char* ret_action = NULL;
 	FvwmWindow *t;
 	FvwmWindow **windowList;
@@ -226,7 +233,7 @@ void CMD_WindowList(F_CMD_ARGS)
 	int low_layer = 0;  /* show all layers by default */
 	int high_layer = INT_MAX;
 	int max_label_width = 0;
-	int show_listskip = 0; /* do not show listskip by default */
+	int skiplist_mode = 0; /* do not show skiplist by default */
 	Bool use_hotkey = True;
 	KeyCode old_sor_keycode;
 	char sor_default_keyname[8] = { 'M', 'e', 't', 'a', '_', 'L' };
@@ -436,11 +443,23 @@ void CMD_WindowList(F_CMD_ARGS)
 			}
 			else if (StrEquals(tok,"UseListSkip"))
 			{
-				show_listskip = 1;
+				/* deprecated as of 02-May-2007 (SS) */
+				fprintf(stderr, "UseListSkip is deprecated. Please use \"UseSkipList\".\n");
+				skiplist_mode = 1;
+			}
+			else if (StrEquals(tok,"UseSkipList"))
+			{
+				skiplist_mode = 1;
 			}
 			else if (StrEquals(tok,"OnlyListSkip"))
 			{
-				show_listskip = 2;
+				/* deprecated as of 02-May-2007 (SS) */
+				fprintf(stderr, "OnlyListSkip is deprecated. Please use \"OnlySkipList\".\n");
+				skiplist_mode = 2;
+			}
+			else if (StrEquals(tok,"OnlySkipList"))
+			{
+				skiplist_mode = 2;
 			}
 			else if (StrEquals(tok,"NoDeskNum"))
 			{
@@ -630,7 +649,7 @@ void CMD_WindowList(F_CMD_ARGS)
 	}
 	if (iconified_at_end && ic > 0)
 	{
-		if (current_at_end)
+		if (current_at_end && ii > ic)
 		{
 			windowList[numWindows - 1] = windowList[--ii - ic];
 		}
@@ -735,15 +754,14 @@ void CMD_WindowList(F_CMD_ARGS)
 			{
 				continue;
 			}
-			if (!show_listskip && DO_SKIP_WINDOW_LIST(t))
+			if (skiplist_mode == 0 && DO_SKIP_WINDOW_LIST(t))
 			{
-				/* don't want listskip windows - skip */
+				/* don't want skiplist windows - skip */
 				continue;
 			}
-			if (show_listskip == 2 &&
-			    !DO_SKIP_WINDOW_LIST(t))
+			if (skiplist_mode == 2 && !DO_SKIP_WINDOW_LIST(t))
 			{
-				/* don't want no listskip one - skip */
+				/* don't want no skiplist one - skip */
 				continue;
 			}
 			if (use_condition && !MatchesConditionMask(t, &mask))
@@ -916,11 +934,11 @@ void CMD_WindowList(F_CMD_ARGS)
 					int scr;
 
 					fscr.xypos.x =
-						Scr.Vx + t->frame_g.x +
-						t->frame_g.width / 2;
+						Scr.Vx + t->g.frame.x +
+						t->g.frame.width / 2;
 					fscr.xypos.y =
-						Scr.Vy + t->frame_g.y +
-						t->frame_g.height / 2;
+						Scr.Vy + t->g.frame.y +
+						t->g.frame.height / 2;
 					scr = FScreenGetScrId(
 						&fscr, FSCREEN_XYPOS);
 					sprintf(loc, "@%d", scr);
@@ -929,16 +947,16 @@ void CMD_WindowList(F_CMD_ARGS)
 				if (flags & SHOW_PAGE_X)
 				{
 					sprintf(loc, "+%d",
-						(Scr.Vx + t->frame_g.x +
-						 t->frame_g.width / 2) /
+						(Scr.Vx + t->g.frame.x +
+						 t->g.frame.width / 2) /
 						Scr.MyDisplayWidth);
 					strcat(tname, loc);
 				}
 				if (flags & SHOW_PAGE_Y)
 				{
 					sprintf(loc, "+%d",
-						(Scr.Vy + t->frame_g.y +
-						 t->frame_g.height/2) /
+						(Scr.Vy + t->g.frame.y +
+						 t->g.frame.height/2) /
 						Scr.MyDisplayHeight);
 					strcat(tname, loc);
 				}
@@ -950,9 +968,9 @@ void CMD_WindowList(F_CMD_ARGS)
 				}
 				strcat(tname, ":");
 				get_window_borders(t, &b);
-				dheight = t->frame_g.height -
+				dheight = t->g.frame.height -
 					b.total_size.height;
-				dwidth = t->frame_g.width -
+				dwidth = t->g.frame.width -
 					b.total_size.width;
 				dwidth -= t->hints.base_width;
 				dheight -= t->hints.base_height;
@@ -963,22 +981,22 @@ void CMD_WindowList(F_CMD_ARGS)
 				strcat(tname, loc);
 				sprintf(loc,"x%d",dheight);
 				strcat(tname, loc);
-				if (t->frame_g.x >=0)
+				if (t->g.frame.x >=0)
 				{
-					sprintf(loc,"+%d",t->frame_g.x);
+					sprintf(loc,"+%d",t->g.frame.x);
 				}
 				else
 				{
-					sprintf(loc,"%d",t->frame_g.x);
+					sprintf(loc,"%d",t->g.frame.x);
 				}
 				strcat(tname, loc);
-				if (t->frame_g.y >=0)
+				if (t->g.frame.y >=0)
 				{
-					sprintf(loc,"+%d",t->frame_g.y);
+					sprintf(loc,"+%d",t->g.frame.y);
 				}
 				else
 				{
-					sprintf(loc,"%d",t->frame_g.y);
+					sprintf(loc,"%d",t->g.frame.y);
 				}
 				strcat(tname, loc);
 

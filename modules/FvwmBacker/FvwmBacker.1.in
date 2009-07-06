@@ -1,9 +1,9 @@
 .\" t
 .\" @(#)@PACKAGE@-@VERSION@ @RELDATELONG@
-.TH FvwmBacker 1 "@RELDATELONG@ (@VERSION@)" FVWM "FVWM Modules"
+.TH FvwmBacker 1 "@RELDATELONG@ (@VERSION@)" Fvwm "Fvwm Modules"
 .UC
 .SH NAME
-FvwmBacker \- the FVWM background changer module
+FvwmBacker \- the fvwm background changer module
 .SH SYNOPSIS
 Module FvwmBacker
 
@@ -22,13 +22,13 @@ colors, etc.
 The FvwmBacker module is the original work of Mike Finger.
 
 Copyright 1994, Mike Finger. The author makes no guarantees or
-warranties of any kind about the use of this module.  Use this modules
+warranties of any kind about the use of this module.  Use this module
 at your own risk.  You may freely use this module or any portion of it
 for any purpose as long as the copyright is kept intact.
 
 .SH INITIALIZATION
-During initialization, \fIFvwmBacker\fP gets config info from 
-\fBfvwm\fP's module configuration database (see 
+During initialization, \fIFvwmBacker\fP gets config info from
+\fBfvwm\fP's module configuration database (see
 .IR fvwm (1),
 section
 .BR "MODULE COMMANDS" ).
@@ -48,7 +48,7 @@ FvwmBacker can be started using a 'Module FvwmBacker' command or stopped
 using a 'KillModule FvwmBacker' command at any time when fvwm is running.
 
 FvwmBacker must reside in a directory that is listed in the ModulePath
-option of FVWM for it to be executed by FVWM.
+option of fvwm for it to be executed by fvwm.
 
 .SH CONFIGURATION OPTIONS
 The following options can be placed in the .fvwm2rc file
@@ -93,9 +93,27 @@ image, screen_width times screen_height bytes
 with a Pixmap image or a C,B,D,R,S or Y
 Gradient and screen_width bytes with
 a VGradient or screen height bytes with an HGradient.
- 
+
 .IP "*FvwmBacker: DoNotRetainPixmap"
 Cancels the effect of the previous option. This is the default.
+
+.SH RUN-TIME CONFIGURATION
+It it possible to replace FvwmBacker's configuration at run-time,
+although it is not yet possible to remove existing configuration
+lines.  This is done by simply removing the old configuration from
+withing fvwm and then read a new one.  This can be done in many
+ways, for example by using an fvwm function or one of the modules
+.BR FvwmCommand " or " FvwmConsole .
+
+Example:
+
+.nf
+.sp
+DestroyModuleConfig FvwmBacker*
+*FvwmBacker: Command (Desk 0) -solid black
+*FvwmBacker: Command (Desk 1) -solid blue
+.sp
+.fi
 
 .SH OLD-STYLE OPTIONS
 There is continued support for the now deprecated option:
@@ -112,7 +130,7 @@ It is functionally equivalent to omitting the page coordinates with
 .fi
 
 .SH SAMPLE CONFIGURATION
-The following are excepts from an .fvwm2rc file which describe
+The following are excerpts from an .fvwm2rc file which describe
 FvwmBacker initialization commands:
 
 .nf

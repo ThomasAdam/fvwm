@@ -46,7 +46,8 @@
 
 #include "defaults.h"
 #include "fvwmlib.h"
-#include "safemalloc.h"
+#include "Graphics.h"
+#include "ColorUtils.h"
 #include "Strings.h"
 #include "Parse.h"
 #include "PictureBase.h"
@@ -85,6 +86,12 @@ static FlocaleFont *FlocaleFontList = NULL;
 static char *Flocale = NULL;
 static char *Fmodifiers = NULL;
 
+/* TODO: make these (static const char *) */
+static char *fft_fallback_font = FLOCALE_FFT_FALLBACK_FONT;
+static char *mb_fallback_font = FLOCALE_MB_FALLBACK_FONT;
+static char *fallback_font = FLOCALE_FALLBACK_FONT;
+
+
 /* ---------------------------- exported variables (globals) --------------- */
 
 /* ---------------------------- local functions ---------------------------- */
@@ -110,7 +117,7 @@ void FlocaleParseShadow(char *str, int *shadow_size, int *shadow_offset,
 		*shadow_size = 0;
 		fprintf(stderr,"[%s][FlocaleParseShadow]: WARNING -- bad "
 			"shadow size in font name:\n\t'%s'\n",
-			(module)? module: "FVWM", fontname);
+			(module)? module: "fvwm", fontname);
 		return;
 	}
 	if (*shadow_size == 0)
@@ -126,7 +133,7 @@ void FlocaleParseShadow(char *str, int *shadow_size, int *shadow_offset,
 			*shadow_offset = 0;
 			fprintf(stderr,"[%s][FlocaleParseShadow]: WARNING -- "
 				"bad shadow offset in font name:\n\t'%s'\n",
-				(module)? module: "FVWMlibs", fontname);
+				(module)? module: "fvwmlibs", fontname);
 		}
 		PeekToken(dir_str, &dir_str);
 	}
@@ -138,7 +145,7 @@ void FlocaleParseShadow(char *str, int *shadow_size, int *shadow_offset,
 			fprintf(stderr,"[%s][FlocaleParseShadow]: WARNING -- "
 				"bad shadow direction in font description:\n"
 				"\t%s\n",
-				(module)? module: "FVWMlibs", fontname);
+				(module)? module: "fvwmlibs", fontname);
 			PeekToken(dir_str, &dir_str); /* skip it */
 		}
 		else
@@ -160,7 +167,7 @@ int FlocaleChar2bOneCharToUtf8(XChar2b c, char *buf)
         int len;
 	char byte1 = c.byte1;
 	char byte2 = c.byte2;
-	unsigned short ucs2 = ((unsigned short int)byte1 << 8) + byte2;
+	unsigned short ucs2 = ((unsigned short)byte1 << 8) + byte2;
 
         if(ucs2 <= 0x7f)
 	{
@@ -181,24 +188,24 @@ int FlocaleChar2bOneCharToUtf8(XChar2b c, char *buf)
 		buf[0] = (ucs2 >> 12) | 0xe0;
 		buf[1] = ((ucs2 & 0xfff) >> 6) | 0x80;
 		buf[2] = (ucs2 & 0x3f) | 0x80;
-		buf[4] = 0;
+		buf[3] = 0;
 	}
 	return len;
 }
 
 /* return number of bytes of character at current position
    (pointed to by str) */
-int FlocaleStringNumberOfBytes(FlocaleFont *flf, const unsigned char *str)
+int FlocaleStringNumberOfBytes(FlocaleFont *flf, const char *str)
 {
         int bytes = 0;
         if(FLC_ENCODING_TYPE_IS_UTF_8(flf->fc))
 	{
 	        /* handle UTF-8 */
-	        if(str[0] <= 0x7f)
+	        if ((str[0] & 0x80) == 0)
 	        {
 		        bytes = 1;
 	        }
-		else if(str[0] <= 0xdf)
+		else if((str[0] & ~0xdf) == 0)
 		{
 		        bytes = 2;
 		}
@@ -211,7 +218,7 @@ int FlocaleStringNumberOfBytes(FlocaleFont *flf, const unsigned char *str)
 	else if(flf->flags.is_mb)
 	{
 	        /* non-UTF-8 multibyte encoding */
-	        if(str[0] <= 0x7f)
+	        if ((str[0] & 0x80) == 0)
 		{
 			bytes = 1;
 		}
@@ -230,10 +237,10 @@ int FlocaleStringNumberOfBytes(FlocaleFont *flf, const unsigned char *str)
 
 /* given a string, font specifying its locale and a byte offset gives
    character offset */
-int FlocaleStringByteToCharOffset(FlocaleFont *flf, const unsigned char *str,
+int FlocaleStringByteToCharOffset(FlocaleFont *flf, const char *str,
 				  int offset)
 {
-	const unsigned char *curr_ptr = str;
+	const char *curr_ptr = str;
 	int i = 0;
 	int len = strlen(str);
 	int coffset = 0;
@@ -250,10 +257,10 @@ int FlocaleStringByteToCharOffset(FlocaleFont *flf, const unsigned char *str,
 
 /* like above but reversed, ie. return byte offset corresponding to given
    charater offset */
-int FlocaleStringCharToByteOffset(FlocaleFont *flf, const unsigned char *str,
+int FlocaleStringCharToByteOffset(FlocaleFont *flf, const char *str,
 				  int coffset)
 {
-	const unsigned char *curr_ptr = str;
+	const char *curr_ptr = str;
 	int i;
 	int len = strlen(str);
 	int offset = 0;
@@ -269,7 +276,7 @@ int FlocaleStringCharToByteOffset(FlocaleFont *flf, const unsigned char *str,
 }
 
 /* return length of string in characters */
-int FlocaleStringCharLength(FlocaleFont *flf, const unsigned char *str)
+int FlocaleStringCharLength(FlocaleFont *flf, const char *str)
 {
 	int i, len;
 	int str_len = strlen(str);
@@ -279,7 +286,7 @@ int FlocaleStringCharLength(FlocaleFont *flf, const unsigned char *str)
 }
 
 static
-XChar2b *FlocaleUtf8ToUnicodeStr2b(unsigned char *str, int len, int *nl)
+XChar2b *FlocaleUtf8ToUnicodeStr2b(char *str, int len, int *nl)
 {
 	XChar2b *str2b = NULL;
 	int i = 0, j = 0, t;
@@ -287,12 +294,12 @@ XChar2b *FlocaleUtf8ToUnicodeStr2b(unsigned char *str, int len, int *nl)
 	str2b = (XChar2b *)safemalloc((len+1)*sizeof(XChar2b));
 	while (i < len && str[i] != 0)
 	{
-		if (str[i] <= 0x7f)
+		if ((str[i] & 0x80) == 0)
 		{
 			str2b[j].byte2 = str[i];
 			str2b[j].byte1 = 0;
 		}
-		else if (str[i] <= 0xdf && i+1 < len)
+		else if ((str[i] & ~0xdf) == 0 && i+1 < len)
 		{
 			t = ((str[i] & 0x1f) << 6) + (str[i+1] & 0x3f);
 			str2b[j].byte2 = (unsigned char)(t & 0xff);
@@ -322,7 +329,7 @@ XChar2b *FlocaleUtf8ToUnicodeStr2b(unsigned char *str, int len, int *nl)
  * big5hkscs-0, and cns-11643- */
 static
 XChar2b *FlocaleStringToString2b(
-	Display *dpy, FlocaleFont *flf, unsigned char *str, int len, int *nl)
+	Display *dpy, FlocaleFont *flf, char *str, int len, int *nl)
 {
 	XChar2b *str2b = NULL;
 	char *tmp = NULL;
@@ -352,7 +359,7 @@ XChar2b *FlocaleStringToString2b(
 	{
 		while (i < len && str[i] != 0)
 		{
-			if (str[i] <= 0x7f)
+			if ((str[i] & 0x80) == 0)
 			{
 				/* seems ok with KSC5601 and GB2312 as we get
 				 * almost the ascii. I do no try
@@ -381,7 +388,7 @@ XChar2b *FlocaleStringToString2b(
 	{
 		while (i < len && str[i] != 0)
 		{
-			if (str[i] <= 0x7f)
+			if ((str[i] & 0x80) == 0)
 			{
 				/* we should convert to ascii */
 #if 0
@@ -419,11 +426,13 @@ char *FlocaleEncodeString(
 	int **l_to_v)
 {
 	char *str1, *str2, *str3;
-	int len1 = len, len2;
+	int len1;
+	int len2;
 	int i;
 	Bool do_iconv = True;
 	const char *bidi_charset;
 
+	len1 = len;
 	if (is_rtl != NULL)
 		*is_rtl = False;
 	*do_free = False;
@@ -442,15 +451,14 @@ char *FlocaleEncodeString(
 
 	        /* first process combining characters */
 	        tmp_str = FiconvCharsetToUtf8(
-			dpy,
-			flf->str_fc,
-			(const char *)str,len);
+			dpy, flf->str_fc, (const char *)str,len);
 		/* if conversion to UTF-8 failed str1 will be NULL */
 		if(tmp_str != NULL)
 		{
 			/* do combining */
-			len = CombineChars(tmp_str,strlen(tmp_str),
-					    comb_chars, l_to_v);
+			len = CombineChars((unsigned char *)tmp_str,
+					   strlen(tmp_str), comb_chars,
+					   l_to_v);
 			/* returns the length of the resulting UTF-8 string */
 			/* convert back to current charset */
 			str1 = FiconvUtf8ToCharset(
@@ -607,7 +615,7 @@ void FlocaleFontStructDrawString(
 	{
 		FlocaleInitGstpArgs(&gstp_args, flf, fws, x, y);
 		/* normal drawing */
-		if (flf->shadow_size != 0 && has_fg_pixels)
+		if (flf->shadow_size != 0 && has_fg_pixels == True)
 		{
 			XSetForeground(dpy, fws->gc, fgsh);
 			while (FlocaleGetShadowTextPosition(
@@ -617,6 +625,9 @@ void FlocaleFontStructDrawString(
 					is_string16, dpy, d, gc, xt, yt,
 					fws->e_str, fws->str2b, len);
 			}
+		}
+		if (has_fg_pixels == True)
+		{
 			XSetForeground(dpy, gc, fg);
 		}
 		xt = gstp_args.orig_x;
@@ -652,9 +663,13 @@ void FlocaleRotateDrawString(
 	char buf[4];
 
 	if (fws->str == NULL || len < 1)
+	{
 		return;
+	}
 	if (fws->flags.text_rotation == ROTATION_0)
+	{
 		return; /* should not happen */
+	}
 
 	if (my_gc == None)
 	{
@@ -899,7 +914,7 @@ void FlocaleRotateDrawString(
 	XSetFillStyle(dpy, my_gc, FillStippled);
 	XSetStipple(dpy, my_gc, rotated_pix);
 	FlocaleInitGstpArgs(&gstp_args, flf, fws, xpfg, ypfg);
-	if (flf->shadow_size != 0 && has_fg_pixels)
+	if (flf->shadow_size != 0 && has_fg_pixels == True)
 	{
 		XSetForeground(dpy, my_gc, fgsh);
 		while (FlocaleGetShadowTextPosition(&xpsh, &ypsh, &gstp_args))
@@ -909,7 +924,6 @@ void FlocaleRotateDrawString(
 				dpy, fws->win, my_gc, xpsh, ypsh, rotated_w,
 				rotated_h);
 		}
-		XSetForeground(dpy, my_gc, fg);
 	}
 	xpsh = gstp_args.orig_x;
 	ypsh = gstp_args.orig_y;
@@ -1063,15 +1077,19 @@ FlocaleFont *FlocaleGetFftFont(
 	char *fn, *hints = NULL;
 
 	hints = GetQuotedString(fontname, &fn, "/", NULL, NULL, NULL);
-	if (*fn == '\0')
+	if (fn == NULL)
+	{
+		fn = fft_fallback_font;
+	}
+	else if (*fn == '\0')
 	{
 		free(fn);
-		fn = FLOCALE_FFT_FALLBACK_FONT;
+		fn = fft_fallback_font;
 	}
 	fftf = FftGetFont(dpy, fn, module);
 	if (fftf == NULL)
 	{
-		if (fn != NULL && fn != FLOCALE_FFT_FALLBACK_FONT)
+		if (fn != NULL && fn != fft_fallback_font)
 		{
 			free(fn);
 		}
@@ -1086,7 +1104,7 @@ FlocaleFont *FlocaleGetFftFont(
 		&flf->fftf, &flf->height, &flf->ascent, &flf->descent);
 	FftGetFontWidths(flf, &flf->max_char_width);
 	free(fftf);
-	if (fn != NULL && fn != FLOCALE_FFT_FALLBACK_FONT)
+	if (fn != NULL && fn != fft_fallback_font)
 	{
 		free(fn);
 	}
@@ -1111,11 +1129,11 @@ FlocaleFont *FlocaleGetFontSet(
 	if (*fn == '\0')
 	{
 		free(fn);
-		fn = fn_fixed = FLOCALE_MB_FALLBACK_FONT;
+		fn = fn_fixed = mb_fallback_font;
 	}
 	else if (!(fn_fixed = FlocaleFixNameForFontSet(dpy, fn, module)))
 	{
-		if (fn != NULL && fn != FLOCALE_MB_FALLBACK_FONT)
+		if (fn != NULL && fn != mb_fallback_font)
 		{
 			free(fn);
 		}
@@ -1127,7 +1145,7 @@ FlocaleFont *FlocaleGetFontSet(
 		{
 			free(fn_fixed);
 		}
-		if (fn != NULL && fn != FLOCALE_MB_FALLBACK_FONT)
+		if (fn != NULL && fn != mb_fallback_font)
 		{
 			free(fn);
 		}
@@ -1142,7 +1160,7 @@ FlocaleFont *FlocaleGetFontSet(
 			fprintf(stderr,
 				"[%s][FlocaleGetFontSet]: (%s)"
 				" Missing font charsets:\n",
-				(module)? module: "FVWMlibs", fontname);
+				(module)? module: "fvwmlibs", fontname);
 			for (i = 0; i < mc; i++)
 			{
 				fprintf(stderr, "%s", ml[i]);
@@ -1155,7 +1173,7 @@ FlocaleFont *FlocaleGetFontSet(
 				fprintf(stderr,
 					"[%s][FlocaleGetFontSet]: No more"
 					" missing charset reportings\n",
-					(module)? module: "FVWMlibs");
+					(module)? module: "fvwmlibs");
 			}
 		}
 		XFreeStringList(ml);
@@ -1176,7 +1194,7 @@ FlocaleFont *FlocaleGetFontSet(
 	{
 		free(fn_fixed);
 	}
-	if (fn != NULL && fn != FLOCALE_MB_FALLBACK_FONT)
+	if (fn != NULL && fn != mb_fallback_font)
 	{
 		free(fn);
 	}
@@ -1200,10 +1218,10 @@ FlocaleFont *FlocaleGetFont(
 		if (*fn == '\0')
 		{
 			free(fn);
-			fn = FLOCALE_FALLBACK_FONT;
+			fn = fallback_font;
 		}
 		font = XLoadQueryFont(dpy, fn);
-		if (fn != NULL && fn != FLOCALE_FALLBACK_FONT)
+		if (fn != NULL && fn != fallback_font)
 		{
 			free(fn);
 			fn = NULL;
@@ -1215,7 +1233,7 @@ FlocaleFont *FlocaleGetFont(
 	}
 	if (font == NULL)
 	{
-		if (fn != NULL && fn != FLOCALE_FALLBACK_FONT)
+		if (fn != NULL && fn != fallback_font)
 		{
 			free(fn);
 		}
@@ -1239,7 +1257,7 @@ FlocaleFont *FlocaleGetFont(
 	flf->max_char_width = font->max_bounds.width;
 	if (flf->font->max_byte1 > 0)
 		flf->flags.is_mb = True;
-	if (fn != NULL && fn != FLOCALE_FALLBACK_FONT)
+	if (fn != NULL && fn != fallback_font)
 	{
 		free(fn);
 	}
@@ -1282,13 +1300,13 @@ FlocaleFont *FlocaleGetFontOrFontSet(
 	}
 	if (flf && fontname)
 	{
-		if (StrEquals(fullname, FLOCALE_MB_FALLBACK_FONT))
+		if (StrEquals(fullname, mb_fallback_font))
 		{
-			flf->name = FLOCALE_MB_FALLBACK_FONT;
+			flf->name = mb_fallback_font;
 		}
-		else if (StrEquals(fullname, FLOCALE_FALLBACK_FONT))
+		else if (StrEquals(fullname, fallback_font))
 		{
-			flf->name = FLOCALE_FALLBACK_FONT;
+			flf->name = fallback_font;
 		}
 		else
 		{
@@ -1371,7 +1389,7 @@ FlocaleFont *FlocaleLoadFont(Display *dpy, char *fontname, char *module)
 	char *str, *opt_str, *encoding= NULL, *fn = NULL;
 	int shadow_size = 0;
 	int shadow_offset = 0;
-	int shadow_dir;
+	int shadow_dir = MULTI_DIR_SE;
 	int i;
 
 	/* removing quoting for modules */
@@ -1386,7 +1404,7 @@ FlocaleFont *FlocaleLoadFont(Display *dpy, char *fontname, char *module)
 	if (fontname == NULL || *fontname == 0)
 	{
 		ask_default = True;
-		fontname = FLOCALE_MB_FALLBACK_FONT;
+		fontname = mb_fallback_font;
 	}
 
 	while (flf)
@@ -1445,14 +1463,14 @@ FlocaleFont *FlocaleLoadFont(Display *dpy, char *fontname, char *module)
 	}
 	else
 	{
-		fn = FLOCALE_MB_FALLBACK_FONT;
+		fn = mb_fallback_font;
 	}
 	while (!flf && (fn && *fn))
 	{
 		flf = FlocaleGetFontOrFontSet(
 			dpy, fn, encoding, fontname, module);
-		if (fn != NULL && fn != FLOCALE_MB_FALLBACK_FONT &&
-		    fn != FLOCALE_FALLBACK_FONT)
+		if (fn != NULL && fn != mb_fallback_font &&
+		    fn != fallback_font)
 		{
 			free(fn);
 			fn = NULL;
@@ -1462,8 +1480,8 @@ FlocaleFont *FlocaleLoadFont(Display *dpy, char *fontname, char *module)
 			str = GetQuotedString(str, &fn, ";", NULL, NULL, NULL);
 		}
 	}
-	if (fn != NULL && fn != FLOCALE_MB_FALLBACK_FONT &&
-	    fn != FLOCALE_FALLBACK_FONT)
+	if (fn != NULL && fn != mb_fallback_font &&
+	    fn != fallback_font)
 	{
 		free(fn);
 	}
@@ -1476,7 +1494,7 @@ FlocaleFont *FlocaleLoadFont(Display *dpy, char *fontname, char *module)
 			fprintf(stderr,"[%s][FlocaleLoadFont]: "
 				"WARNING -- can't load font '%s',"
 				" trying default:\n",
-				(module)? module: "FVWMlibs", fontname);
+				(module)? module: "fvwmlibs", fontname);
 		}
 		else
 		{
@@ -1487,13 +1505,13 @@ FlocaleFont *FlocaleLoadFont(Display *dpy, char *fontname, char *module)
 			if (!ask_default)
 			{
 				fprintf(stderr, "\t%s\n",
-					FLOCALE_MB_FALLBACK_FONT);
+					mb_fallback_font);
 			}
 			if ((flf = FlocaleGetFontSet(
-				     dpy, FLOCALE_MB_FALLBACK_FONT, NULL,
+				     dpy, mb_fallback_font, NULL,
 				     module)) != NULL)
 			{
-				flf->name = FLOCALE_MB_FALLBACK_FONT;
+				flf->name = mb_fallback_font;
 			}
 		}
 		if (flf == NULL)
@@ -1501,32 +1519,32 @@ FlocaleFont *FlocaleLoadFont(Display *dpy, char *fontname, char *module)
 			if (!ask_default)
 			{
 				fprintf(stderr,"\t%s\n",
-					FLOCALE_FALLBACK_FONT);
+					fallback_font);
 			}
 			if ((flf =
 			     FlocaleGetFont(
-				     dpy, FLOCALE_FALLBACK_FONT, NULL,
+				     dpy, fallback_font, NULL,
 				     module)) != NULL)
 			{
-				flf->name = FLOCALE_FALLBACK_FONT;
+				flf->name = fallback_font;
 			}
 			else if (!ask_default)
 			{
 				fprintf(stderr,
 					"[%s][FlocaleLoadFont]:"
 					" ERROR -- can't load font.\n",
-					(module)? module: "FVWMlibs");
+					(module)? module: "fvwmlibs");
 			}
 			else
 			{
 				fprintf(stderr,
 					"[%s][FlocaleLoadFont]: ERROR"
 					" -- can't load default font:\n",
-					(module)? module: "FVWMlibs");
+					(module)? module: "fvwmlibs");
 				fprintf(stderr, "\t%s\n",
-					FLOCALE_MB_FALLBACK_FONT);
+					mb_fallback_font);
 				fprintf(stderr, "\t%s\n",
-					FLOCALE_FALLBACK_FONT);
+					fallback_font);
 			}
 		}
 	}
@@ -1546,8 +1564,8 @@ FlocaleFont *FlocaleLoadFont(Display *dpy, char *fontname, char *module)
 		if (flf->fc == FlocaleCharsetGetUnknownCharset())
 		{
 			fprintf(stderr,"[%s][FlocaleLoadFont]: "
-				"WARNING -- Unkown charset for font\n\t'%s'\n",
-				(module)? module: "FVWMlibs", flf->name);
+				"WARNING -- Unknown charset for font\n\t'%s'\n",
+				(module)? module: "fvwmlibs", flf->name);
 			flf->fc = FlocaleCharsetGetDefaultCharset(dpy, module);
 		}
 		else if (flf->str_fc == FlocaleCharsetGetUnknownCharset() &&
@@ -1556,9 +1574,9 @@ FlocaleFont *FlocaleLoadFont(Display *dpy, char *fontname, char *module)
 			   flf->fftf.str_encoding != NULL)))
 		{
 			fprintf(stderr,"[%s][FlocaleLoadFont]: "
-				"WARNING -- Unkown string encoding for font\n"
+				"WARNING -- Unknown string encoding for font\n"
 				"\t'%s'\n",
-				(module)? module: "FVWMlibs", flf->name);
+				(module)? module: "fvwmlibs", flf->name);
 		}
 		if (flf->str_fc == FlocaleCharsetGetUnknownCharset())
 		{
@@ -1592,8 +1610,8 @@ void FlocaleUnloadFont(Display *dpy, FlocaleFont *flf)
 	}
 
 	if (flf->name != NULL &&
-	    !StrEquals(flf->name, FLOCALE_MB_FALLBACK_FONT) &&
-	    !StrEquals(flf->name, FLOCALE_FALLBACK_FONT))
+	    !StrEquals(flf->name, mb_fallback_font) &&
+	    !StrEquals(flf->name, fallback_font))
 	{
 		free(flf->name);
 	}
@@ -1827,8 +1845,8 @@ void FlocaleDrawString(
 	}
 
 	/* encode the string */
-	FlocaleEncodeWinString(dpy, flf, fws, &do_free, &len, &comb_chars,
-			       NULL);
+	FlocaleEncodeWinString(
+		dpy, flf, fws, &do_free, &len, &comb_chars, NULL);
 	curr_str = fws->e_str;
 	for(char_len = 0, i = 0 ;
 	    i < len && curr_str[i] != 0 ;
@@ -1838,15 +1856,15 @@ void FlocaleDrawString(
 	}
 
 	/* for superimposition calculate the character positions in pixels */
-	if(comb_chars != NULL && (comb_chars[0].c.byte1 != 0 ||
-				  comb_chars[0].c.byte2 != 0))
+	if (comb_chars != NULL && (
+		   comb_chars[0].c.byte1 != 0 || comb_chars[0].c.byte2 != 0))
 	{
 		/* the second condition is actually redundant,
 		   but there for clarity,
 		   ending at 0 is what's expected in a correct
 		   string */
-		pixel_pos = (int *)safemalloc((char_len != 0 ? char_len : 1)
-					      * sizeof(int));
+		pixel_pos = (int *)safemalloc(
+			(char_len != 0 ? char_len : 1) * sizeof(int));
 
 		/* if there is 0 bytes in the encoded string, there might
 		   still be combining character to draw (at position 0) */
@@ -1855,12 +1873,13 @@ void FlocaleDrawString(
 			pixel_pos[0] = 0;
 		}
 
-		for(i = 0, curr_pixel_pos = 0 ;
-		    i < char_len ;
-		    i++, curr_str += curr_len)
+		for(
+			i = 0, curr_pixel_pos = 0 ;
+			i < char_len ;
+			i++, curr_str += curr_len)
 		{
 		        curr_len = FlocaleStringNumberOfBytes(flf, curr_str);
-			for(j = 0 ; j < curr_len ; j++)
+			for (j = 0 ; j < curr_len ; j++)
 			{
 			        buf[j] = curr_str[j];
 			}
@@ -1932,6 +1951,9 @@ void FlocaleDrawString(
 					dpy, fws->win, flf->fontset, fws->gc,
 					xt, yt, fws->e_str, len);
 			}
+		}
+		if (has_fg_pixels == True)
+		{
 			XSetForeground(dpy, fws->gc, fg);
 		}
 		xt = gstp_args.orig_x;
@@ -1949,7 +1971,7 @@ void FlocaleDrawString(
 
 	/* here take care of superimposing chars */
 	i = 0;
-	if(comb_chars != NULL)
+	if (comb_chars != NULL)
 	{
 		while(comb_chars[i].c.byte1 != 0 && comb_chars[i].c.byte2 != 0)
 		{
@@ -1985,8 +2007,9 @@ void FlocaleDrawString(
 			{
 			        int xt = fws->x;
 				int yt = fws->y;
-				FlocaleInitGstpArgs(&gstp_args, flf, fws,
-						    fws->x, fws->y);
+
+				FlocaleInitGstpArgs(
+					&gstp_args, flf, fws, fws->x, fws->y);
 				if (flf->shadow_size != 0)
 				{
 					XSetForeground(dpy, fws->gc, fgsh);
@@ -2001,15 +2024,15 @@ void FlocaleDrawString(
 							      buf2,
 							      strlen(buf2));
 					}
-					XSetForeground(dpy, fws->gc, fg);
 				}
+				XSetForeground(dpy, fws->gc, fg);
 				xt = gstp_args.orig_x;
 				yt = gstp_args.orig_y;
 			        XmbDrawString(
 					dpy, fws->win, flf->fontset, fws->gc,
 					xt + offset, yt, buf2, strlen(buf2));
 			}
-			else if(flf->font != None)
+			else if (flf->font != None)
 			{
 				if (FLC_ENCODING_TYPE_IS_UTF_8(flf->fc))
 				{
@@ -2052,7 +2075,7 @@ void FlocaleDrawString(
 		}
 	}
 
-	if(do_free)
+	if (do_free)
 	{
 		if (fws->e_str != NULL)
 		{
@@ -2391,7 +2414,7 @@ void FlocalePrintLocaleInfo(Display *dpy, int verbose)
 
 	fflush(stderr);
 	fflush(stdout);
-	fprintf(stderr,"FVWM info on locale:\n");
+	fprintf(stderr,"fvwm info on locale:\n");
 	fprintf(stderr,"  locale: %s, Modifier: %s\n",
 		(Flocale)? Flocale:"", (Fmodifiers)? Fmodifiers:"");
 	cs = FlocaleCharsetGetDefaultCharset(dpy, NULL);

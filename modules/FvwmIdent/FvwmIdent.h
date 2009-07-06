@@ -1,7 +1,7 @@
 /* -*-c-*- */
 #include "libs/fvwmlib.h"
-#include <fvwm/fvwm.h>
-#include <libs/vpacket.h>
+#include "fvwm/fvwm.h"
+#include "libs/vpacket.h"
 
 struct target_struct
 {
@@ -25,6 +25,7 @@ struct target_struct
   window_flags flags;
   long title_h;
   long border_w;
+  unsigned title_dir;
   long ewmh_hint_layer;
   unsigned long ewmh_hint_desktop;
   long ewmh_window_type;
@@ -49,7 +50,6 @@ void PixmapDrawWindow(int h, int w);
 void DrawItems(Drawable d, int x, int y, int w, int h);
 void change_window_name(char *str);
 Pixel GetColor(char *name);
-void nocolor(char *a, char *b);
 void DestroyList(void);
 void AddToList(char *, char *);
 void MakeList(void);

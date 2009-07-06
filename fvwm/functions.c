@@ -35,6 +35,10 @@
 #include "libs/fvwmlib.h"
 #include "libs/charmap.h"
 #include "libs/wcontext.h"
+#include "libs/Grab.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
+#include "libs/Event.h"
 #include "fvwm.h"
 #include "externs.h"
 #include "cursor.h"
@@ -44,7 +48,7 @@
 #include "functable.h"
 #include "events.h"
 #include "modconf.h"
-#include "module_interface.h"
+#include "module_list.h"
 #include "misc.h"
 #include "screen.h"
 #include "repeat.h"
@@ -78,7 +82,7 @@ typedef struct FvwmFunction
 	FunctionItem *first_item;        /* first item in function */
 	FunctionItem *last_item;         /* last item in function */
 	char *name;                      /* function name */
-	unsigned int use_depth;
+	int use_depth;
 } FvwmFunction;
 
 /* Types of events for the FUNCTION builtin */
@@ -296,12 +300,6 @@ static Bool DeferExecution(
 	return False;
 }
 
-/* dummies */
-void CMD_Dummy(F_CMD_ARGS)
-{
-	return;
-}
-
 /*
 ** do binary search on func list
 */
@@ -355,7 +353,7 @@ static void __execute_function(
 	cond_rc_t *cond_rc, const exec_context_t *exc, char *action,
 	FUNC_FLAGS_TYPE exec_flags, char *args[], Bool has_ref_window_moved)
 {
-	static unsigned int func_depth = 0;
+	static int func_depth = 0;
 	cond_rc_t *func_rc = NULL;
 	cond_rc_t dummy_rc;
 	Window w;
@@ -506,11 +504,13 @@ static void __execute_function(
 		func_rc = cond_rc;
 	}
 
-	function = PeekToken(taction, NULL);
+	GetNextToken(taction, &function);
 	if (function)
 	{
+		char *tmp = function;
 		function = expand_vars(
 			function, arguments, False, False, func_rc, exc);
+		free(tmp);
 	}
 	if (function && function[0] != '*')
 	{
@@ -630,7 +630,7 @@ static void __execute_function(
 			if (rc == False)
 			{
 				exc2 = exc_clone_context(exc, &ecc, mask);
-				if (has_ref_window_moved && 
+				if (has_ref_window_moved &&
 				    (bif->func_t == F_ANIMATED_MOVE ||
 				     bif->func_t == F_MOVE ||
 				     bif->func_t == F_RESIZE))
@@ -643,7 +643,7 @@ static void __execute_function(
 				else
 				{
 					bif->action(func_rc, exc2, runaction);
-				}				
+				}
 				exc_destroy_context(exc2);
 			}
 		}
@@ -668,7 +668,7 @@ static void __execute_function(
 			if (!bif && desperate)
 			{
 				if (executeModuleDesperate(
-					    func_rc, exc, runaction) == -1 &&
+					    func_rc, exc, runaction) == NULL &&
 				    *function != 0 && !set_silent)
 				{
 					fvwm_msg(
@@ -712,7 +712,6 @@ static FvwmFunction *find_complex_function(const char *function_name)
 	{
 		return NULL;
 	}
-
 	func = Scr.functions;
 	while (func != NULL)
 	{
@@ -727,7 +726,6 @@ static FvwmFunction *find_complex_function(const char *function_name)
 	}
 
 	return NULL;
-
 }
 
 /*
@@ -846,7 +844,7 @@ static void __run_complex_function_items(
 			__execute_function(
 				cond_rc, exc, fi->action, FUNC_DONT_DEFER,
 				args, has_ref_window_moved);
-			if (!has_ref_window_moved && PressedW && 
+			if (!has_ref_window_moved && PressedW &&
 			    XTranslateCoordinates(
 				  dpy, PressedW , Scr.Root, 0, 0, &x, &y,
 				  &JunkChild))
@@ -861,7 +859,7 @@ static void __run_complex_function_items(
 }
 
 static void __cf_cleanup(
-	unsigned int *depth, char **arguments, cond_rc_t *cond_rc)
+	int *depth, char **arguments, cond_rc_t *cond_rc)
 {
 	int i;
 
@@ -905,7 +903,7 @@ static void execute_complex_function(
 	int x, y ,i;
 	XEvent d;
 	FvwmFunction *func;
-	static unsigned int depth = 0;
+	static int depth = 0;
 	const exec_context_t *exc2;
 	exec_context_changes_t ecc;
 	exec_context_change_mask_t mask;
@@ -1026,7 +1024,10 @@ static void execute_complex_function(
 	if (!GrabEm(CRS_NONE, GRAB_NORMAL))
 	{
 		func->use_depth--;
-		XBell(dpy, 0);
+		fvwm_msg(
+			ERR,
+			"ComplexFunction", "Grab failed in function %s,"
+			" unable to execute immediate action", action);
 		__cf_cleanup(&depth, arguments, cond_rc);
 		return;
 	}
@@ -1471,13 +1472,12 @@ void CMD_DestroyFunc(F_CMD_ARGS)
 	FvwmFunction *func;
 	char *token;
 
-	GetNextToken(action,&token);
+	token = PeekToken(action, NULL);
 	if (!token)
 	{
 		return;
 	}
 	func = find_complex_function(token);
-	free(token);
 	if (!func)
 	{
 		return;
@@ -1544,3 +1544,59 @@ void CMD_Plus(F_CMD_ARGS)
 
 	return;
 }
+
+void CMD_EchoFuncDefinition(F_CMD_ARGS)
+{
+	FvwmFunction *func;
+	const func_t *bif;
+	FunctionItem *fi;
+	char *token;
+
+	GetNextToken(action, &token);
+	if (!token)
+	{
+		fvwm_msg(ERR, "EchoFuncDefinition", "Missing argument");
+
+		return;
+	}
+	bif = find_builtin_function(token);
+	if (bif != NULL)
+	{
+		fvwm_msg(
+			INFO, "EchoFuncDefinition",
+			"function '%s' is a built in command", token);
+		free(token);
+
+		return;
+	}
+	func = find_complex_function(token);
+	if (!func)
+	{
+		fvwm_msg(
+			INFO, "EchoFuncDefinition",
+			"function '%s' not defined", token);
+		free(token);
+
+		return;
+	}
+	fvwm_msg(
+		INFO, "EchoFuncDefinition", "definition of function '%s':",
+		token);
+	for (fi = func->first_item; fi != NULL; fi = fi->next_item)
+	{
+		fvwm_msg(
+			INFO, "EchoFuncDefinition", "  %c %s", fi->condition,
+			(fi->action == 0) ? "(null)" : fi->action);
+	}
+	fvwm_msg(INFO, "EchoFuncDefinition", "end of definition");
+	free(token);
+
+	return;
+}
+
+/* dummy commands */
+void CMD_Title(F_CMD_ARGS) { }
+void CMD_TearMenuOff(F_CMD_ARGS) { }
+void CMD_KeepRc(F_CMD_ARGS) { }
+void CMD_Silent(F_CMD_ARGS) { }
+void CMD_Function(F_CMD_ARGS) { }

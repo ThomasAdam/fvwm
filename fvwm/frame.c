@@ -23,6 +23,7 @@
 
 #include "libs/fvwmlib.h"
 #include "libs/FShape.h"
+#include "libs/Grab.h"
 #include "libs/charmap.h"
 #include "libs/wcontext.h"
 #include "fvwm.h"
@@ -150,7 +151,7 @@ static void combine_gravities(
 	ret_grav->decor_grav = gravity_combine_xy_grav(
 		grav_x->decor_grav, grav_y->decor_grav);
 	ret_grav->title_grav = gravity_combine_xy_grav(
-			grav_x->title_grav, grav_y->title_grav);
+		grav_x->title_grav, grav_y->title_grav);
 	ret_grav->lbutton_grav = gravity_combine_xy_grav(
 		grav_x->lbutton_grav, grav_y->lbutton_grav);
 	ret_grav->rbutton_grav = gravity_combine_xy_grav(
@@ -204,6 +205,7 @@ static void get_resize_decor_gravities_one_axis(
 	case FRAME_MR_SETUP:
 	case FRAME_MR_SETUP_BY_APP:
 		ret_grav->client_grav = neg_grav;
+		break;
 	case FRAME_MR_DONT_DRAW:
 		/* can not happen, just a dummy to keep -Wall happy */
 		break;
@@ -223,16 +225,6 @@ static void frame_get_titlebar_dimensions_only(
 	}
 	switch (GET_TITLE_DIR(fw))
 	{
-	case DIR_N:
-	case DIR_S:
-		ret_titlebar_g->y = (GET_TITLE_DIR(fw) == DIR_N) ?
-			bs->top_left.height :
-			frame_g->height - bs->bottom_right.height -
-			fw->title_thickness;
-		ret_titlebar_g->x = bs->top_left.width;
-		ret_titlebar_g->width = frame_g->width - bs->total_size.width;
-		ret_titlebar_g->height = fw->title_thickness;
-		break;
 	case DIR_W:
 	case DIR_E:
 		ret_titlebar_g->x = (GET_TITLE_DIR(fw) == DIR_W) ?
@@ -243,6 +235,17 @@ static void frame_get_titlebar_dimensions_only(
 		ret_titlebar_g->width = fw->title_thickness;
 		ret_titlebar_g->height =
 			frame_g->height - bs->total_size.height;
+		break;
+	case DIR_N:
+	case DIR_S:
+	default: /* default makes gcc4 happy */
+		ret_titlebar_g->y = (GET_TITLE_DIR(fw) == DIR_N) ?
+			bs->top_left.height :
+			frame_g->height - bs->bottom_right.height -
+			fw->title_thickness;
+		ret_titlebar_g->x = bs->top_left.width;
+		ret_titlebar_g->width = frame_g->width - bs->total_size.width;
+		ret_titlebar_g->height = fw->title_thickness;
 		break;
 	}
 
@@ -365,12 +368,12 @@ static void __frame_setup_window(
 		new_g.height = 1;
 	}
 	/* set some flags */
-	if (new_g.width != fw->frame_g.width ||
-	    new_g.height != fw->frame_g.height)
+	if (new_g.width != fw->g.frame.width ||
+	    new_g.height != fw->g.frame.height)
 	{
 		is_resized = True;
 	}
-	if (new_g.x != fw->frame_g.x || new_g.y != fw->frame_g.y)
+	if (new_g.x != fw->g.frame.x || new_g.y != fw->g.frame.y)
 	{
 		is_moved = True;
 	}
@@ -396,7 +399,7 @@ static void __frame_setup_window(
 		frame_move_resize(fw, mr_args);
 		((mr_args_internal *)mr_args)->flags.was_moved = 0;
 		frame_free_move_resize_args(fw, mr_args);
-		fw->frame_g = *frame_g;
+		fw->g.frame = *frame_g;
 	}
 	else if (is_moved)
 	{
@@ -408,7 +411,7 @@ static void __frame_setup_window(
 		 * synthetic ConfigureNotify event to the client if the window
 		 * was moved but not resized. */
 		XMoveWindow(dpy, FW_W_FRAME(fw), frame_g->x, frame_g->y);
-		fw->frame_g = *frame_g;
+		fw->g.frame = *frame_g;
 		if ((draw_parts = border_get_transparent_decorations_part(fw))
 		    != PART_NONE)
 		{
@@ -417,7 +420,7 @@ static void __frame_setup_window(
 				((fw == get_focus_window())) ? True : False,
 				True, CLEAR_ALL, NULL, NULL);
 		}
-		fw->frame_g = *frame_g;
+		fw->g.frame = *frame_g;
 		do_send_configure_notify = True;
 	}
 	/* must not send events to shaded windows because this might cause them
@@ -817,7 +820,8 @@ static void frame_mrs_hide_changing_parts(
 	int t_add;
 	int r_add;
 	int b_add;
-	int i;
+	int w;
+	int h;
 
 	t_add = 0;
 	l_add = 0;
@@ -863,26 +867,41 @@ static void frame_mrs_hide_changing_parts(
 		b_add = (mra->dstep_g.height < 0) ? -mra->dstep_g.height : 0;
 		b_add -= mra->minimal_h_offset;
 	}
-	/* cover top/left borders */
-	XMoveResizeWindow(
-		dpy, hide_wins.w[0], 0, 0, mra->current_g.width,
-		mra->b_g.top_left.height + t_add);
-	XMoveResizeWindow(
-		dpy, hide_wins.w[1], 0, 0, mra->b_g.top_left.width + l_add,
-		mra->current_g.height);
-	/* cover bottom/right borders and possibly part of the client */
-	XMoveResizeWindow(
-		dpy, hide_wins.w[2],
-		0,
-		mra->current_g.height - mra->b_g.bottom_right.height - b_add,
-		mra->current_g.width, mra->b_g.bottom_right.height + b_add);
-	XMoveResizeWindow(
-		dpy, hide_wins.w[3],
-		mra->current_g.width - mra->b_g.bottom_right.width - r_add, 0,
-		mra->b_g.bottom_right.width + r_add, mra->current_g.height);
-	for (i = 0; i < 4; i++)
+	/* cover top border */
+	w = mra->current_g.width;
+	h = mra->b_g.top_left.height + t_add;
+	if (w > 0 && h > 0)
 	{
-		XMapWindow(dpy, hide_wins.w[i]);
+		XMoveResizeWindow(dpy, hide_wins.w[0], 0, 0, w, h);
+		XMapWindow(dpy, hide_wins.w[0]);
+	}
+	/* cover left border */
+	w = mra->b_g.top_left.width + l_add;
+	h = mra->current_g.height;
+	if (w > 0 && h > 0)
+	{
+		XMoveResizeWindow(dpy, hide_wins.w[1], 0, 0, w, h);
+		XMapWindow(dpy, hide_wins.w[1]);
+	}
+	/* cover bottom border and possibly part of the client */
+	w = mra->current_g.width;
+	h = mra->b_g.bottom_right.height + b_add;
+	if (w > 0 && h > 0)
+	{
+		XMoveResizeWindow(
+			dpy, hide_wins.w[2], 0, mra->current_g.height -
+			mra->b_g.bottom_right.height - b_add, w, h);
+		XMapWindow(dpy, hide_wins.w[2]);
+	}
+	/* cover right border and possibly part of the client */
+	w = mra->b_g.bottom_right.width + r_add;
+	h = mra->current_g.height;
+	if (w > 0 && h > 0)
+	{
+		XMoveResizeWindow(
+			dpy, hide_wins.w[3], mra->current_g.width -
+			mra->b_g.bottom_right.width - r_add, 0, w, h);
+		XMapWindow(dpy, hide_wins.w[3]);
 	}
 
 	return;
@@ -1106,7 +1125,7 @@ static void frame_move_resize_step(
 	frame_mrs_setup_draw_decorations(fw, mra);
 	frame_mrs_resize_move_windows(fw, mra);
 	frame_mrs_hide_unhide_parent2(fw, mra);
-	fw->frame_g = mra->next_g;
+	fw->g.frame = mra->next_g;
 
 	return;
 }
@@ -1195,16 +1214,16 @@ void frame_reshape_border(FvwmWindow *fw)
 	if (!IS_MAXIMIZED(fw))
 	{
 		grav = fw->hints.win_gravity;
-		new_g = &fw->normal_g;
+		new_g = &fw->g.normal;
 	}
 	else
 	{
 		/* maximized windows are always considered to have
 		 * NorthWestGravity */
 		grav = NorthWestGravity;
-		new_g = &fw->max_g;
-		off_x = fw->normal_g.x - fw->max_g.x;
-		off_y = fw->normal_g.y - fw->max_g.y;
+		new_g = &fw->g.max;
+		off_x = fw->g.normal.x - fw->g.max.x;
+		off_y = fw->g.normal.y - fw->g.max.y;
 	}
 	gravity_get_naked_geometry(grav, fw, &naked_g, new_g);
 	gravity_translate_to_northwest_geometry_no_bw(
@@ -1215,8 +1234,8 @@ void frame_reshape_border(FvwmWindow *fw)
 	{
 		/* prevent random paging when unmaximizing after the border
 		 * width has changed */
-		fw->max_offset.x += fw->normal_g.x - fw->max_g.x - off_x;
-		fw->max_offset.y += fw->normal_g.y - fw->max_g.y - off_y;
+		fw->g.max_offset.x += fw->g.normal.x - fw->g.max.x - off_x;
+		fw->g.max_offset.y += fw->g.normal.y - fw->g.max.y - off_y;
 	}
 	if (IS_SHADED(fw))
 	{
@@ -1225,10 +1244,10 @@ void frame_reshape_border(FvwmWindow *fw)
 		{
 			SET_SHADED_DIR(fw, GET_TITLE_DIR(fw));
 		}
-		get_shaded_geometry(fw, &fw->frame_g, new_g);
+		get_shaded_geometry(fw, &fw->g.frame, new_g);
 		frame_force_setup_window(
-			fw, fw->frame_g.x, fw->frame_g.y, fw->frame_g.width,
-			fw->frame_g.height, False);
+			fw, fw->g.frame.x, fw->g.frame.y, fw->g.frame.width,
+			fw->g.frame.height, False);
 	}
 	else
 	{
@@ -1751,8 +1770,9 @@ frame_move_resize_args frame_create_move_resize_args(
 	{
 		rc = XGetGeometry(
 			dpy, FW_W(fw), &JunkRoot, &mra->client_g.x,
-			&mra->client_g.y, &mra->client_g.width,
-			&mra->client_g.height, &JunkBW,	&JunkDepth);
+			&mra->client_g.y, (unsigned int*)&mra->client_g.width,
+			(unsigned int*)&mra->client_g.height,
+			(unsigned int*)&JunkBW,	(unsigned int*)&JunkDepth);
 		if (rc == True)
 		{
 			rc = XTranslateCoordinates(
@@ -1776,7 +1796,7 @@ frame_move_resize_args frame_create_move_resize_args(
 	}
 	get_window_borders(fw, &mra->b_g);
 	get_window_borders_no_title(fw, &mra->b_no_title_g);
-	mra->start_g = (start_g != NULL) ? *start_g : fw->frame_g;
+	mra->start_g = (start_g != NULL) ? *start_g : fw->g.frame;
 	frame_get_sidebar_geometry(
 		fw, NULL, &mra->start_g, &mra->curr_sidebar_g, &dummy, &dummy);
 	mra->end_g = *end_g;
@@ -1907,7 +1927,7 @@ void frame_free_move_resize_args(
 
 	mra = (mr_args_internal *)mr_args;
 	SET_HAS_HANDLES(fw, mra->flags.had_handles);
-	fw->frame_g = mra->end_g;
+	fw->g.frame = mra->end_g;
 	if (mra->flags.is_lazy_shading)
 	{
 		border_draw_decorations(
@@ -1954,8 +1974,8 @@ void frame_free_move_resize_args(
 	if (!IS_SHADED(fw) && mra->flags.was_moved)
 	{
 		SendConfigureNotify(
-			fw, fw->frame_g.x, fw->frame_g.y, fw->frame_g.width,
-			fw->frame_g.height, 0, True);
+			fw, fw->g.frame.x, fw->g.frame.y, fw->g.frame.width,
+			fw->g.frame.height, 0, True);
 		mra->flags.was_moved = 0;
 	}
 	focus_grab_buttons_on_layer(fw->layer);

@@ -23,6 +23,9 @@
 #include <X11/Xlib.h>
 
 #include "libs/fvwmlib.h"
+#include "libs/Strings.h"
+#include "libs/wild.h"
+#include "libs/Grab.h"
 #include "libs/Bindings.h"
 #include "libs/charmap.h"
 #include "libs/wcontext.h"
@@ -444,7 +447,7 @@ static Bool __compare_binding(
 }
 
 /* is_pass_through_action() - returns true if the action indicates that the
- * binding should be ignored by FVWM & passed through to the underlying
+ * binding should be ignored by fvwm & passed through to the underlying
  * window.
  * Note: it is only meaningful to check for pass-thru actions on
  * window-specific bindings. */

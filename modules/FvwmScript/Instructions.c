@@ -24,6 +24,9 @@
 #include "libs/charmap.h"
 #include "libs/wcontext.h"
 #include "libs/modifiers.h"
+#include "libs/Module.h"
+#include "libs/ColorUtils.h"
+#include "libs/Strings.h"
 #ifdef HAVE_GETPWUID
 #  include <pwd.h>
 #endif
@@ -31,7 +34,7 @@
 extern int fd[2];
 extern Window ref;
 
-void (*TabCom[27]) (int NbArg,long *TabArg);
+void (*TabCom[29]) (int NbArg,long *TabArg);
 char *(*TabFunc[27]) (int *NbArg, long *TabArg);
 int (*TabComp[7]) (char *arg1,char *arg2);
 
@@ -47,7 +50,7 @@ extern int nbobj;
 extern char **TabVVar;
 extern int TabIdObj[1001];
 extern char *ScriptName;
-extern char *ModuleName;
+extern ModuleArgs *module;
 extern TypeBuffSend BuffSend;
 extern Atom propriete;
 extern char *LastString;
@@ -606,14 +609,14 @@ static char *LaunchScript (int *NbArg,long *TabArg)
   }
 
   /* Construction de la commande */
-  execstr = (char*)safecalloc(strlen(ModuleName) + strlen(arg) +
+  execstr = (char*)safecalloc(strlen(module->name) + strlen(arg) +
     strlen(x11base->TabScriptId[x11base->NbChild + 2]) + 5,sizeof(char));
   scriptname = (char*)safecalloc(sizeof(char),100);
   sscanf(arg,"%s",scriptname);
   scriptarg = (char*)safecalloc(sizeof(char),strlen(arg));
   scriptarg = (char*)strncpy(scriptarg, &arg[strlen(scriptname)],
 			     strlen(arg) - strlen(scriptname));
-  sprintf(execstr,"%s %s %s %s",ModuleName,scriptname,
+  sprintf(execstr,"%s %s %s %s",module->name,scriptname,
 	  x11base->TabScriptId[x11base->NbChild + 2],scriptarg);
   free(scriptname);
   free(scriptarg);
@@ -738,7 +741,7 @@ static char *ReceivFromScript (int *NbArg,long *TabArg)
     {
       XGetWindowProperty(dpy,event.xselection.requestor,
 			 event.xselection.property,
-			 0,8192,False,event.xselection.target,&type,&format,
+			 0L,8192L,False,event.xselection.target,&type,&format,
 			 &longueur,&octets_restant,&donnees);
       if (longueur > 0)
       {
@@ -1432,6 +1435,46 @@ static void ChangeColorset (int NbArg,long *TabArg)
   free(arg[1]);
 }
 
+/* ChangeWindowTitle */
+static void ChangeWindowTitle(int NbArg,long * TabArg){
+
+  char *arg;
+  int tmpVal=NbArg-1;
+
+  arg=CalcArg(TabArg,&tmpVal);
+  XChangeProperty(
+	  dpy, x11base->win, XA_WM_NAME, XA_STRING, 8, PropModeReplace,
+	  (unsigned char*)arg, strlen(arg));
+  free(arg);
+}
+
+
+/* ChangeWindowTitleFromArg */
+static void ChangeWindowTitleFromArg(int NbArg,long * TabArg){
+
+  char *arg;
+  int argVal;  
+  int tmpVal=NbArg-1;
+
+  arg=CalcArg(TabArg,&tmpVal);
+  argVal = atoi(arg);
+  free(arg);
+
+  if(x11base->TabArg[argVal]!=NULL){
+    arg =  (char*)safecalloc(strlen(x11base->TabArg[argVal])+1,sizeof(char));
+    arg = strcpy(arg,x11base->TabArg[argVal]);
+  }else{
+    arg =  (char*)safecalloc(1,sizeof(char));
+    arg = strcpy(arg,"");
+  }
+
+  XChangeProperty(
+	  dpy, x11base->win, XA_WM_NAME, XA_STRING, 8, PropModeReplace,
+	  (unsigned char*)arg, strlen(arg));
+  free(arg);
+}
+
+
 /* SetVar */
 static void SetVar (int NbArg,long *TabArg)
 {
@@ -1887,6 +1930,8 @@ void InitCom(void)
   TabCom[24]=ChangeColorset;
   TabCom[25]=Key;
   TabCom[26]=ChangeLocaleTitle;
+  TabCom[27]=ChangeWindowTitle;
+  TabCom[28]=ChangeWindowTitleFromArg;
 
   /* Fonction */
   TabFunc[1]=FuncGetValue;

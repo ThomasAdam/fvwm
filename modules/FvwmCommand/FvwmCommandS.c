@@ -29,9 +29,9 @@
 #include "FvwmCommand.h"
 #include "libs/fvwmlib.h"
 #include "libs/fvwmsignal.h"
+#include "libs/Strings.h"
 
 #define MYNAME   "FvwmCommandS"
-#define MAXHOSTNAME 32
 
 static int Fd[2]; /* pipes to fvwm */
 static int FfdC; /* command fifo file discriptors */
@@ -41,8 +41,6 @@ static struct stat stat_buf;
 static char *FfdC_name = NULL, *FfdM_name = NULL; /* fifo names */
 
 static ino_t FfdC_ino, FfdM_ino; /* fifo inode numbers */
-
-static char hostname[MAXHOSTNAME];
 
 int open_fifos(const char *f_stem);
 void close_fifos(void);
@@ -167,28 +165,10 @@ void server (char *name)
 
   if (name == NULL)
   {
-    char *dpy_name;
-
-    /* default name */
-    dpy_name = getenv("DISPLAY");
-    if (!dpy_name)
-      dpy_name = ":0";
-    if (strncmp(dpy_name, "unix:", 5) == 0)
-      dpy_name += 4;
-    f_stem = safemalloc(11 + strlen(F_NAME) + MAXHOSTNAME + strlen(dpy_name));
-    if ((stat("/var/tmp", &stat_buf) == 0) && (stat_buf.st_mode & S_IFDIR))
-      strcpy (f_stem, "/var/tmp/");
-    else
-      strcpy (f_stem, "/tmp/");
-    strcat(f_stem, F_NAME);
-
-    /* Make it unique */
-    if (!dpy_name[0] || ':' == dpy_name[0])
-    {
-      gethostname(hostname, MAXHOSTNAME);
-      strcat(f_stem, hostname);  /* Put hostname before dpy if not there */
-    }
-    strcat(f_stem, dpy_name);
+     if ((f_stem = fifos_get_default_name()) == NULL)
+     {
+	exit(-1);
+     }
   }
   else
   {
@@ -202,6 +182,8 @@ void server (char *name)
 
   cix = 0;
 
+  /*Accept reply-messages */
+  SetMessageMask(Fd, MX_REPLY);
   /* tell fvwm we're running */
   SendFinishedStartupNotification(Fd);
 
@@ -407,7 +389,7 @@ int open_fifos(const char *f_stem)
   strcat(FfdM_name, "M");
 
   /* check to see if another FvwmCommandS is running by trying to talk to it */
-  FfdC = open(FfdC_name, O_RDWR | O_NONBLOCK);
+  FfdC = open(FfdC_name, O_RDWR | O_NONBLOCK | O_NOFOLLOW);
   /* remove the fifo's if they exist */
   unlink(FfdM_name);
   unlink(FfdC_name);
@@ -420,25 +402,25 @@ int open_fifos(const char *f_stem)
     close(FfdC);
   }
 
-  /* now we can create the fifo's knowing that they don't already exist
+  /* now we can create the fifos knowing that they don't already exist
    * and any lingering FvwmCommandS will not share them or remove them */
-  if (mkfifo(FfdM_name, S_IRUSR | S_IWUSR) < 0)
+  if (mkfifo(FfdM_name, FVWM_S_IRUSR | FVWM_S_IWUSR) < 0)
   {
     err_msg(FfdM_name);
     return -1;
   }
-  if (mkfifo(FfdC_name, S_IRUSR | S_IWUSR) < 0)
+  if (mkfifo(FfdC_name, FVWM_S_IRUSR | FVWM_S_IWUSR) < 0)
   {
     err_msg(FfdC_name);
     return -1;
   }
 
-  if ((FfdM = open(FfdM_name, O_RDWR | O_NONBLOCK)) < 0)
+  if ((FfdM = open(FfdM_name, O_RDWR | O_NONBLOCK | O_NOFOLLOW)) < 0)
   {
     err_msg("opening message fifo");
     return -1;
   }
-  if ((FfdC = open(FfdC_name, O_RDWR | O_NONBLOCK)) < 0)
+  if ((FfdC = open(FfdC_name, O_RDWR | O_NONBLOCK | O_NOFOLLOW)) < 0)
   {
     err_msg("opening command fifo");
     return -1;
@@ -534,6 +516,7 @@ void process_message(unsigned long type,unsigned long *body)
   case M_ERROR:
   case M_STRING:
   case M_CONFIG_INFO:
+  case MX_REPLY:
     msglen = strlen((char *)&body[3]);
     relay_packet(type, msglen + 1 + 3 * SOL, body);
     break;
@@ -573,8 +556,8 @@ void relay_packet(unsigned long type, unsigned long length,
 {
   Q *new;
 
-  if (!length || !body)
-    return;
+  if (!body)
+	  return;
 
   new = (Q *)safemalloc(sizeof(Q));
 

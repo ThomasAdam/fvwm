@@ -19,6 +19,7 @@
 #define FEVENT_C
 #define FEVENT_PRIVILEGED_ACCESS
 #include "config.h"
+#include "libs/fvwmlib.h"
 #include <X11/Xlib.h>
 #include "FEvent.h"
 #undef FEVENT_C
@@ -27,7 +28,6 @@
 #include <stdio.h>
 
 #include "libs/ftime.h"
-#include "libs/safemalloc.h"
 
 /* ---------------------------- local definitions -------------------------- */
 
@@ -556,6 +556,24 @@ int FWarpPointer(
 	rc = XWarpPointer(
 		display, src_w, dest_w, src_x, src_y, src_width, src_height,
 		dest_x, dest_y);
+
+	return rc;
+}
+
+int FWarpPointerUpdateEvpos(
+	XEvent *ev, Display *display, Window src_w, Window dest_w, int src_x,
+	int src_y, unsigned int src_width, unsigned int src_height,
+	int dest_x, int dest_y)
+{
+	int rc;
+
+	rc = XWarpPointer(
+		display, src_w, dest_w, src_x, src_y, src_width, src_height,
+		dest_x, dest_y);
+	if (ev != NULL && dest_w == DefaultRootWindow(display))
+	{
+		fev_set_evpos(ev, dest_x, dest_y);
+	}
 
 	return rc;
 }

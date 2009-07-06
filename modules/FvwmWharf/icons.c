@@ -39,6 +39,7 @@
 #include "libs/Picture.h"
 #include "libs/Colorset.h"
 #include "libs/PictureGraphics.h"
+#include "libs/Graphics.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -79,8 +80,10 @@ Bool LoadIconFile(int button, int ico)
 	if (!PImageLoadPixmapFromFile(
 		dpy, main_win, path, &Buttons[button].icons[ico].icon,
 		&Buttons[button].icons[ico].mask,
-		&Buttons[button].icons[ico].alpha, &Buttons[button].icons[ico].w,
-		&Buttons[button].icons[ico].h, &Buttons[button].icons[ico].depth,
+		&Buttons[button].icons[ico].alpha,
+		&Buttons[button].icons[ico].w,
+		&Buttons[button].icons[ico].h,
+		&Buttons[button].icons[ico].depth,
 		0, NULL, 0, fpa))
 	{
 		fprintf(stderr, "[FvwmWharf] cannot load pixmap from "

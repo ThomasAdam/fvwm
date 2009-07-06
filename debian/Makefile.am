@@ -6,10 +6,10 @@ EXTRA_DIST = conffiles copyright dirs docs postinst postrm prerm \
 
 version = @VERSION@
 release = 0.`date +%Y%m%d`
-cparams = --without-gnome --without-rplay-library
+cparams = --without-gnome --without-rplay-library --enable-htmldoc
 mparams = CFLAGS="-O2"
 datum = `date "+%a, %d %b %Y %T %z"`
-fullname = FVWM Workers
+fullname = Fvwm Workers
 email = fvwm-workers@fvwm.org
 arch = `dpkg-architecture -qDEB_BUILD_ARCH`
 distdir = $(PACKAGE)-$(version)

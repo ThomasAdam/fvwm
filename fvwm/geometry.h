@@ -47,15 +47,15 @@ void get_window_borders(
 void get_window_borders_no_title(
 	const FvwmWindow *fw, size_borders *borders);
 void set_window_border_size(
-	FvwmWindow *fw, short used_width);
+	FvwmWindow *fw, int used_width);
 Bool is_window_border_minimal(
 	FvwmWindow *fw);
 void update_relative_geometry(FvwmWindow *fw);
 void update_absolute_geometry(FvwmWindow *fw);
 void maximize_adjust_offset(FvwmWindow *fw);
 void constrain_size(
-	FvwmWindow *fw, const XEvent *e, unsigned int *widthp,
-	unsigned int *heightp, int xmotion, int ymotion, int flags);
+	FvwmWindow *fw, const XEvent *e, int *widthp,
+	int *heightp, int xmotion, int ymotion, int flags);
 void gravity_constrain_size(
 	int gravity, FvwmWindow *t, rectangle *rect, int flags);
 Bool get_visible_window_or_icon_geometry(

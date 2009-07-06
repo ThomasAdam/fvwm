@@ -1,3 +1,19 @@
+2009-03-10  Mikhael Goikhman  <migo@homemail.com>
+
+	* Makefile.am:
+	pass --enable-htmldoc to configure
+
+	* fvwm.spec.in:
+	small cleanup
+
+2008-11-07  Dan Espen  <despen@verizon.net>
+
+	* fvwm.spec.in: Copyright -> License
+
+2007-08-07  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
+
+	* fvwm.spec.in:
+
 2003-11-11  Mikhael Goikhman  <migo@homemail.com>
 
 	* fvwm.spec.in:
@@ -40,7 +56,7 @@
 	* fvwm.spec.in:
 	use --sysconfdir=/etc
 
-2001-07-03  Dominik Vogt  <dominik.vogt@gmx.de>
+2001-07-03  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* fvwm.spec.in:
 	removed todo-2.4 and todo-3.0 from rpm
@@ -65,7 +81,7 @@
 	* fvwm.spec.in:
 	translated lang=ru; not translated lang=fr
 
-2001-01-26  Dominik Vogt  <dominik.vogt@gmx.de>
+2001-01-26  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* fvwm.spec.in:
 	renamed --enable-kanji to --enable-multibyte

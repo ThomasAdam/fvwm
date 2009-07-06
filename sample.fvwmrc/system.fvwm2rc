@@ -21,13 +21,13 @@ Style *           HilightFore black, HilightBack palevioletred
 Style *           BorderWidth 7, HandleWidth 7
 Style *           Icon unknown1.xpm, Color lightgrey/dimgrey
 Style *           MWMFunctions, MWMDecor, HintOverride
-Style *           DecorateTransient, NoPPosition
+Style *           DecorateTransient, !UsePPosition
 Style *           IconBox 0 -10 -280 -1
 Style *           FocusFollowsMouse
 Style *           TileCascadePlacement
 
 # Styles for various Fvwm modules:
-Style "Fvwm*"       NoTitle,  Sticky, WindowListSkip
+Style "Fvwm*"       !Title,  Sticky, WindowListSkip
 Style "Fvwm*"       BorderWidth 2, CirculateSkipIcon, CirculateSkip
 Style "FvwmPager"   StaysOnTop
 Style "FvwmBanner"  StaysOnTop
@@ -39,11 +39,11 @@ Style "rxvt"        Icon term.xpm, SloppyFocus, IconBox -70 1 -1 -140
 Style "rxvt"        MWMBorder, MWMButtons
 
 # Styles for various common programs:
-Style "*lock"       NoTitle, NoHandles, Sticky, WindowListSkip, ClickToFocus
-Style "xbiff"       NoTitle, Sticky, WindowListSkip, ClickToFocus
-Style "xcalc"       Icon xcalc.xpm, NoButton 2,ClickToFocus
-Style "xmh"         Icon mail1.xpm, NoIconTitle,StickyIcon
-Style "xmh"	    NoButton 2
+Style "*lock"       !Title, !Handles, Sticky, WindowListSkip, ClickToFocus
+Style "xbiff"       !Title, Sticky, WindowListSkip, ClickToFocus
+Style "xcalc"       Icon xcalc.xpm, !Button 2,ClickToFocus
+Style "xmh"         Icon mail1.xpm, !IconTitle,StickyIcon
+Style "xmh"	    !Button 2
 Style "xman"	    Icon xman.xpm, ClickToFocus
 Style "xmag"	    Icon mag_glass.xpm, ClickToFocus
 Style "xgraph"      Icon graphs.xpm, ClickToFocus
@@ -163,13 +163,13 @@ AddToMenu Window-Ops2	"&Move"		Move
 +                       "Print Reverse" PrintReverseFunction
 
 # be sure to fill these in with your correct machine names:
-AddToMenu Remote-Logins	"dopey"	 Exec rsh dopey rxvt -display $HOSTDISPLAY &
-+			"snoopy" Exec rsh snoopy rxvt -display $HOSTDISPLAY &
-+			"grumpy" Exec rsh grumpy rxvt -display $HOSTDISPLAY &
-+			"happy"	 Exec rsh happy rxvt -display $HOSTDISPLAY &
-+			"bailey" Exec rsh bailey rxvt -display $HOSTDISPLAY &
-+			"barnum" Exec rsh barnum rxvt -display $HOSTDISPLAY &
-+			"joker"	 Exec rsh joker rxvt -display $HOSTDISPLAY &
+AddToMenu Remote-Logins	"dopey"	 Exec ssh dopey rxvt -display $HOSTDISPLAY &
++			"snoopy" Exec ssh snoopy rxvt -display $HOSTDISPLAY &
++			"grumpy" Exec ssh grumpy rxvt -display $HOSTDISPLAY &
++			"happy"	 Exec ssh happy rxvt -display $HOSTDISPLAY &
++			"bailey" Exec ssh bailey rxvt -display $HOSTDISPLAY &
++			"barnum" Exec ssh barnum rxvt -display $HOSTDISPLAY &
++			"joker"	 Exec ssh joker rxvt -display $HOSTDISPLAY &
 +			"signal" Exec rxterm signal
 
 AddToMenu Module-Popup	"FvwmModules"	Title
@@ -348,8 +348,8 @@ AddToFunc ChangeDefaultFocus I Style * $0
 ############################################################
 ############################################################
 # Note that icons are shown in the module
-#    only if NoIcon commnand is applied.
-#Style     *  NoIcon
+#    only if !Icon commnand is applied.
+#Style     *  !Icon
 
 ############################################################
 *FvwmIconBox: IconBack    #cfcfcf
@@ -441,7 +441,7 @@ AddToFunc ChangeDefaultFocus I Style * $0
 *QuitVerify: ItemBack Gray50
 # begin items
 *QuitVerify: Line          center
-*QuitVerify: Text          "Do you really want to exit FVWM?"
+*QuitVerify: Text          "Do you really want to exit fvwm?"
 *QuitVerify: Line          expand
 *QuitVerify: Button   quit      " Exit "
 *QuitVerify: Command  Quit

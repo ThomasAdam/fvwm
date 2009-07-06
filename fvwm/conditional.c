@@ -30,6 +30,8 @@
 #include <math.h>
 
 #include "libs/fvwmlib.h"
+#include "libs/Parse.h"
+#include "libs/wild.h"
 #include "libs/FScreen.h"
 #include "libs/charmap.h"
 #include "libs/wcontext.h"
@@ -398,7 +400,7 @@ void FreeConditionMask(WindowConditionMask *mask)
 			p2=p->next;
 			if(!p2)
 			{
-				free(p->name - (pp->invert ? 1 : 0));
+				free(p->name);
 			}
 			free(p);
 			p=p2;
@@ -427,8 +429,9 @@ void DefaultConditionMask(WindowConditionMask *mask)
  */
 void CreateConditionMask(char *flags, WindowConditionMask *mask)
 {
+	char *allocated_condition;
+	char *next_condition;
 	char *condition;
-	char *prev_condition = NULL;
 	char *tmp;
 	unsigned int state;
 
@@ -438,8 +441,8 @@ void CreateConditionMask(char *flags, WindowConditionMask *mask)
 	}
 
 	/* Next parse the flags in the string. */
-	tmp = flags;
-	tmp = GetNextSimpleOption(tmp, &condition);
+	next_condition = GetNextFullOption(flags, &allocated_condition);
+	condition = PeekToken(allocated_condition, &tmp);
 
 	while (condition)
 	{
@@ -485,27 +488,28 @@ void CreateConditionMask(char *flags, WindowConditionMask *mask)
 		}
 		else if (StrEquals(cond,"PlacedByButton"))
 		{
-			int button, button_mask;
-			if (sscanf(tmp, "%d", &button) && 
-			    (button >= 1 && 
+			int button;
+			int button_mask;
+
+			if (sscanf(tmp, "%d", &button) &&
+			    (button >= 1 &&
 			     button <= NUMBER_OF_EXTENDED_MOUSE_BUTTONS))
 			{
-				free(condition);
-				tmp = GetNextToken (tmp, &condition);
+				tmp = SkipNTokens(tmp, 1);
 				button_mask = (1<<(button-1));
 			}
 			else
 			{
-				button_mask = 
+				button_mask =
 				     (1<<NUMBER_OF_EXTENDED_MOUSE_BUTTONS) - 1;
 			}
 			if (on)
-			{			
-				if (mask->placed_by_button_mask & 
-				    mask->placed_by_button_set_mask & 
+			{
+				if (mask->placed_by_button_mask &
+				    mask->placed_by_button_set_mask &
 				    ~button_mask)
 				{
-				  	  fvwm_msg(WARN, "PlacedByButton", 
+				  	  fvwm_msg(WARN, "PlacedByButton",
 						   "Condition always False.");
 				}
 				mask->placed_by_button_mask |= button_mask;
@@ -520,10 +524,10 @@ void CreateConditionMask(char *flags, WindowConditionMask *mask)
 		{
 			if (on)
 			{
-				if (mask->placed_by_button_mask & 
+				if (mask->placed_by_button_mask &
 				    mask->placed_by_button_set_mask & ~(1<<2))
 				{
-				  	  fvwm_msg(WARN, "PlacedByButton3", 
+				  	  fvwm_msg(WARN, "PlacedByButton3",
 						   "Condition always False.");
 				}
 				mask->placed_by_button_mask |= (1<<2);
@@ -555,6 +559,23 @@ void CreateConditionMask(char *flags, WindowConditionMask *mask)
 		{
 			SET_STICKY_ACROSS_DESKS(mask, on);
 			SETM_STICKY_ACROSS_DESKS(mask, 1);
+		}
+		else if (StrEquals(cond,"StickyIcon"))
+		{
+			SET_ICON_STICKY_ACROSS_PAGES(mask, on);
+			SET_ICON_STICKY_ACROSS_DESKS(mask, on);
+			SETM_ICON_STICKY_ACROSS_PAGES(mask, 1);
+			SETM_ICON_STICKY_ACROSS_DESKS(mask, 1);
+		}
+		else if (StrEquals(cond,"StickyAcrossPagesIcon"))
+		{
+			SET_ICON_STICKY_ACROSS_PAGES(mask, on);
+			SETM_ICON_STICKY_ACROSS_PAGES(mask, 1);
+		}
+		else if (StrEquals(cond,"StickyAcrossDesksIcon"))
+		{
+			SET_ICON_STICKY_ACROSS_DESKS(mask, on);
+			SETM_ICON_STICKY_ACROSS_DESKS(mask, 1);
 		}
 		else if (StrEquals(cond,"Maximized"))
 		{
@@ -666,16 +687,14 @@ void CreateConditionMask(char *flags, WindowConditionMask *mask)
 					CLEAR_USER_STATES(mask, state);
 				}
 				SETM_USER_STATES(mask, state);
-				free(condition);
-				tmp = GetNextToken(tmp, &condition);
+				tmp = SkipNTokens(tmp, 1);
 			}
 		}
 		else if (StrEquals(condition, "Layer"))
 		{
 			if (sscanf(tmp, "%d", &mask->layer))
 			{
-				free(condition);
-				tmp = GetNextToken (tmp, &condition);
+				tmp = SkipNTokens(tmp, 1);
 				if (mask->layer < 0)
 				{
 					/* silently ignore invalid layers */
@@ -693,7 +712,7 @@ void CreateConditionMask(char *flags, WindowConditionMask *mask)
 		{
 			struct name_condition *pp;
 			struct namelist *p;
-			char *condp;
+			char *condp = safestrdup(cond);
 
 			pp = (struct name_condition *)
 				safemalloc(sizeof(struct name_condition));
@@ -701,7 +720,7 @@ void CreateConditionMask(char *flags, WindowConditionMask *mask)
 			pp->namelist = NULL;
 			pp->next = mask->name_condition;
 			mask->name_condition = pp;
-			for(condp=cond; ; )
+			for (;;)
 			{
 				p = (struct namelist *)
 					safemalloc(sizeof(struct namelist));
@@ -718,20 +737,29 @@ void CreateConditionMask(char *flags, WindowConditionMask *mask)
 				}
 				*condp++='\0';
 			}
-			condition = NULL;	/* so it won't be freed */
 		}
 
-		if (prev_condition)
+		if (tmp && *tmp)
 		{
-			free(prev_condition);
+			fvwm_msg(OLD, "CreateConditionMask",
+				 "Use comma instead of whitespace to "
+				 "separate conditions");
 		}
-
-		prev_condition = condition;
-		tmp = GetNextSimpleOption(tmp, &condition);
-	}
-	if (prev_condition)
-	{
-		free(prev_condition);
+		else
+		{
+			if (allocated_condition != NULL)
+			{
+				free(allocated_condition);
+				allocated_condition = NULL;
+			}
+			if (next_condition && *next_condition)
+			{
+				next_condition = GetNextFullOption(
+					next_condition, &allocated_condition);
+			}
+			tmp = allocated_condition;
+		}
+		condition = PeekToken(tmp, &tmp);
 	}
 
 	return;
@@ -759,73 +787,82 @@ Bool MatchesConditionMask(FvwmWindow *fw, WindowConditionMask *mask)
 	   hints etc.) */
 	if (IS_SIZE_FIXED(mask) &&
 	    mask->flag_mask.common.s.is_size_fixed &&
-	    is_function_allowed(F_RESIZE,NULL,fw,True,False))
+	    is_function_allowed(F_RESIZE, NULL, fw, RQORIG_PROGRAM_US, False))
 	{
 	        return False;
 	}
 	if (!IS_SIZE_FIXED(mask) &&
 	    mask->flag_mask.common.s.is_size_fixed &&
-	    !is_function_allowed(F_RESIZE,NULL,fw,True,False))
+	    !is_function_allowed(F_RESIZE, NULL, fw, RQORIG_PROGRAM_US, False))
 	{
 	        return False;
 	}
-	SETM_SIZE_FIXED(mask, 0);
-	if (IS_FIXED(mask) && 
+	if (IS_FIXED(mask) &&
 	    mask->flag_mask.common.s.is_fixed &&
-	    is_function_allowed(F_MOVE, NULL, fw, True, False))
-	{       
+	    is_function_allowed(F_MOVE, NULL, fw, RQORIG_PROGRAM_US, False))
+	{
 	        return False;
 	}
-	if (!IS_FIXED(mask) && 
+	if (!IS_FIXED(mask) &&
 	    mask->flag_mask.common.s.is_fixed &&
-	    !is_function_allowed(F_MOVE, NULL, fw, True, False))
-	{       
+	    !is_function_allowed(F_MOVE, NULL, fw, RQORIG_PROGRAM_US, False))
+	{
 	        return False;
 	}
-	SETM_FIXED(mask, 0);
 	if (IS_UNICONIFIABLE(mask) &&
 	    mask->flag_mask.common.s.is_uniconifiable &&
-	    is_function_allowed(F_ICONIFY,NULL,fw,True,False))
+	    is_function_allowed(F_ICONIFY, NULL, fw, RQORIG_PROGRAM_US, False))
 	{
 	        return False;
 	}
-	if (!IS_UNICONIFIABLE(mask) &&
-	    mask->flag_mask.common.s.is_uniconifiable &&
-	    !is_function_allowed(F_ICONIFY,NULL,fw,True,False))
+	if (
+		!IS_UNICONIFIABLE(mask) &&
+		mask->flag_mask.common.s.is_uniconifiable &&
+		!is_function_allowed(
+			F_ICONIFY, NULL, fw, RQORIG_PROGRAM_US, False))
 	{
 	        return False;
 	}
-	SETM_IS_UNICONIFIABLE(mask, 0);
-	if (IS_UNMAXIMIZABLE(mask) &&
-	    mask->flag_mask.common.s.is_unmaximizable &&
-	    is_function_allowed(F_MAXIMIZE,NULL,fw,True,False))
+	if (
+		IS_UNMAXIMIZABLE(mask) &&
+		mask->flag_mask.common.s.is_unmaximizable &&
+		is_function_allowed(
+			F_MAXIMIZE, NULL, fw, RQORIG_PROGRAM_US, False))
 	{
 	        return False;
 	}
-	if (!IS_UNMAXIMIZABLE(mask) &&
-	    mask->flag_mask.common.s.is_unmaximizable &&
-	    !is_function_allowed(F_MAXIMIZE,NULL,fw,True,False))
+	if (
+		!IS_UNMAXIMIZABLE(mask) &&
+		mask->flag_mask.common.s.is_unmaximizable &&
+		!is_function_allowed(
+			F_MAXIMIZE, NULL, fw, RQORIG_PROGRAM_US, False))
 	{
 	        return False;
 	}
-	SETM_IS_UNMAXIMIZABLE(mask, 0);
-	if (IS_UNCLOSABLE(mask) &&
-	    mask->flag_mask.common.s.is_unclosable &&
-	    (is_function_allowed(F_CLOSE,NULL,fw,True,False) ||
-	     is_function_allowed(F_DELETE,NULL,fw,True,False) ||
-	     is_function_allowed(F_DESTROY,NULL,fw,True,False)))
+	if (
+		IS_UNCLOSABLE(mask) &&
+		mask->flag_mask.common.s.is_unclosable &&
+		(is_function_allowed(
+			 F_CLOSE, NULL, fw, RQORIG_PROGRAM_US,False) ||
+		 is_function_allowed(
+			 F_DELETE, NULL, fw, RQORIG_PROGRAM_US,False) ||
+	     is_function_allowed(
+		     F_DESTROY, NULL, fw, RQORIG_PROGRAM_US, False)))
 	{
 	        return False;
 	}
-	if (!IS_UNCLOSABLE(mask) &&
-	    mask->flag_mask.common.s.is_unclosable &&
-	    (!is_function_allowed(F_CLOSE,NULL,fw,True,False) &&
-	     !is_function_allowed(F_DELETE,NULL,fw,True,False) &&
-	     !is_function_allowed(F_DESTROY,NULL,fw,True,False)))
+	if (
+		!IS_UNCLOSABLE(mask) &&
+		mask->flag_mask.common.s.is_unclosable &&
+		(!is_function_allowed(
+			 F_CLOSE, NULL, fw, RQORIG_PROGRAM_US,False) &&
+		 !is_function_allowed(
+			 F_DELETE, NULL, fw, RQORIG_PROGRAM_US,False) &&
+		 !is_function_allowed(
+			 F_DESTROY, NULL, fw, RQORIG_PROGRAM_US,False)))
 	{
 	        return False;
 	}
-	SETM_IS_UNCLOSABLE(mask, 0);
 	if (!blockcmpmask((char *)&(fw->flags), (char *)&(mask->flags),
 			  (char *)&(mask->flag_mask), sizeof(fw->flags)))
 	{
@@ -865,12 +902,12 @@ Bool MatchesConditionMask(FvwmWindow *fw, WindowConditionMask *mask)
 		if (FScreenIsEnabled() && !mask->my_flags.do_not_check_screen)
 		{
 			is_on_page = !!FScreenIsRectangleOnScreen(
-				NULL, FSCREEN_CURRENT, &(fw->frame_g));
+				NULL, FSCREEN_CURRENT, &(fw->g.frame));
 		}
 		else
 		{
 			is_on_page = !!IsRectangleOnThisPage(
-				&(fw->frame_g), Scr.CurrentDesk);
+				&(fw->g.frame), Scr.CurrentDesk);
 		}
 	}
 	is_on_global_page = 1;
@@ -878,7 +915,7 @@ Bool MatchesConditionMask(FvwmWindow *fw, WindowConditionMask *mask)
 	    mask->my_flags.do_check_desk_and_global_page)
 	{
 		is_on_global_page = !!IsRectangleOnThisPage(
-			&(fw->frame_g), Scr.CurrentDesk);
+			&(fw->g.frame), Scr.CurrentDesk);
 	}
 
 	if (mask->my_flags.do_check_desk_and_page)
@@ -924,10 +961,10 @@ Bool MatchesConditionMask(FvwmWindow *fw, WindowConditionMask *mask)
 		}
 	}
 
-	for(pp=mask->name_condition; pp; pp=pp->next)
+	for (pp = mask->name_condition; pp; pp = pp->next)
 	{
 		does_match = 0;
-		for(p=pp->namelist; p; p=p->next)
+		for (p = pp->namelist; p; p = p->next)
 		{
 			name=p->name;
 			does_match |= matchWildcards(name, fw->name.name);
@@ -1369,11 +1406,16 @@ static int __rc_matches_rcstring_consume(
 		}
 		else if (StrEquals(flags, "-2") || StrEquals(flags, "break"))
 		{
-			match_rc = COND_RC_ERROR;
+			match_rc = COND_RC_BREAK;
 		}
 		else
 		{
 			match_rc = COND_RC_NO_MATCH;
+			/* Does anyone check for other numerical returncode
+			 * values? If so, this might have to be changed. */
+			fprintf(
+				stderr, "Unrecognised condition \"%s\" in"
+				" TestRc command.\n", flags);
 		}
 	}
 	if (orig_flags != NULL)
@@ -1468,6 +1510,50 @@ void CMD_All(F_CMD_ARGS)
 	char *flags;
 	int num, i;
 	Bool does_any_window_match = False;
+	char *token;
+	Bool do_reverse = False;
+	Bool use_stack = False;
+
+	while (True) /* break when a non-option is found */
+	{
+		token = PeekToken(action, &restofline);
+		if (StrEquals(token, "Reverse"))
+		{
+			if (!*restofline)
+			{
+				/* if not any more actions, then Reverse
+				 * probably is some user function, so ignore
+				 * it and do the old  behaviour */
+				break;
+			}
+			else
+			{
+				do_reverse = True;
+				action = restofline;
+			}
+		}
+		else if (StrEquals(token, "UseStack"))
+		{
+			if (!*restofline)
+			{
+				/* if not any more actions, then UseStack
+				 * probably is some user function, so ignore
+				 * it and do the old behaviour */
+				break;
+			}
+			else
+			{
+				use_stack = True;
+				action = restofline;
+			}
+		}
+		else
+		{
+			/* No more options -- continue with flags and
+			 * commands */
+			break;
+		}
+	}
 
 	flags = CreateFlagString(action, &restofline);
 	DefaultConditionMask(&mask);
@@ -1487,18 +1573,44 @@ void CMD_All(F_CMD_ARGS)
 	}
 	g = (FvwmWindow **)safemalloc(num * sizeof(FvwmWindow *));
 	num = 0;
-	for (t = Scr.FvwmRoot.next; t; t = t->next)
+	if (!use_stack)
 	{
-		if (MatchesConditionMask(t, &mask))
+		for (t = Scr.FvwmRoot.next; t; t = t->next)
 		{
-			g[num++] = t;
-			does_any_window_match = True;
+			if (MatchesConditionMask(t, &mask))
+			{
+				g[num++] = t;
+				does_any_window_match = True;
+			}
 		}
 	}
-	for (i = 0; i < num; i++)
+	else
 	{
-		execute_function_override_window(
-			cond_rc, exc, restofline, 0, g[i]);
+		for (t = Scr.FvwmRoot.stack_next; t && t != &Scr.FvwmRoot;
+		     t = t->stack_next)
+		{
+			if (MatchesConditionMask(t, &mask))
+			{
+				g[num++] = t;
+				does_any_window_match = True;
+			}
+		}
+	}
+	if (do_reverse)
+	{
+		for (i = num-1; i >= 0; i--)
+		{
+			execute_function_override_window(
+				cond_rc, exc, restofline, 0, g[i]);
+		}
+	}
+	else
+	{
+		for (i = 0; i < num; i++)
+		{
+			execute_function_override_window(
+				cond_rc, exc, restofline, 0, g[i]);
+		}
 	}
 	if (cond_rc != NULL && cond_rc->rc != COND_RC_BREAK)
 	{
@@ -1639,8 +1751,10 @@ void CMD_WindowId(F_CMD_ARGS)
 		}
 		else if (XGetGeometry(
 				 dpy, win, &JunkRoot, &JunkX, &JunkY,
-				 &JunkWidth, &JunkHeight, &JunkBW,
-				 &JunkDepth) != 0)
+				 (unsigned int*)&JunkWidth,
+				 (unsigned int*)&JunkHeight,
+				 (unsigned int*)&JunkBW,
+				 (unsigned int*)&JunkDepth) != 0)
 		{
 			if (cond_rc != NULL)
 			{
@@ -1757,7 +1871,7 @@ static int ver (char *str)
 	return v;
 }
 
-/* match_version() - compare $version against this version of FVWM
+/* match_version() - compare $version against this version of fvwm
  * using the operator specified by $operator. */
 static Bool match_version(char *version, char *operator)
 {
@@ -1949,11 +2063,13 @@ void CMD_Test(F_CMD_ARGS)
 		else if (StrEquals(cond, "EnvIsSet"))
 		{
 			char *var_name;
+
 			flags_ptr = GetNextSimpleOption(flags_ptr, &var_name);
 			if (var_name)
 			{
 				const char *value = getenv(var_name);
-				match = value != NULL;
+
+				match = (value != NULL) ? 1 : 0;
 			}
 			else
 			{
@@ -1963,6 +2079,7 @@ void CMD_Test(F_CMD_ARGS)
 		else if (StrEquals(cond, "EnvMatch"))
 		{
 			char *var_name;
+
 			flags_ptr = GetNextSimpleOption(flags_ptr, &var_name);
 			if (var_name)
 			{
@@ -1980,8 +2097,7 @@ void CMD_Test(F_CMD_ARGS)
 				{
 					match =
 						/* include empty string case */
-						(!pattern[0] && !value[0])
-						||
+						(!pattern[0] && !value[0]) ||
 						matchWildcards(pattern, value);
 				}
 				else
@@ -2104,6 +2220,9 @@ void CMD_Test(F_CMD_ARGS)
 		{
 			/* unrecognized condition */
 			error = 1;
+			fprintf(
+				stderr, "Unrecognised condition \"%s\" in"
+				" Test command.\n", cond);
 		}
 
 		if (reverse)

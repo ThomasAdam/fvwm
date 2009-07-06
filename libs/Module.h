@@ -10,7 +10,7 @@
 #include "libs/fvwmlib.h"
 
 /**
- * FVWM sends packets of this type to modules.
+ * fvwm sends packets of this type to modules.
  **/
 
 typedef struct
@@ -118,9 +118,10 @@ typedef struct
 #define MX_ENTER_WINDOW           ((1<<1) | M_EXTENDED_MSG)
 #define MX_LEAVE_WINDOW           ((1<<2) | M_EXTENDED_MSG)
 #define MX_PROPERTY_CHANGE        ((1<<3) | M_EXTENDED_MSG)
-#define MAX_EXTENDED_MESSAGES     4
+#define MX_REPLY		  ((1<<4) | M_EXTENDED_MSG)
+#define MAX_EXTENDED_MESSAGES     5
 #define DEFAULT_XMSG_MASK         0x00000000
-#define MAX_XMSG_MASK             0x0000000f
+#define MAX_XMSG_MASK             0x0000001f
 
 #define MAX_TOTAL_MESSAGES   (MAX_MESSAGES + MAX_EXTENDED_MESSAGES)
 
@@ -130,7 +131,7 @@ typedef struct
 #define MX_PROPERTY_CHANGE_SWALLOW     2
 
 /**
- * Reads a single packet of info from FVWM.
+ * Reads a single packet of info from fvwm.
  * The packet is stored into static memory that is reused during
  * the next call to ReadFvwmPacket.  Callers, therefore, must copy
  * needed data before the next call to ReadFvwmPacket.
@@ -156,14 +157,6 @@ void SendText(int *fd, const char *message, unsigned long window);
 
 /** Compatibility **/
 #define SendInfo SendText
-
-/*
- *
- * SendFinishedStartupNotification - informs fvwm that the module has
- * finished its startup procedures and is fully operational now.
- *
- */
-void SendFinishedStartupNotification(int *fd);
 
 /*
  *
@@ -231,7 +224,7 @@ char *module_expand_action(
 	char *forecolor, char *backcolor);
 
 /**
- * Parse the command line arguments given to the module by FVWM.
+ * Parse the command line arguments given to the module by fvwm.
  * Input is the argc & argv from main(), and a flag to indicate
  * if we accept a module alias as argument #6.
  *
@@ -243,9 +236,11 @@ typedef struct
 {
 	/* module name */
 	char* name;
-	/* file descriptor to send info back to FVWM */
+	/* length of the module name */
+	int namelen;
+	/* file descriptor to send info back to fvwm */
 	int to_fvwm;
-	/* file descriptor to read packets from FVWM */
+	/* file descriptor to read packets from fvwm */
 	int from_fvwm;
 	/* window context of module */
 	Window window;

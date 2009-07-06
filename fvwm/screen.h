@@ -73,7 +73,7 @@ typedef enum {
 typedef struct
 {
 	int cs;
-	unsigned short alpha_percent;
+	int alpha_percent;
 } FvwmAcs;
 
 typedef struct
@@ -161,7 +161,7 @@ typedef struct DecorFace
 		struct
 		{
 			int cs;
-			unsigned short alpha_percent;
+			int alpha_percent;
 		} acs;
 		Pixel back;
 		struct
@@ -454,21 +454,8 @@ typedef struct ScreenInfo
 	/*Max button-click delay for Function built-in*/
 	int ClickTime;
 	/* resistance to scrolling in desktop */
-	int ScrollResistance;
-	/* res to moving windows over viewport edge */
-	int MoveResistance;
-	/* the same for edges of xinerama screens */
-	int XiMoveResistance;
-	/* number of pixels of mouse motion to decide it's a move operation */
+	int ScrollDelay;
 	int MoveThreshold;
-	/* attractiveness of window edges */
-	int SnapAttraction;
-	/* mode of snap attraction */
-	int SnapMode;
-	/* snap grid X size */
-	int SnapGridX;
-	/* snap grid Y size */
-	int SnapGridY;
 	int OpaqueSize;
 	/* The current desktop number */
 	int CurrentDesk;

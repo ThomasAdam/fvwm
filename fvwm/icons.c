@@ -37,7 +37,9 @@
 #include "libs/fvwmlib.h"
 #include "libs/FScreen.h"
 #include "libs/FShape.h"
+#include "libs/Parse.h"
 #include "libs/Picture.h"
+#include "libs/Graphics.h"
 #include "libs/PictureGraphics.h"
 #include "libs/FRenderInit.h"
 #include "libs/Rectangles.c"
@@ -181,10 +183,9 @@ void setup_icon_title_size(FvwmWindow *fw)
  *
  */
 static void SetIconPixmapSize(
-	Pixmap *icon, unsigned int width, unsigned int height,
-	unsigned int depth, unsigned int newWidth, unsigned int newHeight,
-	Bool force_centering, int resize_type, int *nrx, int *nry,
-	unsigned int freeOldPixmap)
+	Pixmap *icon, int width, int height, int depth, int newWidth,
+	int newHeight, Bool force_centering, int resize_type, int *nrx,
+	int *nry, int freeOldPixmap)
 {
 	Pixmap oldPixmap;
 	Pixmap resizedPixmap = None;
@@ -403,8 +404,8 @@ ICON_DBG((stderr,"ciw: iph%s used '%s'\n", (fw->icon_g.picture_w_g.height)?"":" 
 	if ((IS_ICON_OURS(fw)) && fw->icon_g.picture_w_g.height > 0 &&
 	    fw->icon_g.picture_w_g.height > 0)
 	{
-		unsigned int newWidth = fw->icon_g.picture_w_g.width;
-		unsigned int newHeight = fw->icon_g.picture_w_g.height;
+		int newWidth = fw->icon_g.picture_w_g.width;
+		int newHeight = fw->icon_g.picture_w_g.height;
 		Boolean resize = False;
 
 		if (newWidth < fw->min_icon_width)
@@ -837,6 +838,7 @@ void DrawIconTitleWindow(
 	int w_title_text_gap = 0;
 	int w_stipple = 0;
 	int is_sticky;
+	int is_stippled;
 	int use_unexpanded_size = 1;
 	Bool draw_string = True;
 
@@ -844,6 +846,8 @@ void DrawIconTitleWindow(
 		(IS_STICKY_ACROSS_PAGES(fw) || IS_ICON_STICKY_ACROSS_PAGES(fw));
 	is_sticky |=
 		(IS_STICKY_ACROSS_DESKS(fw) || IS_ICON_STICKY_ACROSS_DESKS(fw));
+	is_stippled = ((is_sticky && HAS_STICKY_STIPPLED_ICON_TITLE(fw)) ||
+		HAS_STIPPLED_ICON_TITLE(fw));
 	if (is_expanded && FW_W_ICON_PIXMAP(fw) != None)
 	{
 		int sx;
@@ -854,7 +858,7 @@ void DrawIconTitleWindow(
 		use_unexpanded_size = 0;
 		w_title_text_gap = ICON_TITLE_TEXT_GAP_EXPANDED;
 		x_title_min = w_title_text_gap + relief;
-		if (is_sticky)
+		if (is_stippled)
 		{
 			w_stipple = ICON_TITLE_STICK_MIN_WIDTH;
 			x_title_min +=
@@ -955,8 +959,9 @@ void DrawIconTitleWindow(
 	r.y = relief;
 	r.width = w_title_w - x_title - relief;
 	r.height = ICON_HEIGHT(fw) - 2*relief;
-	if (is_sticky)
+	if (is_stippled)
 	{
+
 		if (w_stipple == 0)
 		{
 			w_stipple = ((w_title_w - 2 *
@@ -980,7 +985,7 @@ void DrawIconTitleWindow(
 
 	memset(&fstr, 0, sizeof(fstr));
 
-	if (pev || is_sticky)
+	if (pev || is_stippled)
 	{
 		if (pev)
 		{
@@ -1029,9 +1034,9 @@ void DrawIconTitleWindow(
 				relief, relief, x_title - relief,
 				ICON_HEIGHT(fw) - 2*relief, False);
 		}
-		if (is_sticky)
+		if (is_stippled)
 		{
-			/* clear the sticky area after the text */
+			/* clear the stippled area after the text */
 			XClearArea(
 				dpy, FW_W_ICON_TITLE(fw),
 				w_title_w - x_stipple - w_stipple -1, relief,
@@ -1067,7 +1072,7 @@ void DrawIconTitleWindow(
 		fstr.y = fw->icon_g.title_w_g.height - relief
 			- fw->icon_font->height + fw->icon_font->ascent;
 		FlocaleDrawString(dpy, fw->icon_font, &fstr, 0);
-		if (pev || is_sticky)
+		if (pev || is_stippled)
 		{
 			XSetClipMask(dpy, Scr.TitleGC, None);
 			if (region)
@@ -1081,7 +1086,7 @@ void DrawIconTitleWindow(
 		ICON_HEIGHT(fw) - 1,
 		(fw->icon_title_relief > 0)? Relief:Shadow,
 		(fw->icon_title_relief > 0)? Shadow:Relief, relief);
-	if (is_sticky)
+	if (is_stippled)
 	{
 		/* an odd number of lines every 4 pixels */
 		int pseudo_height = ICON_HEIGHT(fw)- 2*relief + 2;
@@ -1563,7 +1568,7 @@ void ChangeIconPixmap(FvwmWindow *fw)
 
 		if (!IS_ICON_SUPPRESSED(fw))
 		{
-			LowerWindow(fw);
+			LowerWindow(fw, False);
 			AutoPlaceIcon(fw, NULL, True);
 			if (fw->Desk == Scr.CurrentDesk)
 			{
@@ -1652,25 +1657,25 @@ void AutoPlaceIcon(
     base_x = 0;
     base_y = 0;
     /*Also, if its a stickyWindow, put it on the current page! */
-    new_x = t->frame_g.x % Scr.MyDisplayWidth;
-    new_y = t->frame_g.y % Scr.MyDisplayHeight;
-    if (new_x + t->frame_g.width <= 0)
+    new_x = t->g.frame.x % Scr.MyDisplayWidth;
+    new_y = t->g.frame.y % Scr.MyDisplayHeight;
+    if (new_x + t->g.frame.width <= 0)
       new_x += Scr.MyDisplayWidth;
-    if (new_y + t->frame_g.height <= 0)
+    if (new_y + t->g.frame.height <= 0)
       new_y += Scr.MyDisplayHeight;
     frame_setup_window(
-	    t, new_x, new_y, t->frame_g.width, t->frame_g.height, False);
+	    t, new_x, new_y, t->g.frame.width, t->g.frame.height, False);
   }
-  else if (IsRectangleOnThisPage(&(t->frame_g), t->Desk))
+  else if (IsRectangleOnThisPage(&(t->g.frame), t->Desk))
   {
     base_x = 0;
     base_y = 0;
   }
   else
   {
-    base_x = ((t->frame_g.x + Scr.Vx + (t->frame_g.width >> 1)) /
+    base_x = ((t->g.frame.x + Scr.Vx + (t->g.frame.width >> 1)) /
       Scr.MyDisplayWidth) * Scr.MyDisplayWidth;
-    base_y= ((t->frame_g.y + Scr.Vy + (t->frame_g.height >> 1)) /
+    base_y= ((t->g.frame.y + Scr.Vy + (t->g.frame.height >> 1)) /
       Scr.MyDisplayHeight) * Scr.MyDisplayHeight;
     /* limit icon position to desktop */
     if (base_x > Scr.VxMax)
@@ -1783,8 +1788,8 @@ void AutoPlaceIcon(
 #define HRZ_FILL icon_boxes_ptr->IconFlags & ICONFILLHRZ
 
     /* needed later */
-    fscr.xypos.x = t->frame_g.x + (t->frame_g.width / 2) - base_x;
-    fscr.xypos.y = t->frame_g.y + (t->frame_g.height / 2) - base_y;
+    fscr.xypos.x = t->g.frame.x + (t->g.frame.width / 2) - base_x;
+    fscr.xypos.y = t->g.frame.y + (t->g.frame.height / 2) - base_y;
     get_icon_geometry(t, &g);
     /* unnecessary copy of width */
     width = g.width;
@@ -2138,9 +2143,9 @@ static void GetIconFromFile(FvwmWindow *fw)
  */
 static void GetIconWindow(FvwmWindow *fw)
 {
-	unsigned int w;
-	unsigned int h;
-	unsigned int bw;
+	int w;
+	int h;
+	int bw;
 
 	fw->icon_g.picture_w_g.width = 0;
 	fw->icon_g.picture_w_g.height = 0;
@@ -2149,7 +2154,8 @@ static void GetIconWindow(FvwmWindow *fw)
 	 * routine */
 	if (XGetGeometry(
 		    dpy, fw->wmhints->icon_window, &JunkRoot, &JunkX, &JunkY,
-		    &w, &h, &bw, &JunkDepth) == 0)
+		    (unsigned int*)&w, (unsigned int*)&h,(unsigned int*)&bw,
+		    (unsigned int*)&JunkDepth) == 0)
 	{
 		fvwm_msg(
 			ERR,"GetIconWindow",
@@ -2194,15 +2200,17 @@ static void GetIconWindow(FvwmWindow *fw)
  */
 static void GetIconBitmap(FvwmWindow *fw)
 {
-	unsigned int width, height, depth;
+	int width, height, depth;
 
 	fw->icon_g.picture_w_g.width = 0;
 	fw->icon_g.picture_w_g.height = 0;
 
 	/* We are guaranteed that wmhints is non-null when calling this routine
 	 */
-	if (!XGetGeometry(dpy, fw->wmhints->icon_pixmap, &JunkRoot,
-			  &JunkX, &JunkY, &width, &height, &JunkBW, &depth))
+	if (!XGetGeometry(
+		    dpy, fw->wmhints->icon_pixmap, &JunkRoot, &JunkX, &JunkY,
+		    (unsigned int*)&width, (unsigned int*)&height,
+		    (unsigned int*)&JunkBW, (unsigned int*)&depth))
 	{
 		fvwm_msg(
 			ERR,"GetIconBitmap",
@@ -2282,11 +2290,12 @@ void DeIconify(FvwmWindow *fw)
 	for (ofw = NULL; fw != ofw && IS_ICONIFIED_BY_PARENT(fw); )
 	{
 		t = get_transientfor_fvwmwindow(fw);
-		if (t != NULL)
+		if (t == NULL)
 		{
-			ofw = fw;
-			fw = t;
+			break;
 		}
+		ofw = fw;
+		fw = t;
 	}
 	if (IS_ICONIFIED_BY_PARENT(fw))
 	{
@@ -2342,21 +2351,21 @@ void DeIconify(FvwmWindow *fw)
 				update_absolute_geometry(t);
 				if (IsRectangleOnThisPage(&r, t->Desk) &&
 				    !IsRectangleOnThisPage(
-					    &(t->frame_g), t->Desk))
+					    &(t->g.frame), t->Desk))
 				{
 					/* Make sure we keep it on screen when
 					 * de-iconifying. */
-					t->frame_g.x -=
+					t->g.frame.x -=
 						truncate_to_multiple(
-							t->frame_g.x,
+							t->g.frame.x,
 							Scr.MyDisplayWidth);
-					t->frame_g.y -=
+					t->g.frame.y -=
 						truncate_to_multiple(
-							t->frame_g.y,
+							t->g.frame.y,
 							Scr.MyDisplayHeight);
 					XMoveWindow(
 						dpy, FW_W_FRAME(t),
-						t->frame_g.x, t->frame_g.y);
+						t->g.frame.x, t->g.frame.y);
 					update_absolute_geometry(t);
 					maximize_adjust_offset(t);
 				}
@@ -2379,10 +2388,10 @@ void DeIconify(FvwmWindow *fw)
 					(long)icon_rect.x, (long)icon_rect.y,
 					(long)icon_rect.width,
 					(long)icon_rect.height,
-					(long)t->frame_g.x,
-					(long)t->frame_g.y,
-					(long)t->frame_g.width,
-					(long)t->frame_g.height);
+					(long)t->g.frame.x,
+					(long)t->g.frame.y,
+					(long)t->g.frame.width,
+					(long)t->g.frame.height);
 			}
 			else
 			{
@@ -2416,7 +2425,7 @@ void DeIconify(FvwmWindow *fw)
 	}
 
 #if 1
-	RaiseWindow(fw); /* moved dje */
+	RaiseWindow(fw, False); /* moved dje */
 #endif
 	if (sf == fw)
 	{
@@ -2598,14 +2607,14 @@ void Iconify(FvwmWindow *fw, initial_window_options_t *win_opts)
 		(unsigned long)fw, (long)icon_rect.x, (long)icon_rect.y,
 		(long)icon_rect.width, (long)icon_rect.height,
 		/* next 4 added for Animate module */
-		(long)fw->frame_g.x, (long)fw->frame_g.y,
-		(long)fw->frame_g.width, (long)fw->frame_g.height);
+		(long)fw->g.frame.x, (long)fw->g.frame.y,
+		(long)fw->g.frame.width, (long)fw->g.frame.height);
 	BroadcastConfig(M_CONFIGURE_WINDOW,fw);
 
 	if (win_opts->initial_state != IconicState ||
 	    (!IS_ICON_MOVED(fw) && !win_opts->flags.use_initial_icon_xy))
 	{
-		LowerWindow(fw);
+		LowerWindow(fw, False);
 	}
 	if (IS_ICON_STICKY_ACROSS_DESKS(fw) || IS_STICKY_ACROSS_DESKS(fw))
 	{
@@ -2626,8 +2635,6 @@ void Iconify(FvwmWindow *fw, initial_window_options_t *win_opts)
 
 	return;
 }
-
-
 
 /*
  *
@@ -2695,10 +2702,13 @@ void CMD_Iconify(F_CMD_ARGS)
 		{
 			initial_window_options_t win_opts;
 
-			if (!is_function_allowed(
-				    F_ICONIFY, NULL, fw, False, True))
+			if (
+				!is_function_allowed(
+					F_ICONIFY, NULL, fw, RQORIG_PROGRAM,
+					True))
 			{
 				XBell(dpy, 0);
+
 				return;
 			}
 			memset(&win_opts, 0, sizeof(win_opts));

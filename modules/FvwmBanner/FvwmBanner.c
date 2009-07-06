@@ -44,12 +44,15 @@
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
 
-#include <libs/fvwmlib.h>
-#include <libs/Picture.h>
-#include <libs/Module.h>
-#include <libs/FScreen.h>
-#include <libs/FShape.h>
-#include <libs/FRenderInit.h>
+#include "libs/fvwmlib.h"
+#include "libs/Picture.h"
+#include "libs/Module.h"
+#include "libs/FScreen.h"
+#include "libs/FShape.h"
+#include "libs/FRenderInit.h"
+#include "libs/Graphics.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
 
 /* migo (16-Sep-1999): How about to do this configurable? */
 /*#include "fvwm-logo-old.xpm"*/
@@ -108,7 +111,6 @@ int main(int argc, char **argv)
   int retval = 0;
   XEvent Event;
   fd_set in_fdset;
-  fd_set_size_t fd_width = GetFdWidth();
   struct timeval value;
   int fd[2];
   XSetWindowAttributes attr;
@@ -154,10 +156,7 @@ int main(int argc, char **argv)
   Root = RootWindow(dpy, screen);
   x_fd = XConnectionNumber(dpy);
 
-  PictureInitCMap(dpy);
-  FScreenInit(dpy);
-  FShapeInit(dpy);
-  FRenderInit(dpy);
+  flib_init_graphics(dpy);
   /* SetMessageMask(fd, M_CONFIG_INFO | M_END_CONFIG_INFO  | M_SENDCONFIG); */
   SetMessageMask(fd, M_CONFIG_INFO | M_END_CONFIG_INFO);
   parseOptions(fd);
@@ -247,7 +246,7 @@ int main(int argc, char **argv)
 
     if(!FPending(dpy))
 
-      retval=select(fd_width,SELECT_FD_SET_CAST &in_fdset, 0, 0, &value);
+      retval=select(x_fd + 1,SELECT_FD_SET_CAST &in_fdset, 0, 0, &value);
 
     if (retval==0)
     {
@@ -306,10 +305,9 @@ void GetXBMData(void)
 
 void GetXPMData(char **data)
 {
-  if(!PImageLoadPixmapFromXpmData(dpy, win, 0, data,
-				  &view.pixmap, &view.mask,
-				  &view.width, &view.height,
-				  &view.depth))
+  if(!PImageLoadPixmapFromXpmData(
+	     dpy, win, 0, data, &view.pixmap, &view.mask,
+	     &view.width, &view.height, &view.depth))
   {
     GetXBMData();
   }
@@ -341,11 +339,6 @@ void GetImageFile(char *file, char *path)
 			"FvwmBanner: ERROR finding image file in ImagePath\n");
 		GetXPMData(fvwm_logo_xpm);
 	}
-}
-
-void nocolor(char *a, char *b)
-{
- fprintf(stderr,"FvwmBanner: can't %s %s\n", a,b);
 }
 
 static void parseOptions(int fd[2])

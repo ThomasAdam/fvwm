@@ -1,7 +1,7 @@
 /* -*-c-*- */
 #ifndef FVWM_READ_H
 #define FVWM_READ_H
-
+#include <stdio.h>		/* for FILE below */
 
 /**
  * Full pathname of file read in progress, or NULL.
@@ -25,7 +25,7 @@ void run_command_stream(
  * Given a filename, open it and execute the commands therein.
  *
  * If the filename is not an absolute path, search for it in
- * fvwm_userdir (set in main()) or in FVWM_DATADIR.  Return TRUE
+ * fvwm_userdir (set in main()) or in FVWM_DATADIR.  Return 1
  * if the file was found and executed.
  **/
 int run_command_file(char *filename, const exec_context_t *exc);

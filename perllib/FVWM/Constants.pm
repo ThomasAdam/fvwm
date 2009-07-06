@@ -41,11 +41,12 @@ use constant MX_VISIBLE_ICON_NAME => ((1<<0)|M_EXTENDED_MSG);
 use constant MX_ENTER_WINDOW => ((1<<1)|M_EXTENDED_MSG);
 use constant MX_LEAVE_WINDOW => ((1<<2)|M_EXTENDED_MSG);
 use constant MX_PROPERTY_CHANGE => ((1<<3)|M_EXTENDED_MSG);
+use constant MX_REPLY => ((1<<4)|M_EXTENDED_MSG);
 use constant MX_PROPERTY_CHANGE_NONE => 0;
 use constant MX_PROPERTY_CHANGE_BACKGROUND => 1;
 use constant MX_PROPERTY_CHANGE_SWALLOW => 2;
 use constant MAX_MSG_MASK => 0x7fffffff;
-use constant MAX_XMSG_MASK => 0x0000000f;
+use constant MAX_XMSG_MASK => 0x0000001f;
 use constant HEADER_SIZE => 4;
 use constant START_FLAG => 0xffffffff;
 use constant RESPONSE_READY => "NOP FINISHED STARTUP";
@@ -89,6 +90,7 @@ use constant INTSIZE => $Config{longsize};
   MX_ENTER_WINDOW
   MX_LEAVE_WINDOW
   MX_PROPERTY_CHANGE
+  MX_REPLY
   MX_PROPERTY_CHANGE_NONE
   MX_PROPERTY_CHANGE_BACKGROUND
   MX_PROPERTY_CHANGE_SWALLOW
@@ -108,11 +110,11 @@ __END__
 
 =head1 NAME
 
-FVWM::Constants - exports FVWM specific constants
+FVWM::Constants - exports fvwm specific constants
 
 =head1 DESCRIPTION
 
-This class is used to load FVWM constants into your perl script or class.
+This class is used to load fvwm constants into your perl script or class.
 Note, if you use I<FVWM::Module> the constants are automatically exported.
 So you usually do not need to include this class.
 
@@ -162,6 +164,7 @@ For more information, see L<FVWM::Module>.
   MX_ENTER_WINDOW
   MX_LEAVE_WINDOW
   MX_PROPERTY_CHANGE
+  MX_REPLY
   MX_PROPERTY_CHANGE_NONE
   MX_PROPERTY_CHANGE_BACKGROUND
   MX_PROPERTY_CHANGE_SWALLOW

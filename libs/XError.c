@@ -25,6 +25,8 @@
 #include <X11/Xlib.h>
 #include <fvwmlib.h>
 #include "FRenderInit.h"
+#include "XError.h"
+#undef XSetErrorHandler
 
 #define USE_GET_ERROR_TEXT 1
 #ifndef USE_GET_ERROR_TEXT
@@ -32,6 +34,20 @@ static char *error_name(unsigned char code);
 #endif
 static char *request_name(unsigned char code);
 static char unknown[32];
+
+void do_coredump(void)
+{
+	fprintf(stderr, " Leaving a core dump now\n");
+	{
+		char *nullp;
+
+		nullp = NULL;
+
+		*nullp = 99;
+	}
+	/* exit if this fails */
+	exit(99);
+}
 
 #define USE_GET_ERROR_TEXT 1
 void PrintXErrorAndCoredump(Display *dpy, XErrorEvent *error, char *MyName)
@@ -42,8 +58,8 @@ void PrintXErrorAndCoredump(Display *dpy, XErrorEvent *error, char *MyName)
 	msg[255] = 0;
 #ifdef USE_GET_ERROR_TEXT
 	/* can't call this from within an error handler! */
-	/* DV (21-Nov-2000): Well, actually we *can* call it in an error handler
-	 * since it does not trigger a protocol request. */
+	/* DV (21-Nov-2000): Well, actually we *can* call it in an error
+	 * handler since it does not trigger a protocol request. */
 	if (error->error_code >= FirstExtensionError)
 	{
 		suc = FRenderGetErrorText(error->error_code, msg);
@@ -69,16 +85,13 @@ void PrintXErrorAndCoredump(Display *dpy, XErrorEvent *error, char *MyName)
 		error->request_code, request_name(error->request_code));
 	fprintf(stderr, "   Minor opcode of failed request:  %d \n",
 		error->minor_code);
-	/* error->resourceid may be uninitialised. This is no proble since we are
-	 * dumping core anyway. */
+	/* error->resourceid may be uninitialised. This is no proble since we
+	 * are dumping core anyway. */
 	fprintf(stderr, "   Resource id of failed request:  0x%lx \n",
 		error->resourceid);
 
 	/* leave a coredump */
-	fprintf(stderr, " Leaving a core dump now\n");
-	abort();
-	/* exit if this fails */
-	exit(99);
+	do_coredump();
 }
 
 #ifndef USE_GET_ERROR_TEXT
@@ -102,7 +115,6 @@ static char *error_names[] = {
 	"BadLength",
 	"BadImplementation",
 };
-
 
 static char *error_name(unsigned char code)
 {
@@ -238,7 +250,6 @@ static char *code_names[] = {
 	"GetModifierMapping",
 };
 
-
 static char *request_name(unsigned char code)
 {
 	if (code == 0 || code > (sizeof(code_names) / sizeof(char *)))
@@ -254,4 +265,44 @@ static char *request_name(unsigned char code)
 		return unknown;
 	}
 	return code_names[code - 1];
+}
+
+/* -------------------------- error handler stack -------------------------- */
+
+static ferror_handler_t old_handler = NULL;
+
+void ferror_set_temp_error_handler(ferror_handler_t new_handler)
+{
+	if (old_handler != NULL)
+	{
+		do_coredump();
+	}
+	old_handler = XSetErrorHandler(old_handler);
+
+	return;
+}
+
+void ferror_reset_temp_error_handler(void)
+{
+	if (old_handler == NULL)
+	{
+		do_coredump();
+	}
+	XSetErrorHandler(old_handler);
+	old_handler = NULL;
+
+	return;
+}
+
+int ferror_call_next_error_handler(Display *dpy, XErrorEvent *error)
+{
+	int rc;
+
+	if (old_handler == NULL)
+	{
+		do_coredump();
+	}
+	rc = old_handler(dpy, error);
+
+	return rc;
 }

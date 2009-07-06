@@ -13,51 +13,57 @@ bin_SCRIPTS = \
 
 man_MANS = \
 	fvwm-root.1 fvwm-config.1 fvwm-bug.1 fvwm-perllib.1 \
-	fvwm-convert-2.2.1 fvwm-convert-2.4.1 fvwm-convert-2.6.1 \
+	fvwm-convert-2.4.1 fvwm-convert-2.6.1 \
 	fvwm-menu-xlock.1 fvwm-menu-directory.1 \
 	fvwm-menu-desktop.1 fvwm-menu-headlines.1
-EXTRA_DIST = fvwm-convert-2.2 $(man_MANS)
+EXTRA_DIST = fvwm-convert-2.2 fvwm-convert-2.2.1 $(man_MANS)
 
-LDADD = -L$(top_builddir)/libs $(X_LIBS) -lfvwm $(xpm_LIBS) \
-	$(X_PRE_LIBS) -lXext -lX11 -lm $(X_EXTRA_LIBS) $(png_LIBS)
-INCLUDES = -I$(top_srcdir) $(xpm_CFLAGS) $(X_CFLAGS) $(png_CFLAGS)
+LDADD = -L$(top_builddir)/libs $(X_LIBS) -lfvwm $(xpm_LIBS) $(Xcursor_LIBS) \
+	$(X_PRE_LIBS) -lXext -lX11 -lm $(X_EXTRA_LIBS) $(Xrender_LIBS) \
+	$(Xcursor_LIBS) $(png_LIBS) $(rsvg_LIBS)
+INCLUDES = -I$(top_srcdir) $(xpm_CFLAGS) $(X_CFLAGS) $(png_CFLAGS) \
+	$(rsvg_CFLAGS)
 
 
 ## The long generation for *.1 is to make both pod2man and 'make -j' happy.
 
-_fvwm-menu-xlock.1: fvwm-menu-xlock.in
-	@TMP=tmp-$$$$ && (\
+_fvwm-menu-xlock.1: fvwm-menu-xlock
+	@TMP=tmp-$$$$ NAME=fvwm-menu-xlock && (\
 	mkdir $$TMP && \
-	cp fvwm-menu-xlock.in $$TMP/fvwm-menu-xlock && \
-	pod2man --center "FVWM Utilities" $$TMP/fvwm-menu-xlock >$$TMP/fvwm-menu-xlock.1 2>/dev/null && \
-	mv $$TMP/fvwm-menu-xlock.1 .; \
+	cp $$NAME.in $$TMP/$$NAME && \
+	pod2man --center "Fvwm Utilities" --release "@VERSION@@VERSIONINFO@" \
+		--name $$NAME $$TMP/$$NAME >$$TMP/$$NAME.1 && \
+	mv $$TMP/$$NAME.1 .; \
 	rm -rf $$TMP)
 
-_fvwm-menu-directory.1: fvwm-menu-directory.in
-	@TMP=tmp-$$$$ && (\
+_fvwm-menu-directory.1: fvwm-menu-directory
+	@TMP=tmp-$$$$ NAME=fvwm-menu-directory && (\
 	mkdir $$TMP && \
-	cp fvwm-menu-directory.in $$TMP/fvwm-menu-directory && \
-	pod2man --center "FVWM Utilities" $$TMP/fvwm-menu-directory >$$TMP/fvwm-menu-directory.1 2>/dev/null && \
-	mv $$TMP/fvwm-menu-directory.1 .; \
+	cp $$NAME.in $$TMP/$$NAME && \
+	pod2man --center "Fvwm Utilities" --release "@VERSION@@VERSIONINFO@" \
+		--name $$NAME $$TMP/$$NAME >$$TMP/$$NAME.1 && \
+	mv $$TMP/$$NAME.1 .; \
 	rm -rf $$TMP)
 
-_fvwm-menu-headlines.1: fvwm-menu-headlines.in
-	@TMP=tmp-$$$$ && (\
+_fvwm-menu-headlines.1: fvwm-menu-headlines
+	@TMP=tmp-$$$$ NAME=fvwm-menu-headlines && (\
 	mkdir $$TMP && \
-	cp fvwm-menu-headlines.in $$TMP/fvwm-menu-headlines && \
-	pod2man --center "FVWM Utilities" $$TMP/fvwm-menu-headlines >$$TMP/fvwm-menu-headlines.1 2>/dev/null && \
-	mv $$TMP/fvwm-menu-headlines.1 .; \
+	cp $$NAME.in $$TMP/$$NAME && \
+	pod2man --center "Fvwm Utilities" --release "@VERSION@@VERSIONINFO@" \
+		--name $$NAME $$TMP/$$NAME >$$TMP/$$NAME.1 && \
+	mv $$TMP/$$NAME.1 .; \
 	rm -rf $$TMP)
 
-_fvwm-perllib.1: fvwm-perllib.in
-	@TMP=tmp-$$$$ && (\
+_fvwm-perllib.1: fvwm-perllib
+	@TMP=tmp-$$$$ NAME=fvwm-perllib && (\
 	mkdir $$TMP && \
-	cp fvwm-perllib.in $$TMP/fvwm-perllib && \
-	pod2man --center "FVWM Utilities" $$TMP/fvwm-perllib >$$TMP/fvwm-perllib.1 2>/dev/null && \
-	mv $$TMP/fvwm-perllib.1 .; \
+	cp $$NAME.in $$TMP/$$NAME && \
+	pod2man --center "Fvwm Utilities" --release "@VERSION@@VERSIONINFO@" \
+		--name $$NAME $$TMP/$$NAME >$$TMP/$$NAME.1 && \
+	mv $$TMP/$$NAME.1 .; \
 	rm -rf $$TMP)
 
-pod2man: \
+regenerate: \
 	_fvwm-menu-xlock.1 _fvwm-menu-directory.1 _fvwm-menu-headlines.1 \
 	_fvwm-perllib.1
 

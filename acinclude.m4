@@ -4,7 +4,7 @@ dnl Convenience macros
 dnl new version of FUNC_SELECT
 dnl - submitted to autoconf maintainer; expected to appear in next version
 
-AC_DEFUN(AC_FUNC_SELECT,
+AC_DEFUN([AC_FUNC_SELECT],
 [AC_CHECK_FUNCS(select)
 if test "$ac_cv_func_select" = yes; then
   AC_CHECK_HEADERS(unistd.h sys/types.h sys/time.h sys/select.h sys/socket.h)
@@ -40,10 +40,12 @@ if test "$ac_cv_func_select" = yes; then
     ])dnl AC_CACHE_VAL
   ])dnl AC_CACHE_VAL
   if test "$ac_found" = no; then
-    AC_MSG_ERROR([can't determine argument types])
+    AC_MSG_ERROR([can not determine argument types])
   fi
 
   AC_MSG_RESULT([select($ac_cv_type_fd_set_size_t,$ac_cv_type_fd_set *,...)])
+  AH_TEMPLATE([fd_set_size_t],
+  [Define to the type used in argument 1 `select'.  Usually this is an `int'.])
   AC_DEFINE_UNQUOTED(fd_set_size_t, $ac_cv_type_fd_set_size_t)
   ac_cast=
   if test "$ac_cv_type_fd_set" != fd_set; then
@@ -72,8 +74,14 @@ changequote([,]),dnl
     # We found fd_set type in a header, need special cast
     ac_cast="($ac_cv_type_fd_set *)",dnl
     # No fd_set type; it is safe to define it
+    AH_TEMPLATE([fd_set],
+  [Define to the type used in arguments 2-4 of `select', if not set by system
+  headers.])
     AC_DEFINE_UNQUOTED(fd_set,$ac_cv_type_fd_set))
   fi
+  AH_TEMPLATE([SELECT_FD_SET_CAST],
+  [Define a suitable cast for arguments 2-4 of `select'.  On most systems,
+   this will be the empty string, as select usually takes pointers to fd_set.])
   AC_DEFINE_UNQUOTED(SELECT_FD_SET_CAST,$ac_cast)
 fi
 ])
@@ -83,8 +91,8 @@ fi
 dnl Checking for typedefs, with extra headers
 
 
-dnl pds_CHECK_TYPE(TYPE, DEFAULT, [HEADERS])
-AC_DEFUN(pds_CHECK_TYPE,
+dnl pds_CHECK_TYPE(TYPE, DEFAULT, [HEADERS], [comment])
+AC_DEFUN([pds_CHECK_TYPE],
 [AC_REQUIRE([AC_HEADER_STDC])dnl
 AC_MSG_CHECKING(for $1)
 AC_CACHE_VAL(ac_cv_type_$1,
@@ -96,10 +104,11 @@ changequote([,]), [#include <sys/types.h>
 #include <stdlib.h>
 #include <stddef.h>
 #endif
-$3], ac_cv_type_$1=yes, ac_cv_type_$1=no)])dnl
-AC_MSG_RESULT($ac_cv_type_$1)
-if test $ac_cv_type_$1 = no; then
-  AC_DEFINE($1, $2)
+$3], ac_cv_type_[$1]=yes, ac_cv_type_[$]1=no)])dnl
+AC_MSG_RESULT($ac_cv_type_[$1])
+if test $ac_cv_type_[$1] = no; then
+  AH_TEMPLATE([$1],[$4])
+  AC_DEFINE_UNQUOTED($1, $2)
 fi
 ])
 
@@ -110,7 +119,8 @@ dnl Each switch defines an --enable-FOO and --disable-FOO option in
 dnl the resulting configure script.
 dnl
 dnl Usage:
-dnl smr_SWITCH(name, description, default, pos-def, neg-def)
+dnl smr_SWITCH(name, description, default, pos-def, neg-def,
+dnl            pos-def-comment, neg-def-comment)
 dnl
 dnl where:
 dnl
@@ -123,13 +133,16 @@ dnl             --enable-name nor --disable-name is specified
 dnl pos-def     a symbol to AC_DEFINE if switch is on (optional)
 dnl neg-def     a symbol to AC_DEFINE if switch is off (optional)
 dnl
-AC_DEFUN(smr_SWITCH, [
-    AC_MSG_CHECKING(whether to enable $2)
+AC_DEFUN([smr_SWITCH], [
+    AC_MSG_CHECKING(whether to enable [$2])
     AC_ARG_ENABLE(
         $1,
-        ifelse($3, on,
-            [  --disable-[$1]m4_substr([             ], m4_len([$1])) disable [$2]],
-            [  --enable-[$1] m4_substr([             ], m4_len([$1])) enable [$2]]),
+	ifelse($3, on,
+		[AC_HELP_STRING([--disable-$1], [disable $2])],
+		[AC_HELP_STRING([--enable-$1], [enable $2])]
+	),
+        ifelse([$4], , , [AH_TEMPLATE([$4],[$6])])
+        ifelse([$5], , , [AH_TEMPLATE([$5],[$7])])
         [ if test "$enableval" = yes; then
             AC_MSG_RESULT(yes)
             ifelse($4, , , [AC_DEFINE($4)])
@@ -141,7 +154,9 @@ AC_DEFUN(smr_SWITCH, [
            [ AC_MSG_RESULT(yes)
             ifelse($4, , , [AC_DEFINE($4)]) ],
            [ AC_MSG_RESULT(no)
-            ifelse($5, , , [AC_DEFINE($5)])]))])
+            ifelse($5, , , [AC_DEFINE($5)])])
+	)
+])
 
 
 dnl Allow argument for optional libraries; wraps AC_ARG_WITH, to
@@ -168,14 +183,14 @@ dnl libname             (optional) actual name of library,
 dnl                     if different from name
 dnl description         (optional) used to construct help string
 dnl
-AC_DEFUN(smr_ARG_WITHLIB, [
+AC_DEFUN([smr_ARG_WITHLIB], [
 
 ifelse($2, , smr_lib=[$1], smr_lib=[$2])
 
 AC_ARG_WITH([$1]-library,
 ifelse($3, ,
-[  --with-$1-library[=PATH]  use $1 library],
-[  --with-$1-library[=PATH]  use $1 library ($3)]),
+AS_HELP_STRING([--with-$1-library[=PATH]],[use $1 library]),
+AS_HELP_STRING([--with-$1-library[=PATH]],[use $1 library ($3)])),
 [
     if test "$withval" = yes; then
         with_[$1]=yes
@@ -215,10 +230,10 @@ dnl header              a header file required for using the lib
 dnl extra-flags         (optional) flags required when compiling the
 dnl                     header, typically more includes; for ex. X_CFLAGS
 dnl
-AC_DEFUN(smr_ARG_WITHINCLUDES, [
+AC_DEFUN([smr_ARG_WITHINCLUDES], [
 
 AC_ARG_WITH([$1]-includes,
-[  --with-$1-includes=DIR  set directory for $1 headers],
+AS_HELP_STRING([--with-$1-includes=DIR],[set directory for $1 headers]),
 [
     if test -d "$withval"; then
         [$1]_CFLAGS="-I${withval}"
@@ -256,7 +271,7 @@ dnl header      (optional) header required for using library
 dnl x-libs      (optional) extra libraries, if needed to link with lib
 dnl x-flags     (optional) extra flags, if needed to include header files
 dnl
-AC_DEFUN(smr_CHECK_LIB,
+AC_DEFUN([smr_CHECK_LIB],
 [
 ifelse($2, , smr_lib=[$1], smr_lib=[$2])
 ifelse($5, , , smr_header=[$5])
@@ -287,10 +302,10 @@ else
 fi])
 
 
-dnl Defines a boolean variable good for acconfig.h depending on a condition.
+dnl Defines a boolean variable for config.h depending on a condition.
 dnl
 dnl Usage:
-dnl mg_DEFINE_IF_NOT(c-code, cpp-if-cond, var-name, extra-flags)
+dnl mg_DEFINE_IF_NOT(c-code, cpp-if-cond, var-name, extra-flags, var-comment)
 dnl
 dnl c-code       the first code part inside main()
 dnl cpp-if-cond  boolean preprocessor condition
@@ -300,10 +315,11 @@ dnl
 dnl Example:
 dnl mg_DEFINE_IF_NOT([#include <features.h>], [defined __USE_BSD], [NON_BSD])
 dnl
-AC_DEFUN(mg_DEFINE_IF_NOT, [
+AC_DEFUN([mg_DEFINE_IF_NOT], [
 mg_save_CPPFLAGS="$CPPFLAGS"
 ifelse($4, , , CPPFLAGS="$CPPFLAGS [$4]")
 
+AH_TEMPLATE([$3],[$5])
 AC_TRY_RUN([
 #include <stdio.h>
 int main(int c, char **v) {
@@ -329,16 +345,17 @@ dnl contents of gtk.m4
 dnl AM_PATH_GTK([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
 dnl Test for GTK, and define GTK_CFLAGS and GTK_LIBS
 dnl
-AC_DEFUN(AM_PATH_GTK,
+AC_DEFUN([AM_PATH_GTK],
 [dnl
 dnl Get the cflags and libraries from the gtk-config script
 dnl
-AC_ARG_WITH(gtk-prefix,[  --with-gtk-prefix=PFX   prefix for GTK files (optional)],
+AC_ARG_WITH(gtk-prefix,AS_HELP_STRING([--with-gtk-prefix=PFX],[prefix for GTK files (optional)]),
             gtk_config_prefix="$withval", gtk_config_prefix="")
-AC_ARG_WITH(gtk-exec-prefix,[  --with-gtk-exec-prefix=PFX  exec prefix for GTK files (optional)],
+AC_ARG_WITH(gtk-exec-prefix,AS_HELP_STRING([--with-gtk-exec-prefix=PFX],
+            [exec prefix for GTK files (optional)]),
             gtk_config_exec_prefix="$withval", gtk_config_exec_prefix="")
-AC_ARG_ENABLE(gtktest, [  --disable-gtktest       do not try to compile and run a test GTK program],
-		    , enable_gtktest=yes)
+AC_ARG_ENABLE(gtktest,AS_HELP_STRING([--disable-gtktest],
+              [do not try to compile and run a test GTK program]),, enable_gtktest=yes)
 
   if test x$gtk_config_exec_prefix != x ; then
      gtk_config_args="$gtk_config_args --exec-prefix=$gtk_config_exec_prefix"
@@ -363,11 +380,11 @@ AC_ARG_ENABLE(gtktest, [  --disable-gtktest       do not try to compile and run 
     GTK_CFLAGS=`$GTK_CONFIG $gtk_config_args --cflags`
     GTK_LIBS=`$GTK_CONFIG $gtk_config_args --libs`
     gtk_config_major_version=`$GTK_CONFIG $gtk_config_args --version | \
-           sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
+           sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\1/'`
     gtk_config_minor_version=`$GTK_CONFIG $gtk_config_args --version | \
-           sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
+           sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\2/'`
     gtk_config_micro_version=`$GTK_CONFIG $gtk_config_args --version | \
-           sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
+           sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\3/'`
     if test "x$enable_gtktest" = "xyes" ; then
       ac_save_CFLAGS="$CFLAGS"
       ac_save_LIBS="$LIBS"
@@ -510,166 +527,16 @@ main ()
 ])
 
 
-dnl --------------------------------------------------------------------------
-dnl contents of imlib.m4
-dnl modified by migo - write diagnostics to >&5 (i.e. config.log) not stdout
-
-# Configure paths for IMLIB
-# Frank Belew     98-8-31
-# stolen from Manish Singh
-# Shamelessly stolen from Owen Taylor
-
-dnl AM_PATH_IMLIB([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
-dnl Test for IMLIB, and define IMLIB_CFLAGS and IMLIB_LIBS
-dnl
-AC_DEFUN(AM_PATH_IMLIB,
-[dnl
-dnl Get the cflags and libraries from the imlib-config script
-dnl
-AC_ARG_WITH(imlib-prefix,[  --with-imlib-prefix=PFX prefix for IMLIB files (optional)],
-            imlib_prefix="$withval", imlib_prefix="")
-AC_ARG_WITH(imlib-exec-prefix,[  --with-imlib-exec-prefix=PFX  exec prefix for IMLIB files (optional)],
-            imlib_exec_prefix="$withval", imlib_exec_prefix="")
-AC_ARG_ENABLE(imlibtest, [  --disable-imlibtest     do not try to compile and run a test IMLIB program],
-            , enable_imlibtest=yes)
-
-  if test x$imlib_exec_prefix != x ; then
-     imlib_args="$imlib_args --exec-prefix=$imlib_exec_prefix"
-     if test x${IMLIBCONF+set} != xset ; then
-        IMLIBCONF=$imlib_exec_prefix/bin/imlib-config
-     fi
-  fi
-  if test x$imlib_prefix != x ; then
-     imlib_args="$imlib_args --prefix=$imlib_prefix"
-     if test x${IMLIBCONF+set} != xset ; then
-        IMLIBCONF=$imlib_prefix/bin/imlib-config
-     fi
-  fi
-
-  AC_PATH_PROG(IMLIBCONF, imlib-config, no)
-  min_imlib_version=ifelse([$1], ,1.8.1,$1)
-  AC_MSG_CHECKING(for IMLIB - version >= $min_imlib_version)
-  no_imlib=""
-  if test "$IMLIBCONF" = "no" ; then
-    no_imlib=yes
-  else
-    IMLIB_CFLAGS=`$IMLIBCONF $imlibconf_args --cflags`
-    IMLIB_LIBS=`$IMLIBCONF $imlibconf_args --libs`
-
-    imlib_major_version=`$IMLIBCONF $imlib_args --version | \
-           sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
-    imlib_minor_version=`$IMLIBCONF $imlib_args --version | \
-           sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
-    if test "x$enable_imlibtest" = "xyes" ; then
-      ac_save_CFLAGS="$CFLAGS"
-      ac_save_LIBS="$LIBS"
-      CFLAGS="$CFLAGS $IMLIB_CFLAGS"
-      LIBS="$LIBS $IMLIB_LIBS"
-dnl
-dnl Now check if the installed IMLIB is sufficiently new. (Also sanity
-dnl checks the results of imlib-config to some extent
-dnl
-      rm -f conf.imlibtest
-      AC_TRY_RUN([
-#include <stdio.h>
-#include <stdlib.h>
-#include <Imlib.h>
-
-ImlibImage testimage;
-
-int main ()
-{
-  int major, minor;
-  char *tmp_version;
-
-  system ("touch conf.imlibtest");
-
-  /* HP/UX 9 (%@#!) writes to sscanf strings */
-  tmp_version = strdup("$min_imlib_version");
-  if (sscanf(tmp_version, "%d.%d", &major, &minor) != 2) {
-     printf("%s, bad version string\n", "$min_imlib_version");
-     exit(1);
-   }
-
-    if (($imlib_major_version > major) ||
-        (($imlib_major_version == major) && ($imlib_minor_version > minor)))
-    {
-      return 0;
-    }
-  else
-    {
-      printf("\n*** 'imlib-config --version' returned %d.%d, but the minimum version\n", $imlib_major_version, $imlib_minor_version);
-      printf("*** of IMLIB required is %d.%d. If imlib-config is correct, then it is\n", major, minor);
-      printf("*** best to upgrade to the required version.\n");
-      printf("*** If imlib-config was wrong, set the environment variable IMLIBCONF\n");
-      printf("*** to point to the correct copy of imlib-config, and remove the file\n");
-      printf("*** config.cache before re-running configure\n");
-      return 1;
-    }
-}
-
-],, no_imlib=yes,[echo $ac_n "cross compiling; assumed OK... $ac_c"])
-       CFLAGS="$ac_save_CFLAGS"
-       LIBS="$ac_save_LIBS"
-     fi
-  fi
-  if test "x$no_imlib" = x ; then
-     AC_MSG_RESULT(yes)
-     ifelse([$2], , :, [$2])
-  else
-     AC_MSG_RESULT(no)
-     if test "$IMLIBCONF" = "no" ; then
-       echo "*** The imlib-config script installed by IMLIB could not be found"
-       echo "*** If IMLIB was installed in PREFIX, make sure PREFIX/bin is in"
-       echo "*** your path, or set the IMLIBCONF environment variable to the"
-       echo "*** full path to imlib-config."
-     else
-       if test -f conf.imlibtest ; then
-        :
-       else
-          echo "*** Could not run IMLIB test program, checking why..."
-          CFLAGS="$CFLAGS $IMLIB_CFLAGS"
-          LIBS="$LIBS $IMLIB_LIBS"
-          AC_TRY_LINK([
-#include <stdio.h>
-#include <Imlib.h>
-],      [ return 0; ],
-        [ echo "*** The test program compiled, but did not run. This usually means"
-          echo "*** that the run-time linker is not finding IMLIB or finding the wrong"
-          echo "*** version of IMLIB. If it is not finding IMLIB, you'll need to set your"
-          echo "*** LD_LIBRARY_PATH environment variable, or edit /etc/ld.so.conf to point"
-          echo "*** to the installed location  Also, make sure you have run ldconfig if that"
-          echo "*** is required on your system"
-	  echo "***"
-          echo "*** If you have an old version installed, it is best to remove it, although"
-          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"],
-        [ echo "*** The test program failed to compile or link. See the file config.log for the"
-          echo "*** exact error that occured. This usually means IMLIB was incorrectly installed"
-          echo "*** or that you have moved IMLIB since it was installed. In the latter case, you"
-          echo "*** may want to edit the imlib-config script: $IMLIBCONF" ])
-          CFLAGS="$ac_save_CFLAGS"
-          LIBS="$ac_save_LIBS"
-       fi
-     fi
-     IMLIB_CFLAGS=""
-     IMLIB_LIBS=""
-     ifelse([$3], , :, [$3])
-  fi
-  AC_SUBST(IMLIB_CFLAGS)
-  AC_SUBST(IMLIB_LIBS)
-  rm -f conf.imlibtest
-])
-
 # Check for gdk-imlib
-AC_DEFUN(AM_PATH_GDK_IMLIB,
+AC_DEFUN([AM_PATH_GDK_IMLIB],
 [dnl
 dnl Get the cflags and libraries from the imlib-config script
 dnl
-AC_ARG_WITH(imlib-prefix,[  --with-imlib-prefix=PFX prefix for IMLIB files (optional)],
+AC_ARG_WITH(imlib-prefix,AS_HELP_STRING([--with-imlib-prefix=PFX],[prefix for IMLIB files (optional)]),
             imlib_prefix="$withval", imlib_prefix="")
-AC_ARG_WITH(imlib-exec-prefix,[  --with-imlib-exec-prefix=PFX  exec prefix for IMLIB files (optional)],
+AC_ARG_WITH(imlib-exec-prefix,AS_HELP_STRING([--with-imlib-exec-prefix=PFX],[exec prefix for IMLIB files (optional)]),
             imlib_exec_prefix="$withval", imlib_exec_prefix="")
-AC_ARG_ENABLE(imlibtest, [  --disable-imlibtest     do not try to compile and run a test IMLIB program],
+AC_ARG_ENABLE(imlibtest,AS_HELP_STRING([--disable-imlibtest],[do not try to compile and run a test IMLIB program]),
             , enable_imlibtest=yes)
 
   if test x$imlib_exec_prefix != x ; then
@@ -696,9 +563,9 @@ AC_ARG_ENABLE(imlibtest, [  --disable-imlibtest     do not try to compile and ru
     GDK_IMLIB_LIBS=`$IMLIBCONF $imlibconf_args --libs-gdk`
 
     imlib_major_version=`$IMLIBCONF $imlib_args --version | \
-           sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
+           sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\1/'`
     imlib_minor_version=`$IMLIBCONF $imlib_args --version | \
-           sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
+           sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\2/'`
     if test "x$enable_imlibtest" = "xyes" ; then
       ac_save_CFLAGS="$CFLAGS"
       ac_save_LIBS="$LIBS"
@@ -712,7 +579,6 @@ dnl
       AC_TRY_RUN([
 #include <stdio.h>
 #include <stdlib.h>
-#include <Imlib.h>
 #include <gdk_imlib.h>
 
 /* migo: originally it was GdkImLibColor with incorrect spelling */
@@ -778,7 +644,6 @@ int main ()
           LIBS="$LIBS $GDK_IMLIB_LIBS"
           AC_TRY_LINK([
 #include <stdio.h>
-#include <Imlib.h>
 #include <gdk_imlib.h>
 ],      [ return 0; ],
         [                 (echo "*** The test program compiled, but did not run. This usually means" >&5) 2>/dev/null || \
@@ -838,20 +703,21 @@ AC_DEFUN([GNOME_INIT_HOOK],[
 	AC_SUBST(GNOME_INCLUDEDIR)
 
 	AC_ARG_WITH(gnome-includes,
-	[  --with-gnome-includes   location of GNOME headers],[
+		AS_HELP_STRING([--with-gnome-includes],
+			[location of GNOME headers]),[
 	CFLAGS="$CFLAGS -I$withval"
 	])
 
 	gnome_prefix=$ac_default_prefix/lib
 
 	AC_ARG_WITH(gnome-libs,
-	[  --with-gnome-libs       location of GNOME libs],[
+	AS_HELP_STRING([--with-gnome-libs],[location of GNOME libs]),[
 	LDFLAGS="$LDFLAGS -L$withval"
 	gnome_prefix=$withval
 	])
 
 	AC_ARG_WITH(gnome,
-	[  --with-gnome            no, yes or prefix for GNOME files (for FvwmGtk only)],
+	AS_HELP_STRING([--with-gnome],[no, yes or prefix for GNOME files (for FvwmGtk only)]),
 		if test x$withval = xyes; then
 	    		with_gnomelibs=yes
 	    		dnl Note that an empty true branch is not
@@ -932,7 +798,7 @@ AC_DEFUN([GNOME_INIT_HOOK],[
 		AC_TRY_RUN([
 			#include <gnome.h>
 			int main(int c, char **v) {
-				/* we can't really run this outside of X */
+				/* we can not really run this outside of X */
 				if (!c) gnome_init("test-app", "0.0", c, v);
 				return 0;
 			}],
@@ -973,6 +839,8 @@ size_t iconv();
 #endif
 ], [], use_const=no, use_const=yes)
 	AC_MSG_RESULT($use_const)
+        AH_TEMPLATE([ICONV_ARG_CONST],
+                    [define if second arg of iconv use const])
 	if test "x$use_const" = "xyes"; then
 		AC_DEFINE(ICONV_ARG_CONST, const)
 	else
@@ -1007,15 +875,15 @@ c = locale_charset ();
 
 dnl
 dnl
-AC_DEFUN(AM_CHECK_PKG_CONFIG,
+AC_DEFUN([AM_CHECK_PKG_CONFIG],
 [dnl
 dnl Get the cflags and libraries from the freetype-config script
 dnl
 AC_ARG_WITH(pkgconfig-prefix,
-[  --with-pkgconfig-prefix=PFX  prefix where pkg-config is installed],
+AS_HELP_STRING([--with-pkgconfig-prefix=PFX],[prefix where pkg-config is installed]),
             pkgconfig_config_prefix="$withval", pkgconfig_config_prefix="")
 AC_ARG_WITH(pkgconfig-exec-prefix,
-[  --with-pkgconfig-exec-prefix=PFX  exec prefix where pkg-config is installed],
+AS_HELP_STRING([--with-pkgconfig-exec-prefix=PFX],[exec prefix where pkg-config is installed]),
             pkgconfig_config_exec_prefix="$withval",pkgconfig_config_exec_prefix="")
 
 if test x$pkgconfig_config_exec_prefix != x ; then
@@ -1040,18 +908,18 @@ AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
 dnl AM_CHECK_FT2([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
 dnl Test for FreeType2, and define FT2_CFLAGS and FT2_LIBS
 dnl
-AC_DEFUN(AM_CHECK_FT2,
+AC_DEFUN([AM_CHECK_FT2],
 [dnl
 dnl Get the cflags and libraries from the freetype-config script
 dnl
 AC_ARG_WITH(freetype-prefix,
-[  --with-freetype-prefix=PFX  prefix where FreeType is installed (for Xft)],
+AS_HELP_STRING([--with-freetype-prefix=PFX],[prefix where FreeType is installed (for Xft)]),
             ft_config_prefix="$withval", ft_config_prefix="")
 AC_ARG_WITH(freetype-exec-prefix,
-[  --with-freetype-exec-prefix=PFX  exec prefix where FreeType is installed],
+AS_HELP_STRING([--with-freetype-exec-prefix=PFX],[exec prefix where FreeType is installed]),
             ft_config_exec_prefix="$withval", ft_config_exec_prefix="")
 AC_ARG_ENABLE(freetypetest,
-[  --disable-freetypetest  do not try to compile and run a test FreeType program],
+AS_HELP_STRING([--disable-freetypetest],[do not try to compile and run a test FreeType program]),
             [], enable_fttest=yes)
 
 if test x$ft_config_exec_prefix != x ; then
@@ -1077,17 +945,17 @@ else
   FT2_CFLAGS=`$FT2_CONFIG $ft_config_args --cflags`
   FT2_LIBS=`$FT2_CONFIG $ft_config_args --libs`
   ft_config_major_version=`$FT2_CONFIG $ft_config_args --version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\1/'`
   ft_config_minor_version=`$FT2_CONFIG $ft_config_args --version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\2/'`
   ft_config_micro_version=`$FT2_CONFIG $ft_config_args --version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\3/'`
   ft_min_major_version=`echo $min_ft_version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\1/'`
   ft_min_minor_version=`echo $min_ft_version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\2/'`
   ft_min_micro_version=`echo $min_ft_version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\3/'`
   if test "x$enable_fttest" = "xyes" ; then
     ft_config_is_lt=no
     if test $ft_config_major_version -lt $ft_min_major_version ; then
@@ -1175,18 +1043,18 @@ AC_SUBST(FT2_LIBS)
 dnl AM_CHECK_FC([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
 dnl Test for fontconfig, and define FC_CFLAGS and FC_LIBS
 dnl
-AC_DEFUN(AM_CHECK_FC,
+AC_DEFUN([AM_CHECK_FC],
 [dnl
 dnl Get the cflags and libraries from the fontconfig-config script
 dnl
 AC_ARG_WITH(fontconfig-prefix,
-[  --with-fontconfig-prefix=PFX  prefix where fontconfig is installed (for Xft2)],
+AS_HELP_STRING([--with-fontconfig-prefix=PFX],[prefix where fontconfig is installed (for Xft2)]),
             fc_config_prefix="$withval", fc_config_prefix="")
 AC_ARG_WITH(fontconfig-exec-prefix,
-[  --with-fontconfig-exec-prefix=PFX  exec prefix where fontconfig is installed],
+AS_HELP_STRING([--with-fontconfig-exec-prefix=PFX],[exec prefix where fontconfig is installed]),
             fc_config_exec_prefix="$withval", fc_config_exec_prefix="")
 AC_ARG_ENABLE(fontconfigtest,
-[  --disable-fontconfigtest  do not try to compile and run a test fontconfig program],
+AS_HELP_STRING([--disable-fontconfigtest],[do not try to compile and run a test fontconfig program]),
             [], enable_fctest=yes)
 
 if test x$fc_config_exec_prefix != x ; then
@@ -1229,17 +1097,17 @@ else
   FC_CFLAGS=`$FC_CONFIG $fc_config_args --cflags`
   FC_LIBS=`$FC_CONFIG $fc_config_args --libs`
   fc_config_major_version=`$FC_CONFIG $fc_config_args --version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\1/'`
   fc_config_minor_version=`$FC_CONFIG $fc_config_args --version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\2/'`
   fc_config_micro_version=`$FC_CONFIG $fc_config_args --version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\3/'`
   fc_min_major_version=`echo $min_fc_version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\1/'`
   fc_min_minor_version=`echo $min_fc_version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\2/'`
   fc_min_micro_version=`echo $min_fc_version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\3/'`
   fc_config_is_lt=no
   if test $fc_config_major_version -lt $fc_min_major_version ; then
     fc_config_is_lt=yes
@@ -1331,18 +1199,18 @@ AC_SUBST(FC_LIBS)
 dnl AM_CHECK_XFT([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
 dnl Test for xft, and define XFT_CFLAGS and XFT_LIBS
 dnl
-AC_DEFUN(AM_CHECK_XFT,
+AC_DEFUN([AM_CHECK_XFT],
 [dnl
 dnl Get the cflags and libraries from the xft-config script
 dnl
 AC_ARG_WITH(xft-prefix,
-[  --with-xft-prefix=PFX    prefix where Xft2 is installed (optional)],
+AS_HELP_STRING([--with-xft-prefix=PFX],[prefix where Xft2 is installed (optional)]),
             xft_config_prefix="$withval", xft_config_prefix="")
 AC_ARG_WITH(xft-exec-prefix,
-[  --with-xft-exec-prefix=PFX  exec prefix where Xft2 is installed],
+AS_HELP_STRING([--with-xft-exec-prefix=PFX],[exec prefix where Xft2 is installed]),
             xft_config_exec_prefix="$withval", xft_config_exec_prefix="")
 AC_ARG_ENABLE(xfttest,
-[  --disable-xfttest       do not try to compile and run a test Xft program],
+AS_HELP_STRING([--disable-xfttest],[do not try to compile and run a test Xft program]),
             [], enable_xfttest=yes)
 
 if test x$xft_config_exec_prefix != x ; then
@@ -1385,17 +1253,17 @@ else
   XFT_CFLAGS=`$XFT_CONFIG $xft_config_args --cflags`
   XFT_LIBS=`$XFT_CONFIG $xft_config_args --libs`
   xft_config_major_version=`$XFT_CONFIG $xft_config_args --version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\1/'`
   xft_config_minor_version=`$XFT_CONFIG $xft_config_args --version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\2/'`
   xft_config_micro_version=`$XFT_CONFIG $xft_config_args --version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\3/'`
   xft_min_major_version=`echo $min_xft_version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\1/'`
   xft_min_minor_version=`echo $min_xft_version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\2/'`
   xft_min_micro_version=`echo $min_xft_version | \
-         sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
+         sed 's/^[[^0-9.]]*\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*$/\3/'`
   xft_config_is_lt=no
   if test $xft_config_major_version -lt $xft_min_major_version ; then
     xft_config_is_lt=yes
@@ -1769,11 +1637,11 @@ AC_DEFUN([AM_GNU_GETTEXT_VERSION], [])
 
 
 #-----------------------------------------------------------------------------
-# Safty check for mkstemp
+# Safety check for mkstemp
 #
-AC_DEFUN([AM_SAFTY_CHECK_MKSTEMP],[
+AC_DEFUN([AM_SAFETY_CHECK_MKSTEMP],[
   AC_CHECK_FUNCS(mkstemp)
-  has_safty_mkstemp=no
+  has_safety_mkstemp=no
   AC_MSG_CHECKING(if mkstemp is safe)
   if test x$ac_cv_func_mkstemp != xno; then
     AC_TRY_RUN([
@@ -1812,12 +1680,13 @@ int main(void)
   return 0;
 }
     ],
-    [has_safty_mkstemp=yes], [has_safty_mkstemp=no])
+    [has_safety_mkstemp=yes], [has_safety_mkstemp=no])
   fi
-  if test x$has_safty_mkstemp = xno; then
+  AH_TEMPLATE([HAVE_SAFETY_MKSTEMP],[Enable the use of mkstemp])
+  if test x$has_safety_mkstemp = xno; then
     AC_MSG_RESULT(no, use our mkstemp)
   else
     AC_MSG_RESULT(yes)
-    AC_DEFINE(HAVE_SAFTY_MKSTEMP)
+    AC_DEFINE(HAVE_SAFETY_MKSTEMP)
   fi
 ])

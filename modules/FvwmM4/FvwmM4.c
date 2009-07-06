@@ -36,7 +36,6 @@
 #include <pwd.h>
 #include <sys/param.h>
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <netdb.h>
 
 #include <X11/Xlib.h>
@@ -46,6 +45,9 @@
 #include <X11/Intrinsic.h>
 
 #include "libs/Module.h"
+#include "libs/Strings.h"
+#include "libs/System.h"
+#include "libs/fvwm_sys_stat.h"
 
 #include "FvwmM4.h"
 #include "libs/fvwmlib.h"
@@ -159,11 +161,11 @@ int main(int argc, char **argv)
     {
       if(strcasecmp(argv[i],"-m4-prefix") == 0)
 	{
-	  m4_prefix = TRUE;
+	  m4_prefix = True;
 	}
       else if(strcasecmp(argv[i],"-m4-prefix-defines") == 0)
 	{
-	  m4_prefix_defines = TRUE;
+	  m4_prefix_defines = True;
 	}
       else if(strcasecmp(argv[i],"-m4opt") == 0)
 	{
@@ -318,7 +320,10 @@ static char *m4_defs(
 		 */
 		/* first try to unlink it */
 		unlink(tmp_name);
-		if ((fd = open(tmp_name, O_WRONLY|O_EXCL|O_CREAT, 0600)) < 0)
+		fd = open(
+			tmp_name, O_WRONLY|O_EXCL|O_CREAT,
+			FVWM_S_IRUSR | FVWM_S_IWUSR);
+		if (fd < 0)
 		{
 			fprintf(
 				stderr,

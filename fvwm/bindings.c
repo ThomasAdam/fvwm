@@ -24,17 +24,19 @@
 #include "libs/charmap.h"
 #include "libs/wcontext.h"
 #include "libs/modifiers.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
+#include "libs/defaults.h"
 #include "fvwm.h"
 #include "externs.h"
 #include "cursor.h"
 #include "functions.h"
 #include "bindings.h"
-#include "defaults.h"
 #include "module_interface.h"
 #include "misc.h"
 #include "screen.h"
 #include "focus.h"
-#include "menus.h"		/* for menu_binding */
+#include "menubindings.h"
 #include "move_resize.h"	/* for placement_binding */
 #ifdef HAVE_STROKE
 #include "stroke.h"
@@ -227,6 +229,7 @@ static void __rebind_global_key(Binding **pblist, int Button_Key)
 		    (BIND_IS_PKEY_BINDING(b->type) || b->Context == C_ALL))
 		{
 			activate_binding(b, b->type, True);
+
 			return;
 		}
 	}
@@ -240,10 +243,19 @@ static int ParseBinding(
 	int *nr_left_buttons, int *nr_right_buttons,
 	unsigned short *buttons_grabbed, Bool is_silent)
 {
-	char *action, context_string[20], modifier_string[20], *ptr, *token;
-	char key_string[201] = "", buffer[80], *windowName = NULL, *p;
+	char *action;
+	char context_string[20];
+	char modifier_string[20];
+	char *ptr;
+	char *token;
+	char key_string[201] = "";
+	char buffer[80];
+	char *window_name = NULL;
+	char *p;
 	int button = 0;
-	int n1=0,n2=0,n3=0;
+	int n1 = 0;
+	int n2 = 0;
+	int n3 = 0;
 	int context;
 	int modifier;
 	int rc;
@@ -254,7 +266,7 @@ static int ParseBinding(
 	Binding *b;
 	Binding *rmlist = NULL;
 	STROKE_CODE(char stroke[STROKE_MAX_SEQUENCE + 1] = "");
-	STROKE_CODE(int n4=0);
+	STROKE_CODE(int n4 = 0);
 	STROKE_CODE(int i);
 
 	/* tline points after the key word "Mouse" or "Key" */
@@ -263,13 +275,15 @@ static int ParseBinding(
 	if (p == NULL)
 	{
 		fvwm_msg(
-			ERR, "ParseBinding", "empty %s binding, ignored\n",tline);
+			ERR, "ParseBinding", "empty %s binding, ignored\n",
+			tline);
+
 		return 0;
 	}
 	if (*p == '(')
 	{
 		/* A window name has been specified for the binding. */
-		strcpy(buffer, p+1);
+		sscanf(p + 1, "%79s", buffer);
 		p = buffer;
 		while (*p != ')')
 		{
@@ -282,12 +296,13 @@ static int ParseBinding(
 						"Syntax error in line %s -"
 						" missing ')'", tline);
 				}
+
 				return 0;
 			}
 			++p;
 		}
 		*p++ = '\0';
-		windowName = buffer;
+		window_name = buffer;
 		if (*p != '\0')
 		{
 			if (!is_silent)
@@ -297,6 +312,7 @@ static int ParseBinding(
 					"Syntax error in line %s - trailing"
 					" text after specified window", tline);
 			}
+
 			return 0;
 		}
 		token = PeekToken(ptr, &ptr);
@@ -388,7 +404,8 @@ static int ParseBinding(
 						" this button.  To suppress"
 						" this warning, use:\n"
 						"  Silent Mouse %s", button,
-						NUMBER_OF_MOUSE_BUTTONS, tline);
+						NUMBER_OF_MOUSE_BUTTONS,
+						tline);
 				}
 			}
 		}
@@ -475,14 +492,18 @@ static int ParseBinding(
 		{
 			/* pass-through actions indicate that the event be
 			 * allowed to pass through to the underlying window. */
-			if (windowName == NULL)
+			if (window_name == NULL)
 			{
 				/* It doesn't make sense to have a pass-through
 				 * action on global bindings. */
 				if (!is_silent)
-					fvwm_msg(ERR, "ParseBinding",
-						 "Illegal action for global "
-						 "binding: %s", tline);
+				{
+					fvwm_msg(
+						ERR, "ParseBinding",
+						"Invalid action for global "
+						"binding: %s", tline);
+				}
+
 				return 0;
 			}
 		}
@@ -494,14 +515,25 @@ static int ParseBinding(
 	}
 
 	/* short circuit menu bindings for now. */
-	if (context == C_MENU)
+	if ((context & C_MENU) == C_MENU)
 	{
-		return(menu_binding(button,keysym,modifier,action));
+		menu_binding(
+			dpy, type, button, keysym, context, modifier, action,
+			window_name);
+		/* ParseBinding returns the number of new bindings in pblist
+		 * menu bindings does not add to pblist, and should return 0 */
+
+		return 0;
 	}
 	/* short circuit placement bindings for now. */
-	if (context == C_PLACEMENT)
+	if ((context & C_PLACEMENT) == C_PLACEMENT)
 	{
-		return(placement_binding(button,keysym,modifier,action));
+		placement_binding(button,keysym,modifier,action);
+		/* ParseBinding returns the number of new bindings in pblist
+		 * placement bindings does not add to pblist, and should
+		 * return 0 */
+
+		return 0;
 	}
 	/*
 	** Remove the "old" bindings if any
@@ -509,7 +541,7 @@ static int ParseBinding(
 	/* BEGIN remove */
 	CollectBindingList(
 		dpy, pblist, &rmlist, type, STROKE_ARG((void *)stroke)
-		button, keysym, modifier, context, windowName);
+		button, keysym, modifier, context, window_name);
 	if (rmlist != NULL)
 	{
 		is_binding_removed = True;
@@ -526,7 +558,8 @@ static int ParseBinding(
 			}
 			if (rc)
 			{
-				__rebind_global_key(pblist, rmlist->Button_Key);
+				__rebind_global_key(
+					pblist, rmlist->Button_Key);
 			}
 		}
 		FreeBindingList(rmlist);
@@ -557,9 +590,11 @@ static int ParseBinding(
 			" ignored.");
 		modifier = AnyModifier;
 	}
-	if ((BIND_IS_MOUSE_BINDING(type) ||
-	     (BIND_IS_STROKE_BINDING(type) && button != 0)) &&
-	    (context & (C_WINDOW | C_EWMH_DESKTOP)) && buttons_grabbed != NULL)
+	if (
+		(BIND_IS_MOUSE_BINDING(type) ||
+		 (BIND_IS_STROKE_BINDING(type) && button != 0)) &&
+		(context & (C_WINDOW | C_EWMH_DESKTOP)) &&
+		buttons_grabbed != NULL)
 	{
 		if (button == 0)
 		{
@@ -574,7 +609,7 @@ static int ParseBinding(
 	rc = AddBinding(
 		dpy, pblist, type, STROKE_ARG((void *)stroke)
 		button, keysym, key_string, modifier, context, (void *)action,
-		NULL, windowName);
+		NULL, window_name);
 
 	return rc;
 }
@@ -594,9 +629,79 @@ static void binding_cmd(F_CMD_ARGS, binding_t type)
 		Scr.flags.has_mouse_binding_changed = 1;
 		Scr.buttons2grab = btg;
 	}
-	for (b = Scr.AllBindings; count > 0; count--, b = b->NextBinding)
+	for (
+		b = Scr.AllBindings; count > 0 && b != NULL;
+		count--, b = b->NextBinding)
 	{
 		activate_binding(b, type, True);
+	}
+
+	return;
+}
+
+void print_bindings(void)
+{
+	Binding *b;
+
+	fprintf(stderr, "Current list of bindings:\n\n");
+	for (b = Scr.AllBindings; b != NULL; b = b->NextBinding)
+	{
+		switch (b->type)
+		{
+		case BIND_KEYPRESS:
+			fprintf(stderr, "Key");
+			break;
+		case BIND_PKEYPRESS:
+			fprintf(stderr, "PointerKey");
+			break;
+		case BIND_BUTTONPRESS:
+		case BIND_BUTTONRELEASE:
+			fprintf(stderr, "Mouse");
+			break;
+		case BIND_STROKE:
+			fprintf(stderr, "Stroke");
+			break;
+		default:
+			fvwm_msg(
+				ERR, "print_bindings",
+				"invalid binding type %d", b->type);
+			continue;
+		}
+		if (b->windowName != NULL)
+		{
+			fprintf(stderr, " (%s)", b->windowName);
+		}
+		switch (b->type)
+		{
+		case BIND_KEYPRESS:
+		case BIND_PKEYPRESS:
+			fprintf(stderr, "\t%s", b->key_name);
+			break;
+		case BIND_BUTTONPRESS:
+		case BIND_BUTTONRELEASE:
+			fprintf(stderr, "\t%d", b->Button_Key);
+			break;
+		case BIND_STROKE:
+			STROKE_CODE(
+				fprintf(
+					stderr, "\t%s\t%d",
+					(char *)b->Stroke_Seq, b->Button_Key));
+			break;
+		}
+		{
+			char *mod_string;
+			char *context_string;
+
+			mod_string = charmap_table_to_string(
+				MaskUsedModifiers(b->Modifier),key_modifiers);
+			context_string = charmap_table_to_string(
+				b->Context, win_contexts);
+			fprintf(
+				stderr, "\t%s\t%s\t%s\n", context_string,
+				mod_string, (char *)b->Action);
+			free(mod_string);
+			free(context_string);
+		}
 	}
 
 	return;

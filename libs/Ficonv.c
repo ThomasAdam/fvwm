@@ -26,7 +26,6 @@
 
 #include <X11/Xlib.h>
 
-#include "safemalloc.h"
 #include "FlocaleCharset.h"
 #include "Ficonv.h"
 
@@ -148,7 +147,7 @@ void set_iconv_charset_index(FlocaleCharset *fc)
 
 static
 char *convert_charsets(const char *in_charset, const char *out_charset,
-		       const unsigned char *in, unsigned int in_size)
+		       const char *in, unsigned int in_size)
 {
 	static int error_count = 0;
 	Ficonv_t cd;
@@ -174,7 +173,7 @@ char *convert_charsets(const char *in_charset, const char *out_charset,
 		{
 			fprintf(
 				stderr,
-				"[FVWM][convert_charsets]: WARNING -\n\t");
+				"[fvwm][convert_charsets]: WARNING -\n\t");
 			fprintf(
 				stderr,
 				"conversion from `%s' to `%s' not available\n",
@@ -184,7 +183,7 @@ char *convert_charsets(const char *in_charset, const char *out_charset,
 		{
 			fprintf(
 				stderr,
-				"[FVWM][convert_charsets]: WARNING -\n\t");
+				"[fvwm][convert_charsets]: WARNING -\n\t");
 			fprintf(
 				stderr,
 				"conversion from `%s' to `%s' fail (init)\n",
@@ -238,7 +237,7 @@ char *convert_charsets(const char *in_charset, const char *out_charset,
 				{
 					fprintf(
 						stderr,
-						"[FVWM][convert_charsets]:"
+						"[fvwm][convert_charsets]:"
 						" WARNING -\n\t");
 					fprintf(
 						stderr,
@@ -255,7 +254,7 @@ char *convert_charsets(const char *in_charset, const char *out_charset,
 				{
 					fprintf(
 						stderr,
-						"[FVWM][convert_charsets]:"
+						"[fvwm][convert_charsets]:"
 						" WARNING -\n\t");
 					fprintf(
 						stderr,
@@ -276,7 +275,7 @@ char *convert_charsets(const char *in_charset, const char *out_charset,
 	{
 		fprintf(
 			stderr,
-			"[FVWM][convert_charsets]: WARNING - iconv_close"
+			"[fvwm][convert_charsets]: WARNING - iconv_close"
 			" fail\n");
 	}
 
@@ -347,7 +346,7 @@ FlocaleCharset *FiconvSetupConversion(Display *dpy, FlocaleCharset *fc)
 
 	if (!FiconvInitialized)
 	{
-		FiconvInit(dpy, "FVWM");
+		FiconvInit(dpy, "fvwm");
 	}
 
 	if (FLCIconvUtf8Charset == NULL)

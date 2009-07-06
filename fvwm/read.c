@@ -32,6 +32,8 @@
 #include <fcntl.h>
 #endif
 
+#include "libs/Parse.h"
+#include "libs/Strings.h"
 #include "fvwm.h"
 #include "externs.h"
 #include "cursor.h"
@@ -43,7 +45,7 @@
 #define MAX_READ_DEPTH 40
 static char *curr_read_file = NULL;
 static char *curr_read_dir = NULL;
-static unsigned int curr_read_depth = 0;
+static int curr_read_depth = 0;
 static char *prev_read_files[MAX_READ_DEPTH];
 
 static int push_read_file(const char *file)
@@ -53,7 +55,7 @@ static int push_read_file(const char *file)
 		fvwm_msg(
 			ERR, "Read", "Nested Read limit %d is reached",
 			MAX_READ_DEPTH);
-		return FALSE;
+		return 0;
 	}
 	prev_read_files[curr_read_depth++] = curr_read_file;
 	curr_read_file = safestrdup(file);
@@ -63,7 +65,7 @@ static int push_read_file(const char *file)
 	}
 	curr_read_dir = NULL;
 
-	return TRUE;
+	return 1;
 }
 
 static void pop_read_file(void)
@@ -196,7 +198,7 @@ static int parse_filename(
 
 
 /**
- * Returns FALSE if file not found
+ * Returns 0 if file not found
  **/
 int run_command_file(
 	char *filename, const exec_context_t *exc)
@@ -222,17 +224,17 @@ int run_command_file(
 	}
 	if (f == NULL)
 	{
-		return FALSE;
+		return 0;
 	}
-	if (push_read_file(full_filename) == FALSE)
+	if (push_read_file(full_filename) == 0)
 	{
-		return FALSE;
+		return 0;
 	}
 	run_command_stream(NULL, f, exc);
 	fclose(f);
 	pop_read_file();
 
-	return TRUE;
+	return 1;
 }
 
 /**
@@ -240,7 +242,7 @@ int run_command_file(
  **/
 static void cursor_control(Bool grab)
 {
-	static unsigned int read_depth = 0;
+	static int read_depth = 0;
 	static Bool need_ungrab = False;
 
 	if (!(Scr.BusyCursor & BUSY_READ) && !need_ungrab)

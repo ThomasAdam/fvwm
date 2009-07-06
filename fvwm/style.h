@@ -3,6 +3,12 @@
 #ifndef _STYLE_
 #define _STYLE_
 
+#define SNAP_NONE    0x00
+#define SNAP_WINDOWS 0x01
+#define SNAP_ICONS   0x02
+#define SNAP_SAME    0x04
+#define SNAP_SCREEN  0x08
+
 /* access to the special flags of a style */
 /* call these with a pointer to a style_flags struct */
 #define SDO_DECORATE_TRANSIENT(sf) \
@@ -11,6 +17,8 @@
 	((sf)->do_save_under)
 #define SDO_START_LOWERED(sf) \
 	((sf)->do_start_lowered)
+#define SDO_START_SHADED(sf) \
+	((sf)->do_start_shaded)
 #define SHAS_BORDER_WIDTH(sf) \
 	((sf)->has_border_width)
 #define SHAS_COLOR_BACK(sf) \
@@ -31,6 +39,8 @@
 	((sf)->has_icon_background_relief)
 #define SHAS_ICON_TITLE_RELIEF(sf) \
 	((sf)->has_icon_title_relief)
+#define SHAS_MIN_WINDOW_SIZE(sf) \
+	((sf)->has_min_window_size)
 #define SHAS_MAX_WINDOW_SIZE(sf) \
 	((sf)->has_max_window_size)
 #define SHAS_WINDOW_SHADE_STEPS(sf) \
@@ -99,6 +109,8 @@
 	((sf)->has_placement_penalty)
 #define SHAS_PLACEMENT_PERCENTAGE_PENALTY(sf) \
 	((sf)->has_placement_percentage_penalty)
+#define SHAS_PLACEMENT_POSITION_STRING(sf) \
+	((sf)->has_placement_position_string
 #define SCR_MOTION_METHOD(sf) \
 	((sf)->ws_cr_motion_method)
 
@@ -227,6 +239,10 @@
 	((c).s.has_mwm_override)
 #define S_SET_HAS_MWM_OVERRIDE(c,x) \
 	((c).s.has_mwm_override = !!(x))
+#define S_HAS_NO_STICKY_STIPPLED_ICON_TITLE(c) \
+	((c).s.has_no_sticky_stippled_icon_title)
+#define S_SET_HAS_NO_STICKY_STIPPLED_ICON_TITLE(c,x) \
+	((c).s.has_no_sticky_stippled_icon_title = !!(x))
 #define S_HAS_NO_ICON_TITLE(c) \
 	((c).s.has_no_icon_title)
 #define S_SET_HAS_NO_ICON_TITLE(c,x) \
@@ -239,6 +255,14 @@
 	((c).s.has_stippled_title)
 #define S_SET_HAS_STIPPLED_TITLE(c,x) \
 	((c).s.has_stippled_title = !!(x))
+#define S_HAS_NO_STICKY_STIPPLED_TITLE(c) \
+	((c).s.has_no_sticky_stippled_title)
+#define S_SET_HAS_NO_STICKY_STIPPLED_TITLE(c,x) \
+	((c).s.has_no_sticky_stippled_title = !!(x))
+#define S_HAS_STIPPLED_ICON_TITLE(c) \
+	((c).s.has_stippled_icon_title)
+#define S_SET_HAS_STIPPLED_ICON_TITLE(c,x) \
+	((c).s.has_stippled_icon_title = !!(x))
 #define S_HAS_WINDOW_FONT(c) \
 	((c).has_window_font)
 #define S_SET_HAS_WINDOW_FONT(c,x) \
@@ -260,13 +284,13 @@
 #define S_SET_IS_FIXED_PPOS(c,x) \
 	((c).s.is_fixed_ppos = !!(x))
 #define S_SET_IS_UNICONIFIABLE(c,x) \
-        ((c).s.is_uniconifiable = !!(x))
+	((c).s.is_uniconifiable = !!(x))
 #define S_SET_IS_UNMAXIMIZABLE(c,x) \
-        ((c).s.is_unmaximizable = !!(x))
+	((c).s.is_unmaximizable = !!(x))
 #define S_SET_IS_UNCLOSABLE(c,x) \
-        ((c).s.is_unclosable = !!(x))
+	((c).s.is_unclosable = !!(x))
 #define S_SET_MAXIMIZE_FIXED_SIZE_DISALLOWED(c,x) \
-        ((c).s.is_maximize_fixed_size_disallowed = !!(x))
+	((c).s.is_maximize_fixed_size_disallowed = !!(x))
 #define S_IS_ICON_STICKY_ACROSS_PAGES(c) \
 	((c).s.is_icon_sticky_across_pages)
 #define S_SET_IS_ICON_STICKY_ACROSS_PAGES(c,x) \
@@ -398,11 +422,11 @@
 #define SID_SET_HAS_ICON(id,x) \
 	((id).flags.has_icon = (x))
 #define SID_SET_HAS_NAME(id,x) \
-        ((id).flags.has_name = !!(x))
+	((id).flags.has_name = !!(x))
 #define SID_GET_HAS_NAME(id) \
-        ((id).flags.has_name)
+	((id).flags.has_name)
 #define SID_SET_HAS_WINDOW_ID(id,x) \
-        ((id).flags.has_window_id = !!(x))
+	((id).flags.has_window_id = !!(x))
 #define SID_GET_HAS_WINDOW_ID(id) \
         ((id).flags.has_window_id)
 #define SID_SET_IS_COMPABILITY_MODE(id,x) \
@@ -468,9 +492,9 @@
 #define SSET_ID_HAS_NAME(s,x) \
         SID_SET_HAS_NAME(SGET_ID(s), x)
 #define SGET_ID_HAS_NAME(s) \
-        SID_GET_HAS_NAME(SGET_ID(s))
+	SID_GET_HAS_NAME(SGET_ID(s))
 #define SSET_ID_HAS_WINDOW_ID(s,x) \
-        SID_SET_HAS_WINDOW_ID(SGET_ID(s),x)
+	SID_SET_HAS_WINDOW_ID(SGET_ID(s),x)
 #define SGET_ID_HAS_WINDOW_ID(s) \
         SID_GET_HAS_WINDOW_ID(SGET_ID(s))
 #define SSET_ID_IS_COMPABILITY_MODE(s,x) \
@@ -573,6 +597,10 @@
 	((s).start_screen)
 #define SSET_START_SCREEN(s,x) \
 	((s).start_screen = (x))
+#define SSET_STARTS_SHADED_DIR(s,x) \
+	((s).flags.start_shaded_dir = (x))
+#define SGET_STARTS_SHADED_DIR(s)		\
+	((s).flags.start_shaded_dir)
 #define SGET_MIN_ICON_WIDTH(s) \
 	((s).min_icon_width)
 #define SSET_MIN_ICON_WIDTH(s,x) \
@@ -605,10 +633,18 @@
 	((s).icon_title_relief)
 #define SSET_ICON_TITLE_RELIEF(s,x) \
 	((s).icon_title_relief = (x))
+#define SGET_MIN_WINDOW_WIDTH(s) \
+	((s).min_window_width)
+#define SSET_MIN_WINDOW_WIDTH(s,x) \
+	((s).min_window_width = (x))
 #define SGET_MAX_WINDOW_WIDTH(s) \
 	((s).max_window_width)
 #define SSET_MAX_WINDOW_WIDTH(s,x) \
 	((s).max_window_width = (x))
+#define SGET_MIN_WINDOW_HEIGHT(s) \
+	((s).min_window_height)
+#define SSET_MIN_WINDOW_HEIGHT(s,x) \
+	((s).min_window_height = (x))
 #define SGET_MAX_WINDOW_HEIGHT(s) \
 	((s).max_window_height)
 #define SSET_MAX_WINDOW_HEIGHT(s,x) \
@@ -617,50 +653,94 @@
 	((s).shade_anim_steps)
 #define SSET_WINDOW_SHADE_STEPS(s,x) \
 	((s).shade_anim_steps = (x))
+#define SGET_SNAP_PROXIMITY(s) \
+	((s).snap_proximity)
+#define SSET_SNAP_PROXIMITY(s,x) \
+	((s).snap_proximity = (x))
+#define SGET_SNAP_MODE(s) \
+	((s).snap_mode)
+#define SSET_SNAP_MODE(s,x) \
+	((s).snap_mode = (x))
+#define SGET_SNAP_GRID_X(s) \
+	((s).snap_grid_x)
+#define SSET_SNAP_GRID_X(s,x) \
+	((s).snap_grid_x = (x))
+#define SGET_SNAP_GRID_Y(s) \
+	((s).snap_grid_y)
+#define SSET_SNAP_GRID_Y(s,x) \
+	((s).snap_grid_y = (x))
+#define SGET_EDGE_DELAY_MS_MOVE(s) \
+	((s).edge_delay_ms_move)
+#define SSET_EDGE_DELAY_MS_MOVE(s,x) \
+	((s).edge_delay_ms_move = (x))
+#define SGET_EDGE_DELAY_MS_RESIZE(s) \
+	((s).edge_delay_ms_resize)
+#define SSET_EDGE_DELAY_MS_RESIZE(s,x) \
+	((s).edge_delay_ms_resize = (x))
+#define SGET_EDGE_RESISTANCE_MOVE(s) \
+	((s).edge_resistance_move)
+#define SSET_EDGE_RESISTANCE_MOVE(s,x) \
+	((s).edge_resistance_move = (x))
+#define SGET_EDGE_RESISTANCE_XINERAMA_MOVE(s) \
+	((s).edge_resistance_xinerama_move)
+#define SSET_EDGE_RESISTANCE_XINERAMA_MOVE(s,x) \
+	((s).edge_resistance_xinerama_move = (x))
 #define SGET_ICON_BOXES(s) \
 	((s).icon_boxes)
 #define SSET_ICON_BOXES(s,x) \
 	((s).icon_boxes = (x))
+#define SGET_PLACEMENT_PENALTY_PTR(s) \
+	(&(s).pl_penalty)
 #define SGET_NORMAL_PLACEMENT_PENALTY(s) \
-	((s).placement_penalty[0])
+	((s).pl_penalty.normal)
 #define SGET_ONTOP_PLACEMENT_PENALTY(s) \
-	((s).placement_penalty[1])
+	((s).pl_penalty.ontop)
 #define SGET_ICON_PLACEMENT_PENALTY(s) \
-	((s).placement_penalty[2])
+	((s).pl_penalty.icon)
 #define SGET_STICKY_PLACEMENT_PENALTY(s) \
-	((s).placement_penalty[3])
+	((s).pl_penalty.sticky)
 #define SGET_BELOW_PLACEMENT_PENALTY(s) \
-	((s).placement_penalty[4])
+	((s).pl_penalty.below)
 #define SGET_EWMH_STRUT_PLACEMENT_PENALTY(s) \
-	((s).placement_penalty[5])
+	((s).pl_penalty.strut)
 #define SSET_NORMAL_PLACEMENT_PENALTY(s,x) \
-	((s).placement_penalty[0] = (x))
+	((s).pl_penalty.normal = (x))
 #define SSET_ONTOP_PLACEMENT_PENALTY(s,x) \
-	((s).placement_penalty[1] = (x))
+	((s).pl_penalty.ontop = (x))
 #define SSET_ICON_PLACEMENT_PENALTY(s,x) \
-	((s).placement_penalty[2] = (x))
+	((s).pl_penalty.icon = (x))
 #define SSET_STICKY_PLACEMENT_PENALTY(s,x) \
-	((s).placement_penalty[3] = (x))
+	((s).pl_penalty.sticky = (x))
 #define SSET_BELOW_PLACEMENT_PENALTY(s,x) \
-	((s).placement_penalty[4] = (x))
+	((s).pl_penalty.below = (x))
 #define SSET_EWMH_STRUT_PLACEMENT_PENALTY(s,x) \
-	((s).placement_penalty[5] = (x))
+	((s).pl_penalty.strut = (x))
+#define SGET_PLACEMENT_PERCENTAGE_PENALTY_PTR(s) \
+	(&(s).pl_percent_penalty)
 #define SGET_99_PLACEMENT_PERCENTAGE_PENALTY(s) \
-	((s).placement_percentage_penalty[0])
+	((s).pl_percent_penalty.p99)
 #define SGET_95_PLACEMENT_PERCENTAGE_PENALTY(s) \
-	((s).placement_percentage_penalty[1])
+	((s).pl_percent_penalty.p95)
 #define SGET_85_PLACEMENT_PERCENTAGE_PENALTY(s) \
-	((s).placement_percentage_penalty[2])
+	((s).pl_percent_penalty.p85)
 #define SGET_75_PLACEMENT_PERCENTAGE_PENALTY(s) \
-	((s).placement_percentage_penalty[3])
+	((s).pl_percent_penalty.p75)
 #define SSET_99_PLACEMENT_PERCENTAGE_PENALTY(s,x) \
-	((s).placement_percentage_penalty[0] = (x))
+	((s).pl_percent_penalty.p99 = (x))
 #define SSET_95_PLACEMENT_PERCENTAGE_PENALTY(s,x) \
-	((s).placement_percentage_penalty[1] = (x))
+	((s).pl_percent_penalty.p95 = (x))
 #define SSET_85_PLACEMENT_PERCENTAGE_PENALTY(s,x) \
-	((s).placement_percentage_penalty[2] = (x))
+	((s).pl_percent_penalty.p85 = (x))
 #define SSET_75_PLACEMENT_PERCENTAGE_PENALTY(s,x) \
-	((s).placement_percentage_penalty[3] = (x))
+	((s).pl_percent_penalty.p75 = (x))
+#define SGET_PLACEMENT_POSITION_STRING(s) \
+	((s).pl_position_string)
+#define SSET_PLACEMENT_POSITION_STRING(s,x)	\
+	((s).pl_position_string = (x))
+#define SGET_INITIAL_MAP_COMMAND_STRING(s) \
+	((s).initial_map_command_string)
+#define SSET_INITIAL_MAP_COMMAND_STRING(s,x)	\
+	((s).initial_map_command_string = (x))
 
 /* access to style lists */
 #define SLGET_NEXT_LIST(s) \

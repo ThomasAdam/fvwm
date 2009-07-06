@@ -58,7 +58,7 @@ const func_t func_table[] =
 	/* CMD_ENT("#", CMD_Comment, 0, 0, 0), */
 	/* # - Comment line (ignored) */
 
-	/* CMD_ENT("*", CMD_Asteric, 0, 0, 0), */
+	/* CMD_ENT("*", CMD_Asterisk, 0, 0, 0), */
 	/* * - Module configuration line (no space after asterisk) */
 
 	CMD_ENT("+", CMD_Plus, F_ADDMENU2, 0, 0),
@@ -225,10 +225,15 @@ const func_t func_table[] =
 	CMD_ENT("echo", CMD_Echo, F_ECHO, 0, 0),
 	/* - Print message to stderr, mainly for debugging */
 
+	CMD_ENT("echofuncdefinition", CMD_EchoFuncDefinition,
+		F_ECHO_FUNC_DEFINITION, 0, 0),
+	/* - Print the definion of a function */
+
 	CMD_ENT("edgecommand", CMD_EdgeCommand, F_EDGE_COMMAND, 0, 0),
 	/* - Bind one or another screen edge to an fvwm action */
 
-	CMD_ENT("edgeleavecommand", CMD_EdgeLeaveCommand, F_EDGE_LEAVE_COMMAND, 0, 0),
+	CMD_ENT("edgeleavecommand", CMD_EdgeLeaveCommand, F_EDGE_LEAVE_COMMAND,
+		0, 0),
 	/* - Bind one or another screen edge to an fvwm action */
 
 	CMD_ENT("edgeresistance", CMD_EdgeResistance, F_EDGE_RES, 0, 0),
@@ -277,7 +282,7 @@ const func_t func_table[] =
 	CMD_ENT("focusstyle", CMD_FocusStyle, F_FOCUSSTYLE, 0, 0),
 	/* - Configure focus and raise policy for windows */
 
-	CMD_ENT("function", CMD_Dummy, F_FUNCTION, 0, 0),
+	CMD_ENT("function", CMD_Function, F_FUNCTION, 0, 0),
 	/* Function - Execute a user defined function, see AddToFunc */
 
 	CMD_ENT("globalopts", CMD_GlobalOpts, F_GLOBAL_OPTS, 0, 0),
@@ -325,7 +330,7 @@ const func_t func_table[] =
 	CMD_ENT("imagepath", CMD_ImagePath, F_IMAGE_PATH, 0, 0),
 	/* - Directories to search for images */
 
-	CMD_ENT(PRE_KEEPRC, CMD_Dummy, F_KEEPRC, 0, 0),
+	CMD_ENT(PRE_KEEPRC, CMD_KeepRc, F_KEEPRC, 0, 0),
 	/* KeepRc - Do not modify the previous command return code */
 
 	CMD_ENT("key", CMD_Key, F_KEY, 0, 0),
@@ -356,6 +361,10 @@ const func_t func_table[] =
 	/* - Control appearance and behavior of a menu */
 
 	CMD_ENT("module", CMD_Module, F_MODULE, 0, 0),
+	/* - Invoke an fvwm module */
+
+	CMD_ENT("modulelistenonly", CMD_ModuleListenOnly, F_MODULE_LISTEN_ONLY,
+		0, 0),
 	/* - Invoke an fvwm module */
 
 	CMD_ENT("modulepath", CMD_ModulePath, F_MODULE_PATH, 0, 0),
@@ -519,6 +528,10 @@ const func_t func_table[] =
 		FUNC_DONT_REPEAT, 0),
 	/* - Internal, used for module communication */
 
+	CMD_ENT("send_reply", CMD_Send_Reply, F_SEND_REPLY,
+		FUNC_DONT_REPEAT, 0),
+	/* - Internal, used for module communication */
+
 	CMD_ENT("send_windowlist", CMD_Send_WindowList, F_SEND_WINDOW_LIST,
 		FUNC_DONT_REPEAT, 0),
 	/* - Internal, used for module communication */
@@ -544,7 +557,7 @@ const func_t func_table[] =
 	CMD_ENT("setenv", CMD_SetEnv, F_SETENV, 0, 0),
 	/* - Set an environment variable */
 
-	CMD_ENT(PRE_SILENT, CMD_Dummy, F_SILENT, 0, 0),
+	CMD_ENT(PRE_SILENT, CMD_Silent, F_SILENT, 0, 0),
 	/* Silent - Suppress errors on command, avoid window selection */
 
 	CMD_ENT("snapattraction", CMD_SnapAttraction, F_SNAP_ATT, 0, 0),
@@ -580,7 +593,7 @@ const func_t func_table[] =
 	CMD_ENT("style", CMD_Style, F_STYLE, 0, 0),
 	/* - Set attributes of windows that match a pattern */
 
-	CMD_ENT("tearmenuoff", CMD_Dummy, F_TEARMENUOFF, 0, 0),
+	CMD_ENT("tearmenuoff", CMD_TearMenuOff, F_TEARMENUOFF, 0, 0),
 	/* TearMenuOff - Convert a menu to a window, for use in menu items */
 
 	CMD_ENT("test", CMD_Test, F_TEST_, 0, 0),
@@ -592,7 +605,7 @@ const func_t func_table[] =
 	CMD_ENT("thiswindow", CMD_ThisWindow, F_THISWINDOW, 0, 0),
 	/* - Operate on the context window if it meets conditions */
 
-	CMD_ENT("title", CMD_Dummy, F_TITLE, 0, 0),
+	CMD_ENT("title", CMD_Title, F_TITLE, 0, 0),
 	/* Title - Insert title into a menu */
 
 	CMD_ENT("titlestyle", CMD_TitleStyle, F_TITLESTYLE, FUNC_DECOR, 0),

@@ -12,7 +12,7 @@
 
 
 /*
-**  Load and save the 'global', ie not window-related, state of FVWM
+**  Load and save the 'global', ie not window-related, state of fvwm
 **  into a file.
 */
 void LoadGlobalState(char *filename);
@@ -48,8 +48,8 @@ void RestartInSession (char *filename, Bool isNative, Bool doPreserveState);
 typedef struct
 {
 	int shade_dir;
-	int do_shade : 1;
-	int used_title_dir_for_shading : 1;
+	unsigned do_shade : 1;
+	unsigned used_title_dir_for_shading : 1;
 	unsigned do_max : 1;
 } mwtsm_state_args;
 

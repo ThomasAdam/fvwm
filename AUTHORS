@@ -2,6 +2,35 @@ To find out what should go in this file, see "Information For
 Maintainers of GNU Software" (maintain.texi), the section called
 "Recording Changes".
 
+Julio José Teca Nemesio:
+ChangeWindowTitle and ChangeWindowTitleFromArg FvwmScript instructions.
+ChangeWindowTitle FvwmScript command.
+
+Simon Griph:
+SVG image loader.  ARGB/animated mouse cursor loading.
+
+Thomas Adam:
+Window style !StickyStippledTitle (and hence StickyStippledTitle).
+Icon style StippledIconTitle and !StickyStippledIconTitle.
+StartShaded style option.
+Introduce the command expansion placeholder:  $[w.visiblename]
+Make style matching honour a window's visible name (c.f. $[w.visiblename])
+Added "bindings" option to PrintInfo command useful for debugging.
+Force windows on-screen where applicable when using
+"PositionPlacement UnderMouse".
+
+Serge (gentoosiast) Koksharov:
+Documentation fixes, bug fixes.
+
+Arwed von Merkatz:
+UnderMousePlacement style.
+
+David Maciver:
+Menu styles TitleColorset, HilightTitle and TitleFont.
+
+Renato Caldas:
+Some cleanups. Module linked list mechanism.
+
 Malcolm Still:
 New MenuStyle option TrianglesUseFore.
 
@@ -15,7 +44,9 @@ Viktor Griph:
 Patch for Perl modules on 64 bit machines. EdgeHasPointer and
 EdgeIsActive test conditions. Nested variable expansion. MouseWheel
 and ScrollOffPage menu style options. Simple placement mouse bindings
-and PlacedByButton window condition.
+and PlacedByButton window condition. Use of fvwmstyle resource. Warnings
+for unconsumed arguments to style options. Bug fixes. Advance Menu
+context bindings.
 
 Bjoern Steinbrink:
 Patch for FvwmScript tasks running too often.
@@ -29,6 +60,7 @@ EdgeLeaveCommand
 
 George Potapov:
 ShowOnlyFocused option for FvwmIconMan.
+PressButton command in FvwmButtons
 
 Jim C. Brown:
 MailDir option in FvwmTaskBar.
@@ -55,7 +87,9 @@ Scott Smedley:
 Wrote FvwmTabs module. Improved Perl module support. FakeKeyPress
 command. Window-specific key/mouse bindings. FvwmButtons: ActiveIcon,
 ActiveTitle, ActiveColorset, PressIcon, PressTitle & PressColorset options.
-FvwmWindowMenu: rewrote to use WindowList tracker.
+FvwmWindowMenu: rewrote to use WindowList tracker. Version test condition.
+Added "Periodic" option to Schedule command. Converted manpage into XML
+source to generate HTML documentation & (auto-generated) manpage.
 
 Francis Litterio:
 Fixed building FvwmScript under cygwin.  Added CenterPlacement style.
@@ -188,7 +222,7 @@ command; rewrite some scripts examples and new script examples.
 FvwmScroll: p option for a percentage reduction.  FvwmTaskBar: Focus,
 Rows, 3DFvwm, NoIconAction options, take in account the real border
 width for geometry computation, AutoHide amelioration; aliases
-support.  FvwmWinList: geometries fixes; aliases support. utile:
+support.  FvwmWinList: geometries fixes; aliases support. utils:
 fvwm-menu-desktop script for GNOME and KDE desktop menus.  fvwm-root
 improvement (root properties).
 Bugfixes!
@@ -212,9 +246,8 @@ Original idea for 'previous page' parameter (MoveToPage and
 GotoPage).
 
 Dan Espen:
-Color Limiting, Multiple IconBoxes, Iconification Animation, new
-3d hilight/shadow calc from scwm as a library routine, updated web
-docs, lots of improvements in FvwmForm, replacement of FvwmTalk
+Common-color Color Limiting, Multiple IconBoxes, Iconification Animation,
+lots of improvements in FvwmForm, replacement of FvwmTalk
 with FvwmForm, fvwm setup form.
 
 Tony Finch:
@@ -228,7 +261,7 @@ Fixes in the fvwmrc_convert script.
 
 German Gomez Garcia:
 Implemented new menu style definition, allowing multiple
-definitios and gradients and pixmaps 'ala' ButtonStyle. See
+definitions and gradients and pixmaps 'ala' ButtonStyle. See
 doc/README.styles for more info.
 
 Udo Grabowski:

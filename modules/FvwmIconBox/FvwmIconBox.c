@@ -59,6 +59,11 @@
 #include "libs/FShape.h"
 #include "libs/FRender.h"
 #include "libs/FRenderInit.h"
+#include "libs/Graphics.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
+#include "libs/System.h"
+#include "libs/XError.h"
 
 #include "libs/Colorset.h"
 #include "fvwm/fvwm.h"
@@ -227,7 +232,7 @@ int main(int argc, char **argv)
     exit(1);
   }
 
-  /* alise support */
+  /* aliases support */
   if (argc == 7 && argv[6] != NULL)
   {
     MyName = safemalloc(strlen(argv[6])+1);
@@ -285,11 +290,7 @@ int main(int argc, char **argv)
 	      XDisplayName(display_name));
       exit (1);
     }
-  PictureInitCMap(dpy);
-  FScreenInit(dpy);
-  AllocColorset(0);
-  FShapeInit(dpy);
-  FRenderInit(dpy);
+  flib_init_graphics(dpy);
 
   x_fd = XConnectionNumber(dpy);
 
@@ -805,6 +806,7 @@ void RedrawIcon(struct icon_info *item, int f, XEvent *evp)
 	else
 	{
 		cs = Iconcolorset;
+		XSetWindowBackground(dpy, item->IconWin, icon_back_pix);
 	}
 
 	/* icon pixmap */
@@ -1381,7 +1383,6 @@ void CreateWindow(void)
     /* hack to prevent mapping on wrong screen with StartsOnScreen */
     FScreenMangleScreenIntoUSPosHints(FSCREEN_XYPOS, &mysizehints);
   }
-/*!!!*/fprintf(stderr, "pos %d %d, grav %d\n", wx, wy, gravity);
 
   mysizehints.win_gravity = gravity;
 
@@ -1693,11 +1694,6 @@ void GetIconwinSize(int *dx, int *dy)
   *dy = icon_win_height - *dy;
 }
 
-void nocolor(char *a, char *b)
-{
- fprintf(stderr,"%s: can't %s %s\n", MyName, a,b);
-}
-
 void MySendFvwmPipe(int *fd, char *message, unsigned long window)
 {
   long w;
@@ -2002,7 +1998,6 @@ void ParseOptions(void)
 	  xneg = 1;
 	if (flags & YNegative)
 	  yneg = 1;
-/*!!!*/fprintf(stderr, "geom: size %d %d, pos %d %d, neg %d %d\n", num_columns, num_rows, geom_x, geom_y, xneg, yneg);
       }
       else if (strncasecmp(tline,CatString3(
 			     "*", MyName, "MaxIconSize"),Clength+12)==0)

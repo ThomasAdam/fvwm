@@ -17,6 +17,7 @@
 #include "config.h"
 
 #include <limits.h>
+#include "libs/wild.h"
 #include "FvwmIconMan.h"
 
 #define HASHTAB_SIZE 257
@@ -173,10 +174,7 @@ int check_resolution(WinManager *manager, WinData *win)
       flag = 1;
     } else if (win->desknum == globals.desknum) {
       /* win and screen intersect if they are not disjoint in x and y */
-      flag = RECTANGLES_INTERSECT(
-	g.x, g.y, g.width, g.height,
-	manager->managed_g.x, manager->managed_g.y,
-	manager->managed_g.width, manager->managed_g.height);
+      flag = fvwmrect_do_rectangles_intersect(&g, &manager->managed_g);
     }
     break;
 
@@ -186,10 +184,7 @@ int check_resolution(WinManager *manager, WinData *win)
   case SHOW_SCREEN:
     if (win->desknum == globals.desknum) {
       /* win and screen intersect if they are not disjoint in x and y */
-      flag = RECTANGLES_INTERSECT(
-	g.x, g.y, g.width, g.height,
-	manager->managed_g.x, manager->managed_g.y,
-	manager->managed_g.width, manager->managed_g.height);
+      flag = fvwmrect_do_rectangles_intersect(&g, &manager->managed_g);
     }
     break;
   }
@@ -206,14 +201,14 @@ static int iconmanager_show (WinManager *man, char *tname, char *iname,
 
   assert (man);
 
-#ifdef PRINT_DEBUG
+#ifdef FVWM_DEBUG_MSGS
   ConsoleDebug (WINLIST, "In iconmanager_show: %s:%s : %s %s\n", tname, iname,
 		rname, cname);
   ConsoleDebug (WINLIST, "dontshow:\n");
   print_stringlist (&man->dontshow);
   ConsoleDebug (WINLIST, "show:\n");
   print_stringlist (&man->show);
-#endif /*PRINT_DEBUG*/
+#endif /* FVWM_DEBUG_MSGS */
 
   for (string = man->dontshow.list; string; string = string->next) {
     ConsoleDebug (WINLIST, "Matching: %s\n", string->string);

@@ -1,3 +1,28 @@
+2007-08-07  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
+
+	* fvwm.pot:
+	* fvwm.sv_SE.po:
+	* fvwm.fr.po:
+	* fvwm.zh_CN.po:
+	* fvwm.ar.po:
+	* fvwm.de.po:
+	write fvwm in lower case
+
+2007-04-29  Viktor Griph  <griph(at)dd(dot)chalmers(dot)se>
+
+	* Makefile.am (FVWM_POT_FILES):
+	added ../fvwm/menus.c to FVWM_POT_FILES
+
+	* fvwm.sv_SE.po:
+	translated "More&..." to Swedish
+
+2007-04-17  Jesus Guerrero  <6thpink(at)terra(dot)es>
+
+	* po/fvwm.de.po:
+	* po/fvwm.fr.po:
+	* po/fvwm.pot:
+	added the "&More..." string
+
 2004-05-23  Mikhael Goikhman  <migo@homemail.com>
 
 	* po/FvwmScript.zh_CN.gmo:
@@ -59,10 +84,10 @@
 
 2002-12-02  olicha  <olivier.chapuis@free.fr>
 
-	* Makefile.am (uninstall-local-yes): 
+	* Makefile.am (uninstall-local-yes):
 	Fixed make uninstall
 
-2002-12-02  Dominik Vogt  <dominik.vogt@gmx.de>
+2002-12-02  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 
 	* Makefile.am:
 	fixed (?) install and uninstall rules

@@ -22,7 +22,7 @@
  */
 Bool PImageCreatePixmapFromArgbData(
 	Display *dpy, Window win, CARD32 *data, int start, int width,
-	int height, Pixmap pixmap, Pixmap mask, Pixmap alpha, int *have_alpha,
+	int height, Pixmap *pixmap, Pixmap *mask, Pixmap *alpha,
 	int *nalloc_pixels, Pixel **alloc_pixels, int *no_limit,
 	FvwmPictureAttributes fpa);
 /*
@@ -33,8 +33,9 @@ Bool PImageCreatePixmapFromArgbData(
  */
 Bool PImageLoadPixmapFromFile(
 	Display *dpy, Window win, char *file, Pixmap *pixmap, Pixmap *mask,
-	Pixmap *alpha, int *width, int *height, int *depth, int *nalloc_pixels,
-	Pixel **alloc_pixels, int *no_limit, FvwmPictureAttributes fpa);
+	Pixmap *alpha, int *width, int *height, int *depth,
+	int *nalloc_pixels, Pixel **alloc_pixels, int *no_limit,
+	FvwmPictureAttributes fpa);
 
 /*
  * <pubfunc>PImageLoadPixmapFromFile
@@ -51,9 +52,8 @@ FvwmPicture *PImageLoadFvwmPictureFromFile(
  * Create a cursor from a file.
  * </description>
  */
-Bool PImageLoadCursorPixmapFromFile(
-	Display *dpy, Window win, char *path, Pixmap *source, Pixmap *mask,
-	unsigned int *x, unsigned int *y);
+Cursor PImageLoadCursorFromFile(
+	Display *dpy, Window win, char *path, int x_hot, int y_hot);
 
 /*
  * <pubfunc>PImageLoadPixmapFromFile
@@ -63,6 +63,7 @@ Bool PImageLoadCursorPixmapFromFile(
  */
 Bool PImageLoadPixmapFromXpmData(
 	Display *dpy, Window win, int color_limit, char **data,
-	Pixmap *pixmap, Pixmap *mask, int *width, int *height, int *depth);
+	Pixmap *pixmap, Pixmap *mask, int *width,
+	int *height, int *depth);
 
 #endif /* PICTURE_IMAGE_LOADER_H  */

@@ -18,7 +18,12 @@
 #include "config.h"
 
 #include <stdio.h>
+#include <limits.h>
 
+#include "libs/fvwmlib.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
+#include "libs/ColorUtils.h"
 #include "fvwm.h"
 #include "externs.h"
 #include "cursor.h"
@@ -34,6 +39,7 @@
 #include "libs/FGettext.h"
 #include "libs/charmap.h"
 #include "libs/wcontext.h"
+#include "libs/Fsvg.h"
 
 /* ---------------------------- local definitions -------------------------- */
 
@@ -111,9 +117,12 @@ static char *function_vars[] =
 	"w.iconname",
 	"w.iconfile",
 	"w.miniiconfile",
+	"w.iconfile.svgopts",
+	"w.miniiconfile.svgopts",
 	"w.id",
 	"w.name",
 	"w.resource",
+	"w.visiblename",
 	"w.width",
 	"w.x",
 	"w.y",
@@ -130,7 +139,7 @@ enum
 	VAR_FGSH_CS,
 	VAR_GT_,
 	VAR_HILIGHT_CS,
-	VAR_SHADOW_CS,
+	VAR_SHADOW_CS
 } partial_extended_vars;
 
 enum
@@ -181,9 +190,12 @@ enum
 	VAR_W_ICONNAME,
 	VAR_W_ICONFILE,
 	VAR_W_MINIICONFILE,
+	VAR_W_ICONFILE_SVGOPTS,
+	VAR_W_MINIICONFILE_SVGOPTS,
 	VAR_W_ID,
 	VAR_W_NAME,
 	VAR_W_RESOURCE,
+	VAR_W_VISIBLE_NAME,
 	VAR_W_WIDTH,
 	VAR_W_X,
 	VAR_W_Y,
@@ -195,13 +207,120 @@ enum
 
 /* ---------------------------- local functions ---------------------------- */
 
+int __eae_parse_range(char *input, int *lower, int *upper)
+{
+	int rc;
+	int n;
+
+	*lower = 0;
+	*upper = INT_MAX;
+	if (*input == '*')
+	{
+		return 0;
+	}
+	if (!isdigit(*input))
+	{
+		return -1;
+	}
+	rc = sscanf(input, "%d-%d%n", lower, upper, &n);
+	if (rc < 2)
+	{
+		rc = sscanf(input, "%d%n", lower, &n);
+		if (rc < 1)
+		{
+			/* not a positional argument */
+			return -1;
+		}
+		if (input[n] == '-')
+		{
+			/* $[n- */
+			n++;
+		}
+		else
+		{
+			/* $[n */
+			*upper = *lower;
+		}
+	}
+	input += n;
+	if (*input != 0)
+	{
+		/* trailing characters - not good */
+		return -1;
+	}
+	if (*upper < *lower)
+	{
+		/* the range is reverse - not good */
+		return -1;
+	}
+
+	return 0;
+}
+
+static signed int expand_args_extended(
+	char *input, char *argument_string, char *output)
+{
+	int rc;
+	int lower;
+	int upper;
+	int i;
+	size_t len;
+
+	rc = __eae_parse_range(input, &lower, &upper);
+	if (rc == -1)
+	{
+		return -1;
+	}
+	/* Skip to the start of the requested argument range */
+	if (lower > 0)
+	{
+		argument_string = SkipNTokens(argument_string, lower);
+	}
+	if (!argument_string)
+	{
+		/* replace with empty string */
+		return 0;
+	}
+	/* TODO: optimise handling of $[0] to $[9] which have already been
+	 * parsed */
+	for (i = lower, len = 0; i <= upper; i++)
+	{
+		char *token;
+		size_t tlen;
+
+		token = PeekToken(argument_string, &argument_string);
+		if (token == NULL)
+		{
+			break;
+		}
+		/* copy the token */
+		if (i > lower)
+		{
+			if (output != NULL)
+			{
+				*output = ' ';
+				output++;
+			}
+			len++;
+		}
+		tlen = strlen(token);
+		if (output != NULL && tlen > 0)
+		{
+			memcpy(output, token, tlen);
+			output += tlen;
+		}
+		len += tlen;
+	}
+
+	return (int)len;
+}
+
 static signed int expand_vars_extended(
 	char *var_name, char *output, cond_rc_t *cond_rc,
 	const exec_context_t *exc)
 {
-	char *s;
 	char *rest;
-	char dummy[64];
+	char dummy[64] = "\0";
 	char *target = (output) ? output : dummy;
 	int cs = -1;
 	int n;
@@ -212,10 +331,15 @@ static signed int expand_vars_extended(
 	Pixel pixel = 0;
 	int val = -12345678;
 	const char *string = NULL;
+	char *allocated_string = NULL;
+	char *quoted_string = NULL;
+	Bool should_quote = False;
 	Bool is_numeric = False;
+	Bool is_target = False;
 	Bool is_x;
 	Window context_w = Scr.Root;
 	FvwmWindow *fw = exc->w.fw;
+	signed int len = -1;
 
 	/* allow partial matches for *.cs, gt, ... etc. variables */
 	switch ((i = GetTokenIndex(var_name, partial_function_vars, -1, &rest)))
@@ -262,22 +386,16 @@ static signed int expand_vars_extended(
 			pixel = Colorset[cs].fgsh;
 			break;
 		}
-		return pixel_to_color_string(dpy, Pcmap, pixel, target, False);
+		is_target = True;
+		len = pixel_to_color_string(dpy, Pcmap, pixel, target, False);
+		goto GOT_STRING;
 	case VAR_GT_:
-	{
 		if (rest == NULL)
 		{
 			return -1;
 		}
 		string = _(rest);
-		l = strlen(string);
-		if (output)
-		{
-			strcpy(output, string);
-		}
-		return l;
-		break;
-	}
+		goto GOT_STRING;
 	case VAR_DESK_NAME:
 		if (sscanf(rest, "%d%n", &cs, &n) < 1)
 		{
@@ -288,28 +406,15 @@ static signed int expand_vars_extended(
 			/* trailing characters */
 			return -1;
 		}
-		s = GetDesktopName(cs);
-		if (s == NULL)
+		string = GetDesktopName(cs);
+		if (string == NULL)
 		{
 			const char *ddn = _("Desk");
-			s = (char *)safemalloc(19 + strlen(ddn));
-			sprintf(s, "%s %i", ddn, cs);
-			l = strlen(s);
-			if (output)
-			{
-				strcpy(output, s);
-			}
-			free(s);
+			allocated_string = (char *)safemalloc(19 + strlen(ddn));
+			sprintf(allocated_string, "%s %i", ddn, cs);
+			string = allocated_string;
 		}
-		else
-		{
-			l = strlen(s);
-			if (output)
-			{
-				strcpy(output, s);
-			}
-		}
-		return l;
+		goto GOT_STRING;
 	default:
 		break;
 	}
@@ -364,20 +469,22 @@ static signed int expand_vars_extended(
 	case VAR_W_ID:
 		if (fw && !IS_EWMH_DESKTOP(FW_W(fw)))
 		{
-			sprintf(dummy, "0x%x", (unsigned int)FW_W(fw));
-			string = dummy;
+			is_target = True;
+			sprintf(target, "0x%x", (int)FW_W(fw));
 		}
 		break;
 	case VAR_W_NAME:
 		if (fw && !IS_EWMH_DESKTOP(FW_W(fw)))
 		{
 			string = fw->name.name;
+			should_quote = True;
 		}
 		break;
 	case VAR_W_ICONNAME:
 		if (fw && !IS_EWMH_DESKTOP(FW_W(fw)))
 		{
 			string = fw->icon_name.name;
+			should_quote = True;
 		}
 		break;
 	case VAR_W_ICONFILE:
@@ -388,24 +495,68 @@ static signed int expand_vars_extended(
 
 			t = (i == VAR_W_ICONFILE) ?
 				fw->icon_bitmap_file : fw->mini_pixmap_file;
-                        /* expand the path if possible */
-                        string = PictureFindImageFile(t, NULL, R_OK);
-                        if (!string)
-                        {
+			/* expand the path if possible */
+			allocated_string = PictureFindImageFile(t, NULL, R_OK);
+			if (allocated_string == NULL)
+			{
 				string = t;
 			}
-                }
+			else if (USE_SVG && *allocated_string == ':' &&
+				 (string = strchr(allocated_string + 1, ':')))
+			{
+				string++;
+			}
+			else
+			{
+				string = allocated_string;
+			}
+		}
+		break;
+	case VAR_W_ICONFILE_SVGOPTS:
+	case VAR_W_MINIICONFILE_SVGOPTS:
+		if (fw && !IS_EWMH_DESKTOP(FW_W(fw)))
+		{
+			char *t;
+
+			if (!USE_SVG)
+			{
+				return -1;
+			}
+			t = (i == VAR_W_ICONFILE_SVGOPTS) ?
+				fw->icon_bitmap_file : fw->mini_pixmap_file;
+			/* expand the path if possible */
+			allocated_string = PictureFindImageFile(t, NULL, R_OK);
+			string = allocated_string;
+			if (string && *string == ':' &&
+			    (t = strchr(string + 1, ':')))
+			{
+				*t = 0;
+			}
+			else
+			{
+				string = "";
+			}
+		}
 		break;
 	case VAR_W_CLASS:
 		if (fw && !IS_EWMH_DESKTOP(FW_W(fw)))
 		{
 			string = fw->class.res_class;
+			should_quote = True;
 		}
 		break;
 	case VAR_W_RESOURCE:
 		if (fw && !IS_EWMH_DESKTOP(FW_W(fw)))
 		{
 			string = fw->class.res_name;
+			should_quote = True;
+		}
+		break;
+	case VAR_W_VISIBLE_NAME:
+		if (fw && !IS_EWMH_DESKTOP(FW_W(fw)))
+		{
+			string = fw->visible_name;
+			should_quote = True;
 		}
 		break;
 	case VAR_W_X:
@@ -627,6 +778,7 @@ static signed int expand_vars_extended(
 		case COND_RC_OK:
 		case COND_RC_NO_MATCH:
 		case COND_RC_ERROR:
+		case COND_RC_BREAK:
 			val = (int)(cond_rc->rc);
 			break;
 		default:
@@ -693,16 +845,16 @@ static signed int expand_vars_extended(
 		string = Fvwm_VersionInfo;
 		break;
 	case VAR_FUNC_CONTEXT:
-		dummy[0] = wcontext_wcontext_to_char(exc->w.wcontext);
-		dummy[1] = 0;
-		string = dummy;
+		is_target = True;
+		target[0] = wcontext_wcontext_to_char(exc->w.wcontext);
+		target[1] = '\0';
 		break;
 	default:
 		/* unknown variable - try to find it in the environment */
 		string = getenv(var_name);
 		if (!string)
 		{
-			/* Replace it with unexpanded variable. This is needed 
+			/* Replace it with unexpanded variable. This is needed
 			 * since var_name might have been expanded */
 			l = strlen(var_name) + 3;
 			if (output)
@@ -712,22 +864,50 @@ static signed int expand_vars_extended(
 				output[l - 1] = ']';
 				output[l] = 0;
 			}
-			return l; 
+			return l;
 		}
 	}
+
+GOT_STRING:
 	if (is_numeric)
 	{
+		is_target = True;
 		sprintf(target, "%d", val);
-		return strlen(target);
+	}
+	if (is_target)
+	{
+		string = target;
 	}
 	else
 	{
-		if (output && string)
+		if (!string)
+		{
+			return -1;
+		}
+		if (output)
 		{
 			strcpy(output, string);
 		}
-		return string ? strlen(string) : -1;
 	}
+	if (len < 0)
+	{
+		len = strlen(string);
+	}
+	if (should_quote)
+	{
+		quoted_string = (char *)safemalloc(len * 2 + 3);
+		len = QuoteString(quoted_string, string) - quoted_string;
+		if (output)
+		{
+			strcpy(output, quoted_string);
+		}
+		free(quoted_string);
+	}
+	if (allocated_string)
+	{
+		free(allocated_string);
+	}
+	return len;
 }
 
 /* ---------------------------- interface functions ------------------------ */
@@ -757,9 +937,9 @@ char *expand_vars(
 	i = 0;
 	while (i < l)
 	{
-		if (input[i] == '$' && (!ismod || !isalpha(input[i+1])))
+		if (input[i] == '$' && (!ismod || !isalpha(input[i + 1])))
 		{
-			switch (input[i+1])
+			switch (input[i + 1])
 			{
 			case '$':
 				/* skip the second $, it is not a part of
@@ -768,8 +948,8 @@ char *expand_vars(
 				break;
 			case '[':
 				/* extended variables */
-				var = &input[i+2];
 				m = i + 2;
+				var = &input[m];
 				xlevel = 1;
 				name_has_dollar = False;
 				while (m < l && xlevel && input[m])
@@ -797,26 +977,34 @@ char *expand_vars(
 					input[m] = 0;
 					/* handle variable name */
 					k = strlen(var);
-					if (!addto)
+					if (addto)
 					{
-						if (name_has_dollar)
-						{
-							var = expand_vars(
-								var, arguments,
-								addto, ismod,
-								cond_rc, exc);
-						}
+						i += k + 2;
+						input[m] = ']';
+						break;
+					}
+					if (name_has_dollar)
+					{
+						var = expand_vars(
+							var, arguments, addto,
+							ismod, cond_rc, exc);
+					}
+					xlen = expand_args_extended(
+						var, arguments ? arguments[0] :
+						NULL, NULL);
+					if (xlen < 0)
+					{
 						xlen = expand_vars_extended(
 							var, NULL, cond_rc,
 							exc);
-						if (name_has_dollar)
-						{
-							free(var);
-						}
-						if (xlen >= 0)
-						{
-							l2 += xlen - (k + 2);
-						}
+					}
+					if (name_has_dollar)
+					{
+						free(var);
+					}
+					if (xlen >= 0)
+					{
+						l2 += xlen - (k + 2);
 					}
 					i += k + 2;
 					input[m] = ']';
@@ -833,17 +1021,17 @@ char *expand_vars(
 			case '8':
 			case '9':
 			case '*':
-				if (input[i+1] == '*')
+				if (input[i + 1] == '*')
 				{
 					n = 0;
 				}
 				else
 				{
-					n = input[i+1] - '0' + 1;
+					n = input[i + 1] - '0' + 1;
 				}
 				if (arguments[n] != NULL)
 				{
-					l2 += strlen(arguments[n])-2;
+					l2 += strlen(arguments[n]) - 2;
 					i++;
 				}
 				break;
@@ -862,7 +1050,7 @@ char *expand_vars(
 			case 'n':
 				if (fw && !IS_EWMH_DESKTOP(FW_W(fw)))
 				{
-					switch(input[i+1])
+					switch(input[i + 1])
 					{
 					case 'c':
 						if (fw->class.res_class &&
@@ -891,6 +1079,19 @@ char *expand_vars(
 				}
 				break;
 			case 'v':
+				if (fw && !IS_EWMH_DESKTOP(FW_W(fw)))
+				{
+					switch(input[i + 1])
+					{
+						case 'v':
+							if(fw->visible_name)
+							{
+								string = fw->visible_name;
+							}
+							break;
+					}
+				}
+
 				if (Fvwm_VersionInfo)
 				{
 					l2 += strlen(Fvwm_VersionInfo) + 2;
@@ -914,14 +1115,14 @@ char *expand_vars(
 	}
 
 	/* Actually create expanded string */
-	i=0;
-	out = safemalloc(l2+1);
-	j=0;
-	while (i<l)
+	i = 0;
+	out = safemalloc(l2 + 1);
+	j = 0;
+	while (i < l)
 	{
-		if (input[i] == '$' && (!ismod || !isalpha(input[i+1])))
+		if (input[i] == '$' && (!ismod || !isalpha(input[i + 1])))
 		{
-			switch (input[i+1])
+			switch (input[i + 1])
 			{
 			case '[':
 				/* extended variables */
@@ -932,8 +1133,8 @@ char *expand_vars(
 					out[j++] = input[i];
 					break;
 				}
-				var = &input[i+2];
 				m = i + 2;
+				var = &input[m];
 				xlevel = 1;
 				name_has_dollar = False;
 				while (m < l && xlevel && input[m])
@@ -967,8 +1168,16 @@ char *expand_vars(
 							var, arguments,	addto,
 							ismod, cond_rc,	exc);
 					}
-					xlen = expand_vars_extended(
-						var, &out[j], cond_rc, exc);
+					xlen = expand_args_extended(
+						var, arguments ?
+						arguments[0] : NULL,
+						&out[j]);
+					if (xlen < 0)
+					{
+						xlen = expand_vars_extended(
+							var, &out[j], cond_rc,
+							exc);
+					}
 					if (name_has_dollar)
 					{
 						free(var);
@@ -1006,17 +1215,17 @@ char *expand_vars(
 			case '8':
 			case '9':
 			case '*':
-				if (input[i+1] == '*')
+				if (input[i + 1] == '*')
 				{
 					n = 0;
 				}
 				else
 				{
-					n = input[i+1] - '0' + 1;
+					n = input[i + 1] - '0' + 1;
 				}
 				if (arguments[n] != NULL)
 				{
-					for (k=0;arguments[n][k];k++)
+					for (k = 0; arguments[n][k]; k++)
 					{
 						out[j++] = arguments[n][k];
 					}
@@ -1029,15 +1238,6 @@ char *expand_vars(
 				else
 				{
 					i++;
-#if 0
-					/* DV: Whoa! Better live with the extra
-					 * whitespace. */
-					if (isspace(input[i+1]))
-					{
-						/*eliminates extra white space*/
-						i++;
-					}
-#endif
 				}
 				break;
 			case '.':
@@ -1050,11 +1250,11 @@ char *expand_vars(
 					fvwm_msg(OLD, "expand_vars",
 						"Use $[w.id] instead of $w");
 					sprintf(&out[j], "0x%x",
-						(unsigned int)FW_W(fw));
+						(int)FW_W(fw));
 				}
 				else
 				{
-					sprintf(&out[j],"$w");
+					sprintf(&out[j], "$w");
 				}
 				j += strlen(&out[j]);
 				i++;
@@ -1086,7 +1286,7 @@ char *expand_vars(
 			case 'n':
 				if (fw && !IS_EWMH_DESKTOP(FW_W(fw)))
 				{
-					switch(input[i+1])
+					switch(input[i + 1])
 					{
 					case 'c':
 						fvwm_msg(OLD, "expand_vars",
@@ -1142,18 +1342,6 @@ char *expand_vars(
 			} /* switch */
 			if (is_string && string)
 			{
-#if 0
-				out[j++] = '\'';
-				for (k = 0; string[k]; k++)
-				{
-					if (string[k] == '\'')
-					{
-						out[j++] = '\\';
-					}
-					out[j++] = string[k];
-				}
-				out[j++] = '\'';
-#endif
 				j = QuoteString(&out[j], string) - out;
 				string = NULL;
 				is_string = False;

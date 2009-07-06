@@ -28,9 +28,11 @@
 #include "Colorset.h"
 #include "FRenderInit.h"
 #include "FRenderInterface.h"
+#include "Graphics.h"
 #include "PictureGraphics.h"
 #include "PictureUtils.h"
 #include "FImage.h"
+#include "Grab.h"
 
 /* ---------------------------- local definitions -------------------------- */
 
@@ -278,7 +280,7 @@ FImage *PGrabXImage(
 	PGrabImageError = 0;
 	if (d_is_a_window)
 	{
-		XGrabServer(dpy);
+		MyXGrabServer(dpy);
 		XGetWindowAttributes(dpy, d, &xwa);
 		XSync(dpy, False);
 
@@ -312,7 +314,11 @@ FImage *PGrabXImage(
 #if 0
 			fprintf(stderr, "XGetImage error during the grab\n");
 #endif
-			fim = NULL;
+			if (fim != NULL)
+			{
+				FDestroyFImage(dpy, fim);
+				fim = NULL;
+			}
 		}
 		if (d_is_a_window)
 		{
@@ -322,7 +328,7 @@ FImage *PGrabXImage(
 
 	if (d_is_a_window)
 	{
-		XUngrabServer(dpy);
+		MyXUngrabServer(dpy);
 	}
 	return fim;
 }
@@ -402,6 +408,11 @@ Pixmap PCreateRenderPixmap(
 		mask_fim = FGetFImage(
 			dpy, mask, Pvisual, 1, src_x, src_y, src_w, src_h,
 			AllPlanes, ZPixmap);
+		if (!mask_fim)
+		{
+			error = True;
+			goto bail;
+		}
 		if (src_x != 0 || src_y != 0)
 			make_new_mask = True;
 	}
@@ -410,12 +421,18 @@ Pixmap PCreateRenderPixmap(
 		alpha_fim = FGetFImage(
 			dpy, alpha, Pvisual, FRenderGetAlphaDepth(), src_x,
 			src_y, src_w, src_h, AllPlanes, ZPixmap);
+		if (!alpha_fim)
+		{
+			error = True;
+			goto bail;
+		}
 	}
 
 	if (alpha != None || added_alpha_percent < 100)
 	{
 		dest_fim = PGrabXImage(
 			dpy, d, dest_x, dest_y, dest_w, dest_h, d_is_a_window);
+		/* accept this error */
 	}
 
 	if (dest_fim && do_repeat && (dest_w > src_w || dest_h > src_h))
@@ -827,6 +844,11 @@ Pixmap PCreateDitherPixmap(
 		mask_fim = FGetFImage(
 			dpy, mask, Pvisual, 1, 0, 0, in_width, in_height,
 			AllPlanes, ZPixmap);
+		if (!mask_fim)
+		{
+			FDestroyFImage(dpy, mask_fim);
+			return None;
+		}
 	}
 	out_pix = XCreatePixmap(dpy, win, out_width, out_height, Pdepth);
 	out_fim = FCreateFImage(
@@ -956,6 +978,7 @@ void PGraphicsRenderPixmaps(
 	t_fra.added_alpha_percent = 100;
 	t_fra.tint_percent = 0;
 	t_fra.mask = 0;
+	t_fra.tint = None;
 
 	if (fra)
 	{
@@ -1191,7 +1214,7 @@ FvwmPicture *PGraphicsCreateTiledPicture(
 	return q;
 }
 
-Pixmap PGraphicsCreateTransprency(
+Pixmap PGraphicsCreateTransparency(
 	Display *dpy, Window win, FvwmRenderAttributes *fra, GC gc,
 	int x, int y, int width, int height, Bool parent_relative)
 {
@@ -1212,7 +1235,7 @@ Pixmap PGraphicsCreateTransprency(
 
 	if (parent_relative)
 	{
-		/* this block is not usefull if backing store ... */
+		/* this block is not useful if backing store ... */
 		if (!XGetGeometry(
 			dpy, win, &root, (int *)&junk, (int *)&junk,
 			(unsigned int *)&sw, (unsigned int *)&sh,
@@ -1325,7 +1348,7 @@ void PGraphicsTintRectangle(
 		fra.tint = tint;
 		fra.tint_percent = tint_percent;
 		fra.mask = FRAM_DEST_IS_A_WINDOW | FRAM_HAVE_TINT;
-		p = PGraphicsCreateTransprency(
+		p = PGraphicsCreateTransparency(
 			dpy, dest, &fra, gc, dest_x, dest_y, dest_w, dest_h,
 			False);
 		if (p)
@@ -1338,7 +1361,7 @@ void PGraphicsTintRectangle(
 	}
 }
 
-#if 0 /* humm... maybe usefull one day with menus */
+#if 0 /* humm... maybe useful one day with menus */
 Pixmap PGraphicsCreateTranslucent(
 	Display *dpy, Window win, FvwmRenderAttributes *fra, GC gc,
 	int x, int y, int width, int height)
@@ -1409,11 +1432,11 @@ Pixmap PGraphicsCreateTranslucent(
 		root_pix = XCreatePixmap(dpy, win, gw, gh, Pdepth);
 		my_gc = fvwmlib_XCreateGC(dpy, win, 0, NULL);
 		XChangeGC(dpy, my_gc, valuemask, &values);
-		XGrabServer(dpy);
+		MyXGrabServer(dpy);
 		XCopyArea(
 			dpy, DefaultRootWindow(dpy), root_pix, my_gc,
 			gx, gy, gw, gh, 0, 0);
-		XUngrabServer(dpy);
+		MyXUngrabServer(dpy);
 		XFreeGC(dpy,my_gc);
 	}
 	if (XRenderSupport && FRenderGetExtensionSupported())

@@ -28,15 +28,20 @@
 #include "config.h"
 
 #include <stdio.h>
+#include <X11/Xatom.h>
 
 #include "libs/fvwmlib.h"
+#include "libs/Parse.h"
 #include "libs/PictureBase.h"
 #include "libs/FShape.h"
+#include "libs/ColorUtils.h"
 #include "libs/Picture.h"
 #include "libs/PictureUtils.h"
+#include "libs/Graphics.h"
 #include "libs/PictureGraphics.h"
 #include "libs/FRenderInit.h"
 #include "libs/Strings.h"
+#include "libs/Grab.h"
 #include "colorset.h"
 #include "externs.h"
 #include "fvwm.h"
@@ -195,7 +200,8 @@ Pixmap get_root_pixmap(Atom prop)
 void update_root_pixmap(Atom prop)
 {
 	static Atom a_rootpix = None;
-	unsigned int w = 0, h = 0;
+	int w = 0;
+	int h = 0;
 	XID dummy;
 	Pixmap pix;
 
@@ -209,8 +215,8 @@ void update_root_pixmap(Atom prop)
 		pix = get_root_pixmap(prop);
 		if (pix && !XGetGeometry(
 			dpy, pix, &dummy, (int *)&dummy, (int *)&dummy,
-			&w, &h, (unsigned int *)&dummy,
-			(unsigned int *)&dummy))
+			(unsigned int *)&w, (unsigned int *)&h,
+			(unsigned int *)&dummy, (unsigned int *)&dummy))
 		{
 			pix = None;
 		}
@@ -220,8 +226,8 @@ void update_root_pixmap(Atom prop)
 		pix = get_root_pixmap(a_rootpix);
 		if (pix && !XGetGeometry(
 			dpy, pix, &dummy, (int *)&dummy, (int *)&dummy,
-			&w, &h, (unsigned int *)&dummy,
-			(unsigned int *)&dummy))
+			(unsigned int *)&w, (unsigned int *)&h,
+			(unsigned int *)&dummy, (unsigned int *)&dummy))
 		{
 			pix = None;
 		}
@@ -493,7 +499,7 @@ static void parse_shape(Window win, colorset_t *cs, int i, char *args,
 	{
 		cs->shape_type = SHAPE_STRETCH;
 	}
-	fpa.mask = 0;
+	fpa.mask = FPAM_NO_ALPHA;
 
 	/* try to load the shape mask */
 	if (!token)
@@ -637,6 +643,7 @@ void parse_colorset(int n, char *line)
 	Bool has_image_alpha_changed = False;
 	Bool pixmap_is_a_bitmap = False;
 	Bool do_reload_pixmap = False;
+	Bool is_server_grabbed = False;
 	XColor color;
 	XGCValues xgcv;
 	static char *name = "parse_colorset";
@@ -1093,10 +1100,12 @@ void parse_colorset(int n, char *line)
 
 			if (average_pix == root_pic.pixmap)
 			{
-				int w,h;
+				int w;
+				int h;
 				XID dummy;
 
-				XGrabServer(dpy);
+				MyXGrabServer(dpy);
+				is_server_grabbed = True;
 				if (!XGetGeometry(
 				    dpy, average_pix, &dummy,
 				    (int *)&dummy, (int *)&dummy,
@@ -1115,7 +1124,8 @@ void parse_colorset(int n, char *line)
 				}
 				if (average_pix == None)
 				{
-					XUngrabServer(dpy);
+					MyXUngrabServer(dpy);
+					is_server_grabbed = False;
 				}
 			}
 		}
@@ -1149,25 +1159,42 @@ void parse_colorset(int n, char *line)
 					dpy, cs->mask, 0, 0, cs->width,
 					cs->height, AllPlanes, ZPixmap);
 			}
-			if (average_pix == root_pic.pixmap)
+			if (is_server_grabbed == True)
 			{
-				XUngrabServer(dpy);
+				MyXUngrabServer(dpy);
 			}
-			/* only fetch the pixels that are not masked out */
-			for (i = 0; i < cs->width; i++)
+			if (image != None && mask_image != None)
 			{
-				for (j = 0; j < cs->height; j++)
+				/* only fetch the pixels that are not masked
+				 * out */
+				for (i = 0; i < cs->width; i++)
 				{
-					if ((cs->mask == None) || (XGetPixel(
-						mask_image, i, j) == 0))
+					for (j = 0; j < cs->height; j++)
 					{
-						colors[k++].pixel =
-							XGetPixel(image, i, j);
+						if (
+							cs->mask == None ||
+							XGetPixel(
+								mask_image, i,
+								j) == 0)
+						{
+							colors[k++].pixel =
+								XGetPixel(
+									image,
+									i, j);
+						}
 					}
 				}
 			}
-
-			XDestroyImage(image);
+			else
+			{
+				fvwm_msg(
+					ERR, "parse_colorset",
+					"error reading root background");
+			}
+			if (image != None)
+			{
+				XDestroyImage(image);
+			}
 			if (mask_image != None)
 			{
 				XDestroyImage(mask_image);
@@ -1215,7 +1242,6 @@ void parse_colorset(int n, char *line)
 				dred += red;
 				dgreen += green;
 				dblue += blue;
-				free(colors);
 				/* get it */
 				color.red = dred / k;
 				color.green = dgreen / k;
@@ -1235,6 +1261,7 @@ void parse_colorset(int n, char *line)
 					}
 				}
 			}
+			free(colors);
 		} /* average */
 		else if ((cs->color_flags & BG_SUPPLIED) && bg != NULL)
 		{
@@ -1420,7 +1447,8 @@ void parse_colorset(int n, char *line)
 	/*
 	 * ---------- change the hilight colour ----------
 	 */
-	if (has_hi_changed || has_bg_changed)
+	if (has_hi_changed ||
+	    (has_bg_changed && !(cs->color_flags & HI_SUPPLIED)))
 	{
 		has_hi_changed = 1;
 		if ((cs->color_flags & HI_SUPPLIED) && hi != NULL)
@@ -1451,7 +1479,8 @@ void parse_colorset(int n, char *line)
 	/*
 	 * ---------- change the shadow colour ----------
 	 */
-	if (has_sh_changed || has_bg_changed)
+	if (has_sh_changed ||
+	    (has_bg_changed && !(cs->color_flags & SH_SUPPLIED)))
 	{
 		has_sh_changed = 1;
 		if ((cs->color_flags & SH_SUPPLIED) && sh != NULL)
@@ -1482,7 +1511,9 @@ void parse_colorset(int n, char *line)
 	/*
 	 * ---------- change the shadow foreground colour ----------
 	 */
-	if (has_fgsh_changed || has_fg_changed || has_bg_changed)
+	if (has_fgsh_changed ||
+	    ((has_fg_changed || has_bg_changed) &&
+	     !(cs->color_flags & FGSH_SUPPLIED)))
 	{
 		has_fgsh_changed = 1;
 		if ((cs->color_flags & FGSH_SUPPLIED) && fgsh != NULL)

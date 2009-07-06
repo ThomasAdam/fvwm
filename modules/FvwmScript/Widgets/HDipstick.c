@@ -16,12 +16,14 @@
 
 #include "config.h"
 
+#include "libs/fvwmlib.h"
+#include "libs/ColorUtils.h"
+#include "libs/Graphics.h"
 #include "Tools.h"
-
 
 /*
  * Fonction pour HDipstick
- * Création d'une jauge horizontale
+ * CrÃ©ation d'une jauge horizontale
  * plusieurs options
  */
 void InitHDipstick(struct XObj *xobj)

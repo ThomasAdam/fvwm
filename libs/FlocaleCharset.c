@@ -23,7 +23,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
-#include "safemalloc.h"
 #include "Strings.h"
 #include "Parse.h"
 #include "Flocale.h"
@@ -317,7 +316,7 @@ char *euc_jp[]            = {"EUC-JP",
 #endif
 
 static
-FlocaleCharset UnkownCharset =
+FlocaleCharset UnknownCharset =
 	{"Unknown", nullsl, FLC_INDEX_ICONV_CHARSET_NOT_FOUND, NULL};
 
 /* the table contains all Xorg "charset" plus some others */
@@ -491,27 +490,31 @@ void FlocaleInit_X_Charset(Display *dpy, const char *module)
 	int i;
 
 	om = XOpenOM(dpy, NULL, NULL, NULL);
-	if (om && (XGetOMValues(om, XNRequiredCharSet, &cs, NULL)) == NULL)
+	if (om && XGetOMValues(om, XNRequiredCharSet, &cs, NULL) == NULL)
 	{
 		if (cs.charset_count > 0)
 		{
+			if (FLCXOMCharsetList != NULL)
+			{
+				free(FLCXOMCharsetList);
+			}
 			FLCXOMCharsetList_num = cs.charset_count;
-			FLCXOMCharsetList =
-			    (FlocaleCharset **)safemalloc(
-				   sizeof(FlocaleCharset)*FLCXOMCharsetList_num);
-			for(i = 0; i <  FLCXOMCharsetList_num; i++)
+			FLCXOMCharsetList = (FlocaleCharset **)safemalloc(
+				sizeof(FlocaleCharset) * cs.charset_count);
+			for (i = 0; i <  FLCXOMCharsetList_num; i++)
 			{
 				FLCXOMCharsetList[i] =
-				    FlocaleCharsetOfXCharset(cs.charset_list[i]);
+					FlocaleCharsetOfXCharset(
+						cs.charset_list[i]);
 #if FLOCALE_DEBUG_CHARSET
 				fprintf(stderr,
 					"[FlocaleInitCharset] XOM charset "
 					"%i: %s, bidi:%s\n",
 					i,
 					FLC_DEBUG_GET_X_CHARSET(
-						       FLCXOMCharsetList[i]),
+						FLCXOMCharsetList[i]),
 					FLC_DEBUG_GET_BIDI_CHARSET (
-						      FLCXOMCharsetList[i]));
+						FLCXOMCharsetList[i]));
 #endif
 			}
 		}
@@ -520,9 +523,56 @@ void FlocaleInit_X_Charset(Display *dpy, const char *module)
 	{
 		XCloseOM(om);
 	}
-
 	if (FLCXOMCharsetList_num > 0 && FLCXOMCharsetList[0])
+	{
+		char *best_charset;
+
+		if (FLCLocaleCharset != NULL)
+		{
+			best_charset = FLCLocaleCharset->x;
+#if FLOCALE_DEBUG_CHARSET
+			fprintf(stderr,
+				"[FlocaleInitCharset] FLCLocaleCharset: %s\n",
+				best_charset);
+#endif
+		}
+		else
+		{
+			best_charset = FLOCALE_FALLBACK_XCHARSET;
+#if FLOCALE_DEBUG_CHARSET
+			fprintf(stderr,
+				"[FlocaleInitCharset] FALLBACK: %s\n",
+				best_charset);
+#endif
+		}
+
 		FLCXOMCharset = FLCXOMCharsetList[0];
+		if (best_charset == NULL)
+		{
+			/* should not happen */
+		}
+		else
+		{
+			for(i = 0; i <  FLCXOMCharsetList_num; i++)
+			{
+				if (StrEquals(
+					best_charset,
+					FLC_DEBUG_GET_X_CHARSET(
+						FLCXOMCharsetList[i])))
+				{
+					FLCXOMCharset = FLCXOMCharsetList[i];
+					break;
+				}
+			}
+		}
+#if FLOCALE_DEBUG_CHARSET
+		fprintf(stderr,
+			"[FlocaleInitCharset] XOM charset "
+			"%i: %s\n",
+			i,
+			FLC_DEBUG_GET_X_CHARSET(FLCXOMCharset));
+#endif
+	}
 #endif
 }
 
@@ -533,28 +583,51 @@ void FlocaleCharsetInit(Display *dpy, const char *module)
 	static Bool initialized = False;
 	char *charset;
 
-	if (initialized)
+	if (initialized == True)
+	{
 		return;
-
+	}
 	initialized = True;
 
-	/* set the defaults X locale charsets */
-	FlocaleInit_X_Charset(dpy, module);
-
+	/* try to find the regular charset */
 	charset = getenv("CHARSET");
+#if FLOCALE_DEBUG_CHARSET
+	fprintf(stderr,
+		"[FlocaleInitCharset] CHARSET: %s\n", (!charset)? "null":charset);
+#endif
 	if ((!charset || strlen(charset) < 3) && FlocaleLibcharsetSupport)
 	{
 		charset = (char *)Flocale_charset();
+#if FLOCALE_DEBUG_CHARSET
+		fprintf(
+			stderr,
+			"[FlocaleInitCharset] FlocaleLibcharsetSupport: %s\n",
+			(!charset)? "null":charset);
+#endif
 	}
 	if ((!charset || strlen(charset) < 3) && FlocaleCodesetSupport)
 	{
 		charset = Fnl_langinfo(FCODESET);
+#if FLOCALE_DEBUG_CHARSET
+		fprintf(
+			stderr,
+			"[FlocaleInitCharset] Fnl_langinfo: %s\n",
+			(!charset)? "null":charset);
+#endif
 	}
 	if (charset != NULL && strlen(charset) > 2)
 	{
 		FLCLocaleCharset =
 			FlocaleCharsetOfLocaleCharset(charset);
+#if FLOCALE_DEBUG_CHARSET
+		fprintf(
+			stderr,
+			"[FlocaleInitCharset] FLCLocaleCharset: %s\n", charset);
+#endif
 	}
+
+	/* set the defaults X locale charsets */
+	FlocaleInit_X_Charset(dpy, module);
 
 	/* never null */
 	FLCUtf8Charset = FlocaleCharsetOfXCharset(FLOCALE_UTF8_XCHARSET);
@@ -567,6 +640,8 @@ void FlocaleCharsetInit(Display *dpy, const char *module)
 		FLC_DEBUG_GET_X_CHARSET(FLCLocaleCharset),
 		FLC_DEBUG_GET_BIDI_CHARSET (FLCLocaleCharset));
 #endif
+
+	return;
 }
 
 void FlocaleCharsetSetFlocaleCharset(
@@ -582,7 +657,8 @@ void FlocaleCharsetSetFlocaleCharset(
 
 	if (hints && *hints)
 	{
-		iconv = GetQuotedString(hints, &charset, "/", NULL, NULL, NULL);
+		iconv = GetQuotedString(
+			hints, &charset, "/", NULL, NULL, NULL);
 		if (charset && *charset && *charset != '*' )
 		{
 			flf->fc = FlocaleCharsetOfXCharset(charset);
@@ -600,7 +676,7 @@ void FlocaleCharsetSetFlocaleCharset(
 	{
 		if (FftSupport && flf->fftf.fftfont != NULL)
 		{
-			flf->fc =  FlocaleCharsetOfXCharset(flf->fftf.encoding);
+			flf->fc = FlocaleCharsetOfXCharset(flf->fftf.encoding);
 		}
 		else if (flf->fontset != None)
 		{
@@ -619,7 +695,7 @@ void FlocaleCharsetSetFlocaleCharset(
 				{
 					flf->fc = FLCXOMCharset =
 						FlocaleCharsetOfFontStruct(
-								dpy, fs_list[0]);
+							dpy, fs_list[0]);
 				}
 			}
 		}
@@ -635,7 +711,11 @@ void FlocaleCharsetSetFlocaleCharset(
 		while(!iconv_found &&
 		      FLC_GET_LOCALE_CHARSET(flf->fc,i) != NULL)
 		{
-			if (strcmp(iconv,FLC_GET_LOCALE_CHARSET(flf->fc,i)) == 0)
+			if (
+				strcmp(
+					iconv,
+					FLC_GET_LOCALE_CHARSET(flf->fc,i)) ==
+				0)
 			{
 				iconv_found = True;
 				/* Trust the user? yes ... */
@@ -663,7 +743,7 @@ void FlocaleCharsetSetFlocaleCharset(
 		}
 		else
 		{
-			CopyString(&fc->x, "Unkown"); /* for simplicity */
+			CopyString(&fc->x, "Unknown"); /* for simplicity */
 			fc->bidi = NULL;
 			fc->encoding_type = FLC_ENCODING_TYPE_FONT;
 		}
@@ -679,7 +759,7 @@ void FlocaleCharsetSetFlocaleCharset(
 	}
 	if (flf->fc == NULL)
 	{
-		flf->fc = &UnkownCharset;
+		flf->fc = &UnknownCharset;
 	}
 
 	/* now the string charset */
@@ -692,7 +772,7 @@ void FlocaleCharsetSetFlocaleCharset(
 		}
 		if (flf->str_fc == NULL)
 		{
-			flf->str_fc = &UnkownCharset;
+			flf->str_fc = &UnknownCharset;
 		}
 	}
 	else if (FftSupport && flf->fftf.fftfont != NULL)
@@ -700,15 +780,15 @@ void FlocaleCharsetSetFlocaleCharset(
 		if (flf->fftf.str_encoding != NULL)
 		{
 			flf->str_fc = FlocaleCharsetOfXCharset(
-							flf->fftf.str_encoding);
+				flf->fftf.str_encoding);
 			if (flf->str_fc == NULL)
 			{
 				flf->str_fc = FlocaleCharsetOfLocaleCharset(
-							flf->fftf.str_encoding);
+					flf->fftf.str_encoding);
 			}
 			if (flf->str_fc == NULL)
 			{
-				flf->str_fc = &UnkownCharset;
+				flf->str_fc = &UnknownCharset;
 			}
 		}
 		else
@@ -719,7 +799,7 @@ void FlocaleCharsetSetFlocaleCharset(
 	}
 	if (flf->str_fc == NULL)
 	{
-		if (flf->fc != &UnkownCharset)
+		if (flf->fc != &UnknownCharset)
 		{
 			flf->str_fc = flf->fc;
 		}
@@ -751,11 +831,11 @@ FlocaleCharset *FlocaleCharsetGetDefaultCharset(Display *dpy, char *module)
 			(module != NULL)? module:"FVWMlibs",
 			"FlocaleGetDefaultCharset");
 		fprintf(stderr,"X Ouput Method ");
-		fprintf(stderr,"CHARSET env variable ");
+		fprintf(stderr,", CHARSET env variable");
 		if (FlocaleLibcharsetSupport)
-			fprintf(stderr,"locale_charset");
+			fprintf(stderr,", locale_charset");
 		if (FlocaleCodesetSupport)
-			fprintf(stderr," nl_langinfo");
+			fprintf(stderr,", nl_langinfo");
 		fprintf(stderr,"\n");
 		/* never null */
 		FLCLocaleCharset =
@@ -784,7 +864,7 @@ FlocaleCharset *FlocaleCharsetGetLocaleCharset(void)
 
 FlocaleCharset *FlocaleCharsetGetUnknownCharset(void)
 {
-	return &UnkownCharset;
+	return &UnknownCharset;
 }
 
 const char *FlocaleGetBidiCharset(Display *dpy, FlocaleCharset *fc)
@@ -835,7 +915,7 @@ Bool FlocaleCharsetIsCharsetXLocale(Display *dpy, char *charset, char *module)
 #endif
 }
 
-void FlocaleCharsetPrintXOMInfo()
+void FlocaleCharsetPrintXOMInfo(void)
 {
 #ifdef HAVE_XOUTPUT_METHOD
 	int i;
@@ -853,4 +933,3 @@ void FlocaleCharsetPrintXOMInfo()
 	fprintf(stderr,"\n");
 #endif
 }
-

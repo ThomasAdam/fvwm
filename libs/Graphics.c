@@ -24,14 +24,15 @@
 #include <stdio.h>
 #include <math.h>
 
-
 #include "defaults.h"
 #include "libs/fvwmlib.h"
+#include "libs/Parse.h"
 #include "libs/PictureBase.h"
 #include "libs/PictureUtils.h"
 #include "libs/PictureGraphics.h"
 #include "libs/gravity.h"
 #include "libs/FImage.h"
+#include "libs/Graphics.h"
 
 /* ---------------------------- local definitions -------------------------- */
 
@@ -689,13 +690,13 @@ XColor *AllocAllGradientColors(
  * returns the number of colors asked for (No. allocated may be less due
  * to the ColorLimit command).  A return of 0 indicates an error
  */
-unsigned int ParseGradient(
+int ParseGradient(
 	char *gradient, char **rest, char ***colors_return, int **perc_return,
 	int *nsegs_return)
 {
 	char *item;
 	char *orig;
-	unsigned int npixels;
+	int npixels;
 	char **s_colors;
 	int *perc;
 	int nsegs, i, sum;
@@ -838,15 +839,17 @@ unsigned int ParseGradient(
  * supported. */
 Bool CalculateGradientDimensions(
 	Display *dpy, Drawable d, int ncolors, char type, int dither,
-	unsigned int *width_ret, unsigned int *height_ret)
+	int *width_ret, int *height_ret)
 {
-	static unsigned int best_width = 0, best_height = 0;
+	static int best_width = 0, best_height = 0;
 	int dither_factor = (dither > 0)? 128:1;
 
 	/* get the best tile size (once) */
 	if (!best_width)
 	{
-		if (!XQueryBestTile(dpy, d, 1, 1, &best_width, &best_height))
+		if (!XQueryBestTile(
+			    dpy, d, 1, 1, (unsigned int*)&best_width,
+			    (unsigned int*)&best_height))
 		{
 			best_width = 0;
 			best_height = 0;
@@ -911,10 +914,10 @@ Bool CalculateGradientDimensions(
  * None the gradient is drawn into it. The d_width, d_height, d_x and d_y
  * describe the traget rectangle within the drawable. */
 Drawable CreateGradientPixmap(
-	Display *dpy, Drawable d, GC gc, int type, int g_width, int g_height,
-	int ncolors, XColor *xcs, int dither, Pixel **d_pixels, int *d_npixels,
-	Drawable in_drawable, int d_x, int d_y, int d_width, int d_height,
-	XRectangle *rclip)
+	Display *dpy, Drawable d, GC gc, int type, int g_width,
+	int g_height, int ncolors, XColor *xcs, int dither, Pixel **d_pixels,
+	int *d_npixels, Drawable in_drawable, int d_x, int d_y,
+	int d_width, int d_height, XRectangle *rclip)
 {
 	Pixmap pixmap = None;
 	PictureImageColorAllocator *pica = NULL;
@@ -1243,13 +1246,13 @@ Drawable CreateGradientPixmap(
  */
 Pixmap CreateGradientPixmapFromString(
 	Display *dpy, Drawable d, GC gc, int type, char *action,
-	unsigned int *width_return, unsigned int *height_return,
+	int *width_return, int *height_return,
 	Pixel **pixels_return, int *nalloc_pixels, int dither)
 {
 	Pixel *d_pixels = NULL;
-	unsigned int d_npixels = 0;
+	int d_npixels = 0;
 	XColor *xcs = NULL;
-	unsigned int ncolors = 0;
+	int ncolors = 0;
 	char **colors;
 	int *perc, nsegs;
 	Pixmap pixmap = None;

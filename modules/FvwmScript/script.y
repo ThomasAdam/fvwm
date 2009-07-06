@@ -1,4 +1,19 @@
 %{
+/* This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+#include "config.h"
 #include "types.h"
 #include "libs/FGettext.h"
 
@@ -358,13 +373,13 @@ int yyerror(char *errmsg)
 %token <str> STR GSTR VAR FONT
 %token <number> NUMBER	/* Nombre pour communiquer les dimensions */
 
-%token WINDOWTITLE WINDOWLOCALETITLE WINDOWSIZE WINDOWPOSITION FONT USEGETTEXT
+%token WINDOWTITLE WINDOWLOCALETITLE WINDOWSIZE WINDOWPOSITION USEGETTEXT
 %token FORECOLOR BACKCOLOR SHADCOLOR LICOLOR COLORSET
 %token OBJECT INIT PERIODICTASK QUITFUNC MAIN END PROP
 %token TYPE SIZE POSITION VALUE VALUEMIN VALUEMAX TITLE SWALLOWEXEC ICON FLAGS WARP WRITETOFILE LOCALETITLE
 %token HIDDEN NOFOCUS NORELIEFSTRING CENTER LEFT RIGHT
 %token CASE SINGLECLIC DOUBLECLIC BEG POINT
-%token EXEC HIDE SHOW CHFONT CHFORECOLOR CHBACKCOLOR CHCOLORSET KEY
+%token EXEC HIDE SHOW CHFONT CHFORECOLOR CHBACKCOLOR CHCOLORSET CHWINDOWTITLE CHWINDOWTITLEFARG KEY
 %token GETVALUE GETMINVALUE GETMAXVALUE GETFORE GETBACK GETHILIGHT GETSHADOW CHVALUE CHVALUEMAX CHVALUEMIN
 %token ADD DIV MULT GETTITLE GETOUTPUT STRCOPY NUMTOHEX HEXTONUM QUIT
 %token LAUNCHSCRIPT GETSCRIPTFATHER SENDTOSCRIPT RECEIVFROMSCRIPT
@@ -622,6 +637,8 @@ instr:
     | instr CHVALUE chvalue
     | instr CHVALUEMAX chvaluemax
     | instr CHVALUEMIN chvaluemin
+    | instr CHWINDOWTITLE addlbuff gstrarg {AddCom(27,1);}
+    | instr CHWINDOWTITLEFARG numarg {AddCom(28,1);}
     | instr POSITION position
     | instr SIZE size
     | instr TITLE title
@@ -650,6 +667,8 @@ oneinstr: EXEC exec
 	| CHVALUE chvalue
 	| CHVALUEMAX chvaluemax
 	| CHVALUEMIN chvaluemin
+	| CHWINDOWTITLE addlbuff gstrarg {AddCom(27,1);}
+	| CHWINDOWTITLEFARG numarg {AddCom(28,1);}
 	| POSITION position
 	| SIZE size
 	| TITLE title

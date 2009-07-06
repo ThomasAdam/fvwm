@@ -40,8 +40,16 @@
 #include "libs/Module.h"                /* for headersize, etc. */
 #include "libs/fvwmlib.h"
 #include "libs/fvwmsignal.h"
+#include "libs/ColorUtils.h"
+#include "libs/Cursor.h"
+#include "libs/envvar.h"
+#include "libs/Graphics.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
+#include "libs/System.h"
+#include "libs/XError.h"
 
-#include <libs/PictureBase.h>            /* for PictureInitCMap */
+#include "libs/PictureBase.h"            /* for PictureInitCMap */
 #include "libs/Colorset.h"
 #include "libs/FScreen.h"
 #include "libs/FShape.h"
@@ -66,6 +74,7 @@ Item *item;                             /* current during parse */
 Item *cur_sel, *cur_button;             /* current during parse */
 Item *timer = NULL;                     /* timeout tracking */
 Display *dpy;
+Atom wm_del_win;
 int fd_x;                  /* fd for X connection */
 Window root, ref;
 int screen;
@@ -77,8 +86,7 @@ char bg_state = 'd';                    /* in default state */
 char endDefaultsRead = 'n';
 char *font_names[4];
 char *screen_background_color;
-char *MyName;
-int MyNameLen;
+static ModuleArgs *module;
 int Channel[2];
 Bool Swallowed = False;
 
@@ -344,15 +352,15 @@ static void ParseConfigLine(char *buf)
     LoadColorset(&buf[8]);
     return;
   }
-  if (strncasecmp(buf, MyName, MyNameLen) != 0) {/* If its not for me */
+  if (strncasecmp(buf, CatString3("*",module->name,0), module->namelen+1) != 0) {/* If its not for me */
     return;
   } /* Now I know its for me. */
-  p = buf+MyNameLen;                  /* jump to end of my name */
+  p = buf+module->namelen+1;                  /* jump to end of my name */
   /* at this point we have recognized "*FvwmForm" */
   FormVarsCheck(&p);
   e = FindToken(p,ct_table,struct CommandTable);/* find cmd in table */
   if (e == 0) {                       /* if no match */
-    fprintf(stderr,"%s: unknown command: %s\n",MyName+1,buf);
+    fprintf(stderr,"%s: unknown command: %s\n",module->name,buf);
     return;
   }
 
@@ -397,7 +405,7 @@ static void ct_ActivateOnPress(char *cp)
   int i,j;
   if (strlen(cp) > 5) {
     fprintf(stderr,"%s: arg for ActivateOnPress (%s) too long\n",
-	    MyName+1,cp);
+	    module->name,cp);
     return;
   }
   for (i=0,j=0;i<strlen(cp);i++) {
@@ -417,7 +425,7 @@ static void ct_ActivateOnPress(char *cp)
     CF.activate_on_press = 0;
   } else {
     fprintf(stderr,"%s: arg for ActivateOnPress (%s/%s) invalid\n",
-	    MyName+1,option,cp);
+	    module->name,option,cp);
   }
 }
 static void ct_GrabServer(char *cp)
@@ -783,7 +791,7 @@ static void AssignDrawTable(Item *adt_item)
   new_dt->dt_color_names[c_item_fg] = safestrdup(match_item_fore);
   new_dt->dt_color_names[c_item_bg] = safestrdup(match_item_back);
   new_dt->dt_used = 0;                  /* show nothing allocated */
-  new_dt->dt_Ffont = FlocaleLoadFont(dpy, new_dt->dt_font_name, MyName+1);
+  new_dt->dt_Ffont = FlocaleLoadFont(dpy, new_dt->dt_font_name, module->name);
   FlocaleAllocateWinString(&new_dt->dt_Fstr);
 
   myfprintf((stderr,"Created drawtable with %s %s %s %s %s\n",
@@ -795,7 +803,7 @@ static void AssignDrawTable(Item *adt_item)
 }
 
 /* input/output is global "item" - currently allocated last item */
-static void AddItem()
+static void AddItem(void)
 {
   Item *save_item;
   save_item = (Item *)item;             /* save current item */
@@ -885,7 +893,7 @@ static void ct_Timeout(char *cp)
   if (*cp == '\"') {
     item->timeout.command = CopyQuotedString(++cp);
     /* skip over the whole quoted string to continue parsing */
-    cp += strlen(item->timeout.command);
+    cp += strlen(item->timeout.command) + 1;
   }
   else {
     tmpbuf = safestrdup(cp);
@@ -1000,7 +1008,7 @@ static void ct_UseData(char *cp)
   /* Cant do the actual reading of the data file here,
      we are already in a readconfig loop. */
 }
-static void ReadFormData()
+static void ReadFormData(void)
 {
   int leading_len;
   char *line_buf;                       /* ptr to curr config line */
@@ -1128,7 +1136,7 @@ static void ct_Choice(char *cp)
      before the choice. At least a core dump is avoided. */
   if (cur_sel == 0) {                   /* need selection for a choice */
     fprintf(stderr,"%s: Need selection for choice %s\n",
-	    MyName+1, cp);
+	    module->name, cp);
     return;
   }
   bg_state = 'u';                       /* indicate b/g color now used. */
@@ -1294,7 +1302,7 @@ static void ReadConfig(void)
 {
   char *line_buf;                       /* ptr to curr config line */
 
-  InitGetConfigLine(Channel,MyName);
+  InitGetConfigLine(Channel,CatString3("*",module->name,0));
   while (GetConfigLine(Channel,&line_buf),line_buf) { /* get config from fvwm */
     ParseConfigLine(line_buf);          /* process config lines */
   }
@@ -1430,8 +1438,10 @@ static void Restart(void)
 
 	  if ( strcmp(item->input.value, item->input.value_history_ptr[prior])
 	       != 0) {                  /* different value */
-	    if (item->input.value_history_ptr[item->input.value_history_count]) {
-	      free(item->input.value_history_ptr[item->input.value_history_count]);
+	    if (item->input.value_history_ptr[item->input.value_history_count])
+	    {
+	      free(item->input.value_history_ptr[
+			   item->input.value_history_count]);
 	      myfprintf((stderr,"Freeing old item in slot %d\n",
 			 item->input.value_history_count));
 	    }
@@ -2177,15 +2187,17 @@ static void OpenWindows(void)
   CF.frame = XCreateWindow(dpy, root, x, y, CF.max_width, CF.total_height, 0,
 			   Pdepth, InputOutput, Pvisual,
 			   CWColormap | CWBackPixel | CWBorderPixel, &xswa);
+  wm_del_win = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
+  XSetWMProtocols(dpy, CF.frame, &wm_del_win, 1);
   XSelectInput(dpy, CF.frame,
 	       KeyPressMask | ExposureMask | StructureNotifyMask |
 	       VisibilityChangeMask);
   if (!CF.title) {
-    CF.title = MyName+1;
+    CF.title = module->name;
   }
   XStoreName(dpy, CF.frame, CF.title);
   XSetWMHints(dpy, CF.frame, &wmh);
-  myclasshints.res_name = MyName+1;
+  myclasshints.res_name = module->name;
   myclasshints.res_class = "FvwmForm";
   XSetClassHint(dpy,CF.frame,&myclasshints);
   sh.width = CF.max_width;
@@ -2382,7 +2394,9 @@ static void ParseActiveMessage(char *buf)
 					}
 					if(dt_ptr->dt_item_GC)
 					{
-						XFreeGC(dpy, dt_ptr->dt_item_GC);
+						XFreeGC(
+							dpy,
+							dt_ptr->dt_item_GC);
 						dt_ptr->dt_item_GC = None;
 					}
 				}
@@ -2432,12 +2446,15 @@ static void ParseActiveMessage(char *buf)
 		FScreenConfigureModule(buf + sizeof(XINERAMA_CONFIG_STRING)-1);
 		return;
 	}
-	if (strncasecmp(buf, MyName, MyNameLen) != 0)
+	if (
+		strncasecmp(
+			buf, CatString3("*",module->name,0),
+			module->namelen+1) != 0)
 	{
 		/* If its not for me */
 		return;
 	} /* Now I know its for me. */
-	p = buf+MyNameLen;                  /* jump to end of my name */
+	p = buf+module->namelen+1;                  /* jump to end of my name */
 	/* at this point we have recognized "*FvwmForm" */
 	e = FindToken(p,am_table,struct CommandTable);/* find cmd in table */
 	if (e == 0)
@@ -2447,7 +2464,7 @@ static void ParseActiveMessage(char *buf)
 		if (FindToken(p, ct_table, struct CommandTable) == 0)
 			fprintf(
 				stderr,"%s: Active command unknown: %s\n",
-				MyName+1,buf);
+				module->name,buf);
 		return;                             /* ignore it */
 	}
 
@@ -2573,7 +2590,6 @@ TimerHandler(int sig)
 int main (int argc, char **argv)
 {
   int i;
-  char *s;
   char cmd[200];
 
 #ifdef DEBUGTOFILE
@@ -2582,25 +2598,12 @@ int main (int argc, char **argv)
 
   FlocaleInit(LC_CTYPE, "", "", "FvwmForm");
 
-  /* From FvwmAnimate start */
-  /* Save our program  name - for error events */
-  if ((s=strrchr(argv[0], '/')))        /* strip path */
-    s++;
-  else                          /* no slash */
-    s = argv[0];
-  if(argc>=7)                         /* if override name */
-    s = argv[6];                      /* use arg as name */
-  MyNameLen=strlen(s)+1;                /* account for '*' */
-  MyName = safemalloc(MyNameLen+1);     /* account for \0 */
-  *MyName='*';
-  strcpy(MyName+1, s);          /* append name */
-
-  myfprintf((stderr,"%s: Starting, argv[0] is %s, len %d\n",MyName+1,
-	     argv[0],MyNameLen));
-
-  if (argc < 6) {                       /* Now MyName is defined */
-    fprintf(stderr,"%s Version "VERSION" should only be executed by fvwm!\n",
-	    MyName+1);
+  module = ParseModuleArgs(argc,argv,1); /* allow an alias */
+  if (module == NULL)
+  {
+    fprintf(
+	    stderr,
+	    "FvwmForm Version "VERSION" should only be executed by fvwm!\n");
     exit(1);
   }
 
@@ -2637,12 +2640,12 @@ int main (int argc, char **argv)
 #endif
 #endif
 
-  Channel[0] = atoi(argv[1]);
-  Channel[1] = atoi(argv[2]);
+  Channel[0] = module->to_fvwm;
+  Channel[1] = module->from_fvwm;
 
   dpy = XOpenDisplay("");
   if (dpy==NULL) {
-    fprintf(stderr,"%s: could not open display\n",MyName+1);
+    fprintf(stderr,"%s: could not open display\n",module->name);
     exit(1);
   }
   /* From FvwmAnimate end */
@@ -2664,12 +2667,7 @@ int main (int argc, char **argv)
   if (ref == 0) ref = None;
   myfprintf((stderr, "ref == %d\n", (int)ref));
 
-  PictureInitCMap(dpy);
-  FScreenInit(dpy);
-  /* prevent core dumps if fvwm doesn't provide any colorsets */
-  AllocColorset(0);
-  FShapeInit(dpy);
-  FRenderInit(dpy);
+  flib_init_graphics(dpy);
 
   fd_x = XConnectionNumber(dpy);
 
@@ -2679,8 +2677,8 @@ int main (int argc, char **argv)
   InitConstants();
   ReadDefaults();                       /* get config from fvwm */
 
-  if (strcasecmp(MyName+1,"FvwmForm") != 0) { /* if not already read */
-    sprintf(cmd,"read %s Quiet",MyName+1); /* read quiet modules config */
+  if (strcasecmp(module->name,"FvwmForm") != 0) { /* if not already read */
+    sprintf(cmd,"read %s Quiet",module->name); /* read quiet modules config */
     SendText(Channel,cmd,0);
   }
 
@@ -2723,6 +2721,6 @@ ErrorHandler(Display *dpy, XErrorEvent *event)
   if (FRenderGetErrorCodeBase() + FRenderBadPicture == event->error_code)
     return 0;
 
-  PrintXErrorAndCoredump(dpy, event, MyName+1);
+  PrintXErrorAndCoredump(dpy, event, module->name);
   return 0;
 }

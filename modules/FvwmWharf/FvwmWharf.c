@@ -75,6 +75,11 @@
 #include "libs/Module.h"
 #include "libs/PictureBase.h"
 #include "libs/Colorset.h"
+#include "libs/Graphics.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
+#include "libs/System.h"
+#include "libs/XError.h"
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xproto.h>
@@ -146,7 +151,7 @@ int AnimationDir=1;
 
 Window main_win;
 int Width, Height,win_x,win_y;
-unsigned int display_width, display_height;
+int display_width, display_height;
 
 #define MW_EVENTS   (ExposureMask | ButtonReleaseMask |\
 		     ButtonPressMask | LeaveWindowMask | EnterWindowMask)
@@ -279,12 +284,7 @@ int main(int argc, char **argv)
 	    XDisplayName(display_name));
     exit (1);
   }
-  PictureInitCMap(dpy);
-  FScreenInit(dpy);
-  /* Initialise default colorset */
-  AllocColorset(0);
-  FShapeInit(dpy);
-  FRenderInit(dpy);
+  flib_init_graphics(dpy);
   XSetErrorHandler(myErrorHandler);
 
   x_fd = XConnectionNumber(dpy);
@@ -524,7 +524,8 @@ void Loop(void)
 	if (Event.xbutton.button != Button1) {
 	  if (Event.xbutton.button == Button2) {
 	    static int LastX, LastY;
-	    static int scr_x, scr_y, scr_w, scr_h;
+	    static int scr_x, scr_y;
+	    static int scr_w, scr_h;
 
 	    if (LastMapped != -1) {
 	      CloseFolder(LastMapped);
@@ -1066,7 +1067,8 @@ void MapFolder(int folder, int *LastMapped, int base_x, int base_y, int row,
   else
   {
     int folderx, foldery, folderw, folderh;
-    int scr_x, scr_y, scr_w, scr_h;
+    int scr_x, scr_y;
+    int scr_w, scr_h;
     fscreen_scr_arg fscr;
 
     fscr.xypos.x = base_x;
@@ -2414,8 +2416,9 @@ void swallow(unsigned long *body)
 
 	}
 	if (Buttons[button].maxsize) {
-	  int width, height;
-	  int junk1, junk2, junk3, junk4;
+	  unsigned int width, height;
+	  int junk1, junk2;
+	  unsigned int junk3, junk4;
 	  Window root;
 	  if (XGetGeometry(dpy, Buttons[button].IconWin, &root,
 			   &junk1, &junk2, &width, &height, &junk3,

@@ -1,6 +1,6 @@
 /* -*-c-*- */
 /*
- * GNOME WM Compliance adapted for FVWM
+ * GNOME WM Compliance adapted for fvwm
  * Properties set on the root window (or desktop window)
  *
  * Even though the rest of fvwm is GPL consider this file
@@ -8,7 +8,7 @@
  * your WM GNOME compiant
  *
  * written by Raster
- * adapted for FVWM by Jay Painter <jpaint@gnu.org>
+ * adapted for fvwm by Jay Painter <jpaint@gnu.org>
  */
 #include "config.h"
 
@@ -19,8 +19,10 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
+#include <X11/Xatom.h>
 
 #include "libs/fvwmlib.h"
+#include "libs/Parse.h"
 #include "fvwm.h"
 #include "externs.h"
 #include "cursor.h"
@@ -254,7 +256,7 @@ static Window __button_proxy = 0;
 
 
 /* how many desks does gnome know about */
-static unsigned int gnome_max_desk = 1;
+static int gnome_max_desk = 1;
 
 static int atom_size(int format)
 {
@@ -281,7 +283,7 @@ AtomGet(Window win, Atom to_get, Atom type, int *size)
 	retval = NULL;
 	length = 0x7fffffff;
 	XGetWindowProperty(
-		dpy, win, to_get, 0, length, False, type, &type_ret,
+		dpy, win, to_get, 0L, length, False, type, &type_ret,
 		&format_ret, &num_ret, &bytes_after, &retval);
 
 	if ((retval) && (num_ret > 0) && (format_ret > 0))
@@ -312,7 +314,7 @@ GNOME_GetHintIcons(FvwmWindow *fwin)
 	Atom atom_get;
 	long *retval;
 	int size;
-	unsigned int i;
+	int i;
 	Pixmap pmap;
 	Pixmap mask;
 
@@ -523,12 +525,13 @@ GNOME_SetHints(FvwmWindow *fwin)
 	{
 		val |= WIN_STATE_SHADED;
 	}
-	if (!is_function_allowed(F_MOVE, NULL, fwin, True, False))
+	if (!is_function_allowed(F_MOVE, NULL, fwin, RQORIG_PROGRAM_US, False))
 	{
 		val |= WIN_STATE_FIXED_POSITION;
 	}
-	XChangeProperty(dpy, FW_W(fwin), atom_set, XA_CARDINAL, 32,
-			PropModeReplace, (unsigned char *)&val, 1);
+	XChangeProperty(
+		dpy, FW_W(fwin), atom_set, XA_CARDINAL, 32, PropModeReplace,
+		(unsigned char *)&val, 1);
 
 	return;
 }
@@ -838,22 +841,22 @@ GNOME_SetWinArea(FvwmWindow *w)
 
 	if (!DO_SKIP_WINDOW_LIST(w))
 	{
-		if (IsRectangleOnThisPage(&(w->frame_g), w->Desk))
+		if (IsRectangleOnThisPage(&(w->g.frame), w->Desk))
 		{
 			val[0] = Scr.Vx / Scr.MyDisplayWidth;
 			val[1] = Scr.Vy / Scr.MyDisplayHeight;
 		}
 		else
 		{
-			val[0] = (w->frame_g.x + Scr.Vx) / Scr.MyDisplayWidth;
+			val[0] = (w->g.frame.x + Scr.Vx) / Scr.MyDisplayWidth;
 			if (val[0] < 0 &&
-			    w->frame_g.x + Scr.Vx + w->frame_g.width > 0)
+			    w->g.frame.x + Scr.Vx + w->g.frame.width > 0)
 			{
 				val[0] = 0;
 			}
-			val[1] = (w->frame_g.y + Scr.Vy) / Scr.MyDisplayHeight;
+			val[1] = (w->g.frame.y + Scr.Vy) / Scr.MyDisplayHeight;
 			if (val[1] < 0 &&
-			    w->frame_g.y + Scr.Vy + w->frame_g.height > 0)
+			    w->g.frame.y + Scr.Vy + w->g.frame.height > 0)
 			{
 				val[1] = 0;
 			}
@@ -1070,7 +1073,7 @@ void GNOME_HandlePropRequest(
 	}
 	/*--------------------------------------------------------------------
 	  First change the props on the window so the gnome app knows we did
-	  somthing.
+	  something.
 	  --------------------------------------------------------------------*/
 #ifdef FVWM_DEBUG_MSGS
 	fvwm_msg(
@@ -1170,7 +1173,7 @@ GNOME_ProxyButtonEvent(const XEvent *ev)
 }
 
 
-/* this is the function entered into FVWM's functions table */
+/* this is the function entered into fvwm's functions table */
 void
 CMD_GnomeButton(F_CMD_ARGS)
 {

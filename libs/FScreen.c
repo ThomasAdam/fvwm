@@ -63,7 +63,7 @@
 
 #include "defaults.h"
 #include "fvwmlib.h"
-#include "safemalloc.h"
+#include "Parse.h"
 #include "FScreen.h"
 #include "PictureBase.h"
 
@@ -94,8 +94,8 @@ typedef struct
 	int   screen_number;
 	short x_org;
 	short y_org;
-	short width;
-	short height;
+	unsigned short width;
+	unsigned short height;
 } XineramaScreenInfo;
 #endif
 
@@ -594,7 +594,9 @@ Bool FScreenConfigureSLSScreens(int nscreens, char *args)
 		{
 			break;
 		}
-		if (XParseGeometry(token, &val[0], &val[1], &val[2], &val[3]) ==
+		if (XParseGeometry(token, &val[0], &val[1],
+				   (unsigned int *)&val[2],
+				   (unsigned int *)&val[3]) ==
 		    (XValue|YValue|WidthValue|HeightValue) ||
 		    GetIntegerArguments(args, &next, val, 4) == 4)
 		{
@@ -715,7 +717,7 @@ void FScreenConfigureModule(char *args)
 	return;
 }
 
-/* Here's the function used by FVWM to generate the string which
+/* Here's the function used by fvwm to generate the string which
  * FScreenConfigureModule expects to receive back as its argument.
  */
 const char *FScreenGetConfiguration(void)
@@ -772,6 +774,16 @@ static int FindScreenOfXY(int x, int y)
 {
 	int i;
 
+	x = x % screens_xi[0].width;
+	while (x < 0)
+	{
+		x += screens_xi[0].width;
+	}
+	y = y % screens_xi[0].height;
+	while (y < 0)
+	{
+		y += screens_xi[0].height;
+	}
 	for (i = first_to_check;  i <= last_to_check;  i++)
 	{
 		if (x >= screens[i].x_org  &&
@@ -855,8 +867,8 @@ static int FindScreen(
  * one screen is configured.  Otherwise it returns True.
  */
 Bool FScreenGetScrRect(
-	fscreen_scr_arg *arg, fscreen_scr_t screen, int *x, int *y, int *w,
-	int *h)
+	fscreen_scr_arg *arg, fscreen_scr_t screen, int *x, int *y,
+	int *w, int *h)
 {
 	screen = FindScreen(arg, screen);
 	if (screen < first_to_check || screen > last_to_check)
@@ -1005,7 +1017,8 @@ void FScreenCenterOnScreen(
 }
 
 void FScreenGetResistanceRect(
-	int wx, int wy, int ww, int wh, int *x0, int *y0, int *x1, int *y1)
+	int wx, int wy, unsigned int ww, unsigned int wh, int *x0, int *y0,
+	int *x1, int *y1)
 {
 	fscreen_scr_arg arg;
 
@@ -1150,7 +1163,9 @@ int FScreenParseGeometryWithScreen(
 
 	/* Safety net */
 	if (parsestring == NULL  ||  *parsestring == '\0')
+	{
 		return 0;
+	}
 
 	/* Make a local copy devoid of "@scr" */
 	s_size = strlen(parsestring) + 1;
@@ -1190,6 +1205,10 @@ int FScreenParseGeometry(
 	rc = FScreenParseGeometryWithScreen(
 		parsestring, x_return, y_return, width_return, height_return,
 		&scr);
+	if (rc == 0)
+	{
+		return 0;
+	}
 	switch (scr)
 	{
 	case FSCREEN_GLOBAL:
@@ -1287,10 +1306,12 @@ int FScreenGetGeometry(
 {
 	int   ret;
 	int   saved;
-	int   x, y, w=0, h=0;
+	int   x, y;
+	unsigned int w = 0, h = 0;
 	int   grav, x_grav, y_grav;
 	int   scr = default_geometry_scr;
-	int   scr_x, scr_y, scr_w, scr_h;
+	int   scr_x, scr_y;
+	int scr_w, scr_h;
 
 	/* I. Do the parsing and strip off extra bits */
 	ret = FScreenParseGeometryWithScreen(parsestring, &x, &y, &w, &h, &scr);

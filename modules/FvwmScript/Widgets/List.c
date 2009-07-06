@@ -16,6 +16,9 @@
 
 #include "config.h"
 
+#include "libs/fvwmlib.h"
+#include "libs/ColorUtils.h"
+#include "libs/Graphics.h"
 #include "Tools.h"
 
 #define BdWidth 2               /* Border width */
@@ -443,6 +446,8 @@ void EvtMouseList(struct XObj *xobj, XButtonEvent *EvtButton)
     rectT.y = rect.y + (xobj->value2 - 1) * (rect.height - 8) / NbCell;
     if (NbVisCell<NbCell)
       rectT.height = NbVisCell * (rect.height-8) / NbCell+8;
+    else
+      rectT.height = rect.height;
     rectT.width = rect.width;
     if(PtInRect(pt,rectT))
     {

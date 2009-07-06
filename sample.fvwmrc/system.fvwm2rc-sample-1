@@ -29,35 +29,35 @@ Style *             Icon unknown1.xpm, Color Black/#40a0c0
 Style *             TileManualPlacement
 Style *             MWMFunctions,MWMDecor,HintOverride
 Style *             DecorateTransient,IconBox 0 -10 -280 -1
-Style "Fvwm*"       NoTitle, NoHandles, Sticky, WindowListSkip,
+Style "Fvwm*"       !Title, !Handles, Sticky, WindowListSkip,
 Style "Fvwm*"       BorderWidth 0,CirculateSkipIcon
 Style "Fvwm Pager"  StaysOnTop
 Style "FvwmPager"   StaysOnTop
 Style "FvwmBanner"  StaysOnTop
-Style "FvwmButtons" NoTitle, NoHandles, Sticky, WindowListSkip
+Style "FvwmButtons" !Title, !Handles, Sticky, WindowListSkip
 Style "FvwmButtons" BorderWidth 0, CirculateSkip
 Style "FvwmButtons" Icon toolbox.xpm,ClickToFocus
-Style "*lock"       NoTitle, NoHandles, Sticky, WindowListSkip
+Style "*lock"       !Title, !Handles, Sticky, WindowListSkip
 Style "*lock"	    TileCascadePlacement
-Style "xbiff"       NoTitle, Sticky, WindowListSkip,ClickToFocus
+Style "xbiff"       !Title, Sticky, WindowListSkip,ClickToFocus
 Style "Maker"       StartsOnDesk 1,TileCascadePlacement,ClickToFocus
 Style "matlab"      StartsOnDesk 3
 Style "signal"      StartsOnDesk 3
 Style "rxvt"        Icon  term.xpm,SloppyFocus,IconBox -70 1 -1 -140
 Style "XTerm"       Icon xterm.xpm,IconBox -70 1 -1 -140
 Style "XTerm"       Color black/#aa80aa,MWMBorder,MWMButtons
-Style "Appointment" Icon datebook.xpm, NoButton 2, NoButton 4,ClickToFocus
-Style "xcalc"       Icon xcalc.xpm, NoButton 2,TileCascadePlacement,ClickToFocus
-Style "xmh"         Icon mail1.xpm, NoIconTitle,StickyIcon
-Style "xmh"	    TileCascadePlacement, StartsOnDesk 2, NoButton 2
+Style "Appointment" Icon datebook.xpm, !Button 2, !Button 4,ClickToFocus
+Style "xcalc"       Icon xcalc.xpm, !Button 2,TileCascadePlacement,ClickToFocus
+Style "xmh"         Icon mail1.xpm, !IconTitle,StickyIcon
+Style "xmh"	    TileCascadePlacement, StartsOnDesk 2, !Button 2
 Style "xman"	    Icon xman.xpm,TileCascadePlacement,ClickToFocus
 Style "xvgr"	    Icon graphs.xpm,TileCascadePlacement,ClickToFocus
 Style "matlab"	    Icon math4.xpm,ClickToFocus
 Style "xmag"	    Icon mag_glass.xpm,CenterPlacement, ClickToFocus
 Style "xgraph"      Icon graphs.xpm,TileCascadePlacement,ClickToFocus
-Style "sppeed6"     Icon math3.xpm,NoTitle,ClickToFocus
-Style "sppeed6_user" Icon math4.xpm,NoTitle
-Style "xmosaic"     NoPPosition, color Green/Yellow,ClickToFocus
+Style "sppeed6"     Icon math3.xpm,!Title,ClickToFocus
+Style "sppeed6_user" Icon math4.xpm,!Title
+Style "xmosaic"     !UsePPosition, color Green/Yellow,ClickToFocus
 Style "MetaCard"    TileCascadePlacement, ClickToFocus
 
 Key Left	A	C	Scroll -100 0
@@ -148,13 +148,13 @@ AddToMenu Window-Ops2	"Move"		Move-or-Raise
 +			"ScrollBar" 	Module FvwmScroll 2 2
 +			"Print"         PrintFunction
 
-AddToMenu Remote-Logins	"dopey"	 Exec rsh dopey rxvt -display $HOSTDISPLAY &
-+			"snoopy" Exec rsh snoopy rxvt -display $HOSTDISPLAY &
-+			"grumpy" Exec rsh grumpy rxvt -display $HOSTDISPLAY &
-+			"happy"	 Exec rsh happy rxvt -display $HOSTDISPLAY &
-+			"bailey" Exec rsh bailey rxvt -display $HOSTDISPLAY &
-+			"barnum" Exec rsh barnum rxvt -display $HOSTDISPLAY &
-+			"joker"	 Exec rsh joker rxvt -display $HOSTDISPLAY &
+AddToMenu Remote-Logins	"dopey"	 Exec ssh dopey rxvt -display $HOSTDISPLAY &
++			"snoopy" Exec ssh snoopy rxvt -display $HOSTDISPLAY &
++			"grumpy" Exec ssh grumpy rxvt -display $HOSTDISPLAY &
++			"happy"	 Exec ssh happy rxvt -display $HOSTDISPLAY &
++			"bailey" Exec ssh bailey rxvt -display $HOSTDISPLAY &
++			"barnum" Exec ssh barnum rxvt -display $HOSTDISPLAY &
++			"joker"	 Exec ssh joker rxvt -display $HOSTDISPLAY &
 +			"signal" Exec rxterm signal
 
 AddToMenu Module-Popup	"Modules"	Title
@@ -236,9 +236,9 @@ AddToFunc Iconify-and-Raise     I Iconify
 # Output re-direction is csh style, not sh style
 # You will want to substitute your own hosts here!
 
-*FvwmButtons Dopey   rterm.xpm	Exec "XTerm" rsh dopey "exec rxvt -T dopey -display $HOSTDISPLAY </dev/null >&/dev/null & "&
-*FvwmButtons Grumpy  rterm.xpm	Exec "XTerm" rsh grumpy "exec rxvt -T grumpy -display $HOSTDISPLAY </dev/null >&/dev/null & "&
-*FvwmButtons Snoopy  rterm.xpm	Exec "XTerm" rsh snoopy "exec rxvt -T snoopy -display $HOSTDISPLAY </dev/null >&/dev/null & "&
+*FvwmButtons Dopey   rterm.xpm	Exec "XTerm" ssh dopey "exec rxvt -T dopey -display $HOSTDISPLAY </dev/null >&/dev/null & "&
+*FvwmButtons Grumpy  rterm.xpm	Exec "XTerm" ssh grumpy "exec rxvt -T grumpy -display $HOSTDISPLAY </dev/null >&/dev/null & "&
+*FvwmButtons Snoopy  rterm.xpm	Exec "XTerm" ssh snoopy "exec rxvt -T snoopy -display $HOSTDISPLAY </dev/null >&/dev/null & "&
 *FvwmButtons signal rterm.xpm	Exec "XTerm" rxterm signal &
 *FvwmButtons mail    mail2.xpm    Function MailFunction xmh "-font fixed"
 
@@ -283,8 +283,8 @@ AddToFunc Iconify-and-Raise     I Iconify
 ############################################################
 ############################################################
 # Note that icons are shown in the module
-#    only if NoIcon commnand is applied.
-#Style     *  NoIcon
+#    only if Icon commnand is applied.
+#Style     *  !Icon
 
 ############################################################
 *FvwmIconBoxIconBack    #cfcfcf

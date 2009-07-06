@@ -25,6 +25,9 @@
 #include "libs/PictureUtils.h"
 #include "libs/FRender.h"
 #include "libs/FRenderInit.h"
+#include "libs/ColorUtils.h"
+#include "libs/Graphics.h"
+#include "libs/XError.h"
 
 #define GRAB_EVENTS (ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|\
 	EnterWindowMask|LeaveWindowMask)
@@ -534,11 +537,11 @@ static void set_window_properties (Window win, char *name, char *icon,
   wmhints.flags = StateHint;
 
   if (XStringListToTextProperty (&name, 1, &win_name) == 0) {
-    ConsoleMessage ("%s: cannot allocate window name.\n",Module);
+    ConsoleMessage ("%s: cannot allocate window name.\n", MyName);
     return;
   }
   if (XStringListToTextProperty (&icon, 1, &win_icon) == 0) {
-    ConsoleMessage ("%s: cannot allocate window icon.\n",Module);
+    ConsoleMessage ("%s: cannot allocate window icon.\n", MyName);
     return;
   }
 
@@ -620,9 +623,9 @@ void X_init_manager (int man_id)
   ConsoleDebug (X11, "boxwidth = %d\n", man->geometry.boxwidth);
 
   if (man->fontname == NULL)
-    man->FButtonFont = FlocaleLoadFont(theDisplay, FONT_STRING, MyName);
+    man->FButtonFont = FlocaleLoadFont(theDisplay, NULL, MyName);
   else
-    man->FButtonFont = FlocaleLoadFont(theDisplay, man->fontname, MyName)  ;
+    man->FButtonFont = FlocaleLoadFont(theDisplay, man->fontname, MyName);
   if (man->FButtonFont == NULL)
   {
     ConsoleMessage ("Can't get font, exiting\n");
@@ -633,7 +636,7 @@ void X_init_manager (int man_id)
     man->tips_conf->Ffont = FlocaleLoadFont(theDisplay, NULL, MyName);
   else
     man->tips_conf->Ffont = FlocaleLoadFont(
-	    theDisplay, man->tips_fontname, MyName)  ;
+	    theDisplay, man->tips_fontname, MyName);
 
   for ( i = 0; i < NUM_CONTEXTS; i++ ) {
     man->pixmap[i] = None;
@@ -1045,19 +1048,12 @@ void init_display (void)
   }
   XSetErrorHandler (handle_error);
   _XA_WM_DEL_WIN = XInternAtom(theDisplay, "WM_DELETE_WINDOW", 0);
-  PictureInitCMap (theDisplay);
-  FScreenInit(theDisplay);
-  AllocColorset(0);
-  FShapeInit(theDisplay);
-  FRenderInit(theDisplay);
+  flib_init_graphics (theDisplay);
   FTipsInit(theDisplay);
 
   x_fd = XConnectionNumber (theDisplay);
   theScreen = DefaultScreen (theDisplay);
   theRoot = RootWindow (theDisplay, theScreen);
-
-  ConsoleDebug (X11, "screen width: %d\n", globals.screen_g.width);
-  ConsoleDebug (X11, "screen height: %d\n", globals.screen_g.height);
 }
 
 void recreate_background(WinManager *man, Contexts i)
@@ -1177,7 +1173,7 @@ void change_colorset(int color)
 		if (man->tips_conf->colorset == color)
 		{
 			FTipsColorsetChanged(theDisplay, color);
-		} 
+		}
 	}
 }
 

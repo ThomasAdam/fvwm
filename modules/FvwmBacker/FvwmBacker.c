@@ -1,5 +1,5 @@
 /* -*-c-*- */
-/* FvwmBacker Module for Fvwm.
+/* FvwmBacker Module for fvwm.
  *
  *  Copyright 1994,  Mike Finger (mfinger@mermaid.micro.umn.edu or
  *                               Mike_Finger@atk.com)
@@ -9,7 +9,7 @@
  * and this and any other applicible copyrights are kept intact.
 
  * The functions in this source file that are based on part of the FvwmIdent
- * module for Fvwm are noted by a small copyright atop that function, all others
+ * module for fvwm are noted by a small copyright atop that function, all others
  * are copyrighted by Mike Finger.  For those functions modified/used, here is
  *  the full, origonal copyright:
  *
@@ -54,6 +54,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
+#include <X11/Xatom.h>
 
 #include "libs/FShape.h"
 #include "libs/Module.h"
@@ -61,11 +62,13 @@
 #include "libs/Parse.h"
 #include "libs/PictureBase.h"
 #include "libs/FRenderInit.h"
+#include "libs/Graphics.h"
+#include "libs/XError.h"
 #include "FvwmBacker.h"
 
 /* migo (22-Nov-1999): Temporarily until fvwm_msg is moved to libs */
 #define ERR
-#define fvwm_msg(t,l,f) fprintf(stderr, "[FVWM][FvwmBacker]: <<ERROR>> %s\n", f)
+#define fvwm_msg(t,l,f) fprintf(stderr, "[fvwm][FvwmBacker]: <<ERROR>> %s\n", f)
 
 unsigned long BackerGetColor(char *color);
 
@@ -112,8 +115,7 @@ int current_x = 0;
 int current_y = 0;
 int current_colorset = -1;  /* the last matched command colorset or -1 */
 
-int Fvwm_fd[2];
-int fd_width;
+int fvwm_fd[2];
 
 char *Module;        /* i.e. "FvwmBacker" */
 char *configPrefix;  /* i.e. "*FvwmBacker" */
@@ -172,8 +174,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	Fvwm_fd[0] = atoi(argv[1]);
-	Fvwm_fd[1] = atoi(argv[2]);
+	fvwm_fd[0] = atoi(argv[1]);
+	fvwm_fd[1] = atoi(argv[2]);
 
 	/* Grab the X display information now. */
 
@@ -189,11 +191,7 @@ int main(int argc, char **argv)
 	MyDisplayHeight = DisplayHeight(dpy, screen);
 	MyDisplayWidth = DisplayWidth(dpy, screen);
 	XSetErrorHandler(ErrorHandler);
-	PictureInitCMap(dpy);
-	/* allocate default colorset */
-	AllocColorset(0);
-	FShapeInit(dpy);
-	FRenderInit(dpy);
+	flib_init_graphics(dpy);
 
 	XA_XSETROOT_ID = XInternAtom(dpy, "_XSETROOT_ID", False);
 	XA_ESETROOT_PMAP_ID = XInternAtom(dpy, "ESETROOT_PMAP_ID", False);
@@ -204,21 +202,19 @@ int main(int argc, char **argv)
 	/* Parse the config file */
 	ParseConfig();
 
-	fd_width = GetFdWidth();
-
-	SetMessageMask(Fvwm_fd,
+	SetMessageMask(fvwm_fd,
 		       M_NEW_PAGE | M_NEW_DESK | M_CONFIG_INFO |
 		       M_END_CONFIG_INFO | M_SENDCONFIG);
 
 	/*
 	** we really only want the current desk/page, and window list sends it
 	*/
-	SendInfo(Fvwm_fd, "Send_WindowList", 0);
+	SendInfo(fvwm_fd, "Send_WindowList", 0);
 
 	/* tell fvwm we're running */
-	SendFinishedStartupNotification(Fvwm_fd);
+	SendFinishedStartupNotification(fvwm_fd);
 
-	/* Recieve all messages from Fvwm */
+	/* Recieve all messages from fvwm */
 	EndLessLoop();
 
 	/* Should never get here! */
@@ -237,11 +233,11 @@ void EndLessLoop(void)
 }
 
 /*
-  ReadFvwmPipe - Read a single message from the pipe from Fvwm
+  ReadFvwmPipe - Read a single message from the pipe from fvwm
 */
 void ReadFvwmPipe(void)
 {
-	FvwmPacket* packet = ReadFvwmPacket(Fvwm_fd[1]);
+	FvwmPacket* packet = ReadFvwmPacket(fvwm_fd[1]);
 	if ( packet == NULL )
 	{
 		exit(0);
@@ -325,101 +321,101 @@ void SetDeskPageBackground(const Command *c)
 	{
 	case 1: /* solid colors */
 	case 2: /* colorset */
-			dpy2 =  XOpenDisplay(displayName);
-			if (!dpy2)
+		dpy2 =  XOpenDisplay(displayName);
+		if (!dpy2)
+		{
+			fvwm_msg(ERR, "FvwmBacker",
+				 "Fail to create a forking dpy, Exit!");
+			exit(2);
+		}
+		screen2 = DefaultScreen(dpy2);
+		root2 = RootWindow(dpy2, screen2);
+		if (RetainPixmap)
+		{
+			XSetCloseDownMode(dpy2, RetainPermanent);
+		}
+		XGrabServer(dpy2);
+		DeleteRootAtoms(dpy2, root2);
+		switch (c->type)
+		{
+		case 2:
+			current_colorset = c->colorset;
+			/* Process a colorset */
+			if (CSET_IS_TRANSPARENT(c->colorset))
 			{
-				fvwm_msg(ERR, "FvwmBacker",
-					 "Fail to create a forking dpy, Exit!");
-				exit(2);
+				fvwm_msg(ERR,"FvwmBacker", "You cannot "
+					 "use a transparent colorset as "
+					 "background!");
+				XUngrabServer(dpy2);
+				XCloseDisplay(dpy2);
+				return;
 			}
-			screen2 = DefaultScreen(dpy2);
-			root2 = RootWindow(dpy2, screen2);
+			else if (Pdepth != DefaultDepth(dpy2, screen2))
+			{
+				fvwm_msg(ERR,"FvwmBacker", "You cannot "
+					 "use a colorset background if\n"
+					 "the fvwm depth is not equal "
+					 "to the root depth!");
+				XUngrabServer(dpy2);
+				XCloseDisplay(dpy2);
+				return;
+			}
+			else if (RetainPixmap)
+			{
+				pix = CreateBackgroundPixmap(
+					dpy2, root2, MyDisplayWidth,
+					MyDisplayHeight,
+					&Colorset[c->colorset],
+					DefaultDepth(dpy2, screen2),
+					DefaultGC(dpy2, screen2), False);
+				if (pix != None)
+				{
+					XSetWindowBackgroundPixmap(
+						dpy2, root2, pix);
+					XClearWindow(dpy2, root2);
+				}
+			}
+			else
+			{
+				SetWindowBackground(
+					dpy2, root2, MyDisplayWidth,
+					MyDisplayHeight,
+					&Colorset[c->colorset],
+					DefaultDepth(dpy2, screen2),
+					DefaultGC(dpy2, screen2), True);
+			}
+			break;
+		case 1: /* Process a solid color request */
 			if (RetainPixmap)
 			{
-				XSetCloseDownMode(dpy2, RetainPermanent);
-			}
-			XGrabServer(dpy2);
-			DeleteRootAtoms(dpy2, root2);
-			switch (c->type)
-			{
-			case 2:
-				current_colorset = c->colorset;
-				/* Process a colorset */
-				if (CSET_IS_TRANSPARENT(c->colorset))
-				{
-					fvwm_msg(ERR,"FvwmBacker", "You cannot "
-						 "use a transparent colorset as "
-						 "background!");
-					XUngrabServer(dpy2);
-					XCloseDisplay(dpy2);
-					return;
-				}
-				else if (Pdepth != DefaultDepth(dpy2, screen2))
-				{
-					fvwm_msg(ERR,"FvwmBacker", "You cannot "
-						 "use a colorset background if\n"
-						 "the fvwm depth is not equal "
-						 "to the root depth!");
-					XUngrabServer(dpy2);
-					XCloseDisplay(dpy2);
-					return;
-				}
-				else if (RetainPixmap)
-				{
-					pix = CreateBackgroundPixmap(
-						dpy2, root2, MyDisplayWidth,
-						MyDisplayHeight,
-						&Colorset[c->colorset],
-						DefaultDepth(dpy2, screen2),
-						DefaultGC(dpy2, screen2), False);
-					if (pix != None)
-					{
-						XSetWindowBackgroundPixmap(
-							dpy2, root2, pix);
-						XClearWindow(dpy2, root2);
-					}
-				}
-				else
-				{
-					SetWindowBackground(
-						dpy2, root2, MyDisplayWidth,
-						MyDisplayHeight,
-						&Colorset[c->colorset],
-						DefaultDepth(dpy2, screen2),
-						DefaultGC(dpy2, screen2), True);
-				}
-				break;
-			case 1: /* Process a solid color request */
-				if (RetainPixmap)
-				{
-					GC gc;
-					XGCValues xgcv;
+				GC gc;
+				XGCValues xgcv;
 
-					xgcv.foreground = c->solidColor;
-					gc = fvwmlib_XCreateGC(
-						dpy2, root2, GCForeground,
-						&xgcv);
-					pix = XCreatePixmap(
-						dpy2, root2, 1, 1,
-						DefaultDepth(dpy2, screen2));
-					XFillRectangle(
-						dpy2, pix, gc, 0, 0, 1, 1);
-					XFreeGC(dpy2, gc);
-				}
-				XSetWindowBackground(dpy2, root2, c->solidColor);
-				XClearWindow(dpy2, root2);
-				break;
+				xgcv.foreground = c->solidColor;
+				gc = fvwmlib_XCreateGC(
+					dpy2, root2, GCForeground,
+					&xgcv);
+				pix = XCreatePixmap(
+					dpy2, root2, 1, 1,
+					DefaultDepth(dpy2, screen2));
+				XFillRectangle(
+					dpy2, pix, gc, 0, 0, 1, 1);
+				XFreeGC(dpy2, gc);
 			}
-			SetRootAtoms(dpy2, root2, pix);
-			XUngrabServer(dpy2);
-			XCloseDisplay(dpy2); /* this XSync, Ungrab, ...etc */
+			XSetWindowBackground(dpy2, root2, c->solidColor);
+			XClearWindow(dpy2, root2);
 			break;
+		}
+		SetRootAtoms(dpy2, root2, pix);
+		XUngrabServer(dpy2);
+		XCloseDisplay(dpy2); /* this XSync, Ungrab, ...etc */
+		break;
 	case -1:
 	case 0:
 	default:
 		if(c->cmdStr != NULL)
 		{
-			SendFvwmPipe(Fvwm_fd, c->cmdStr, (unsigned long)0);
+			SendFvwmPipe(fvwm_fd, c->cmdStr, (unsigned long)0);
 		}
 		break;
 	}
@@ -465,7 +461,7 @@ void ExecuteMatchingCommands(int colorset, int changed)
 }
 
 /*
-  ProcessMessage - Process the message coming from Fvwm
+  ProcessMessage - Process the message coming from fvwm
 */
 void ProcessMessage(unsigned long type, unsigned long *body)
 {
@@ -539,12 +535,13 @@ int ParseConfigLine(char *line)
 		if (strncasecmp(line, configPrefix, cpl) == 0)
 		{
 			if (strncasecmp(
-				line+cpl, "RetainPixmap", 12) == 0)
+				    line+cpl, "RetainPixmap", 12) == 0)
 			{
 				RetainPixmap = True;
 			}
 			else if (strncasecmp(
-				line+cpl, "DoNotRetainPixmap", 17) == 0)
+					 line+cpl,
+					 "DoNotRetainPixmap", 17) == 0)
 			{
 				RetainPixmap = False;
 			}
@@ -564,7 +561,7 @@ int ParseConfigLine(char *line)
 /*
   ParseConfig - Parse the configuration file fvwm to us to use
 */
-void ParseConfig()
+void ParseConfig(void)
 {
 	char *line_start;
 	char *tline;
@@ -573,13 +570,13 @@ void ParseConfig()
 	strcpy(line_start, "*");
 	strcat(line_start, Module);
 
-	InitGetConfigLine(Fvwm_fd, line_start);
-	GetConfigLine(Fvwm_fd, &tline);
+	InitGetConfigLine(fvwm_fd, line_start);
+	GetConfigLine(fvwm_fd, &tline);
 
 	while(tline != (char *)0)
 	{
 		ParseConfigLine(tline);
-		GetConfigLine(Fvwm_fd, &tline);
+		GetConfigLine(fvwm_fd, &tline);
 	}
 	free(line_start);
 }
@@ -624,7 +621,7 @@ Bool ParseNewCommand(
 		else if (StrEquals(name, "Page"))
 		{
 			if ((option_val = GetNextToken(
-				option_val,&value)) == NULL)
+				     option_val,&value)) == NULL)
 			{
 				fvwm_msg(
 					ERR, "FvwmBacker",
@@ -712,7 +709,8 @@ void AddCommand(char *line)
 				return;
 			}
 			error = ParseNewCommand(
-				parens, this, &do_ignore_desk, &do_ignore_page);
+				parens, this, &do_ignore_desk,
+				&do_ignore_page);
 			if (error)
 			{
 				free(this);

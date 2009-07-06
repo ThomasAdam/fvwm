@@ -21,6 +21,7 @@
 #include "xmanager.h"
 #include "x.h"
 #include "libs/Module.h"
+#include "libs/wild.h"
 
 static Button *get_select_button(void);
 
@@ -221,7 +222,7 @@ int builtin_gotomanager(int numargs, BuiltinArg *args)
 	case SelectButton:
 	case FocusButton:
 		ConsoleMessage(
-			"gotomanger: \"select\" or \"focus\" does not specify"
+			"gotomanager: \"select\" or \"focus\" does not specify"
 			" a manager\n");
 		break;
 

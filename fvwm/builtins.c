@@ -37,6 +37,13 @@
 #include "libs/fvwmlib.h"
 #include "libs/fvwmsignal.h"
 #include "libs/setpgrp.h"
+#include "libs/Grab.h"
+#include "libs/Parse.h"
+#include "libs/ColorUtils.h"
+#include "libs/Graphics.h"
+#include "libs/wild.h"
+#include "libs/envvar.h"
+#include "libs/ClientMsg.h"
 #include "libs/Picture.h"
 #include "libs/PictureUtils.h"
 #include "libs/FGettext.h"
@@ -414,7 +421,7 @@ static void __remove_window_decors(F_CMD_ARGS, FvwmDecor *d)
 		{
 			/* remove the extra title height now because we delete
 			 * the current decor before calling ChangeDecor(). */
-			t->frame_g.height -= t->decor->title_height;
+			t->g.frame.height -= t->decor->title_height;
 			t->decor = NULL;
 			ecc.w.fw = t;
 			ecc.w.wcontext = C_WINDOW;
@@ -1614,11 +1621,16 @@ Bool ReadDecorFace(char *s, DecorFace *df, int button, int verbose)
 
 			vc->num = num_coords;
 			vc->use_fgbg = 0;
-			vc->x = safemalloc(sizeof(char) * num_coords);
-			vc->y = safemalloc(sizeof(char) * num_coords);
-			vc->xoff = safemalloc(sizeof(char) * num_coords);
-			vc->yoff = safemalloc(sizeof(char) * num_coords);
-			vc->c = safemalloc(sizeof(char) * num_coords);
+			vc->x = (signed char*)safemalloc(sizeof(char) *
+							 num_coords);
+			vc->y = (signed char*)safemalloc(sizeof(char) *
+							 num_coords);
+			vc->xoff = (signed char*)safemalloc(sizeof(char) *
+							    num_coords);
+			vc->yoff = (signed char*)safemalloc(sizeof(char) *
+							    num_coords);
+			vc->c = (signed char*)safemalloc(sizeof(char) *
+							 num_coords);
 
 			/* get the points */
 			for (i = 0; i < vc->num; ++i)
@@ -2154,6 +2166,9 @@ void update_fvwm_colorset(int cset)
 
 void CMD_Beep(F_CMD_ARGS)
 {
+#if 1 /*!!!*/
+parse_colorset(11, "RootTransparent");
+#endif
 	XBell(dpy, 0);
 
 	return;
@@ -2254,8 +2269,9 @@ void CMD_CursorMove(F_CMD_ARGS)
 	{
 		y = pan_y;
 	}
-	FWarpPointer(dpy, None, Scr.Root, 0, 0, Scr.MyDisplayWidth,
-		     Scr.MyDisplayHeight, x, y);
+	FWarpPointerUpdateEvpos(
+		exc->x.elast, dpy, None, Scr.Root, 0, 0, Scr.MyDisplayWidth,
+		Scr.MyDisplayHeight, x, y);
 
 	return;
 }
@@ -2264,9 +2280,10 @@ void CMD_Delete(F_CMD_ARGS)
 {
 	FvwmWindow * const fw = exc->w.fw;
 
-	if (!is_function_allowed(F_DELETE, NULL, fw, True, True))
+	if (!is_function_allowed(F_DELETE, NULL, fw, RQORIG_PROGRAM_US, True))
 	{
 		XBell(dpy, 0);
+
 		return;
 	}
 	if (IS_TEAR_OFF_MENU(fw))
@@ -2278,12 +2295,14 @@ void CMD_Delete(F_CMD_ARGS)
 		send_clientmessage(
 			dpy, FW_W_PARENT(fw), _XA_WM_DELETE_WINDOW,
 			CurrentTime);
+
 		return;
 	}
 	if (WM_DELETES_WINDOW(fw))
 	{
 		send_clientmessage(
 			dpy, FW_W(fw), _XA_WM_DELETE_WINDOW, CurrentTime);
+
 		return;
 	}
 	else
@@ -2309,8 +2328,12 @@ void CMD_Destroy(F_CMD_ARGS)
 		XBell(dpy, 0);
 		return;
 	}
-	if (XGetGeometry(dpy, FW_W(fw), &JunkRoot, &JunkX, &JunkY,
-			 &JunkWidth, &JunkHeight, &JunkBW, &JunkDepth) != 0)
+	if (
+		XGetGeometry(
+			dpy, FW_W(fw), &JunkRoot, &JunkX, &JunkY,
+			(unsigned int*)&JunkWidth, (unsigned int*)&JunkHeight,
+			(unsigned int*)&JunkBW, (unsigned int*)&JunkDepth)
+		!= 0)
 	{
 		XKillClient(dpy, FW_W(fw));
 	}
@@ -2340,9 +2363,12 @@ void CMD_Close(F_CMD_ARGS)
 			dpy, FW_W(fw), _XA_WM_DELETE_WINDOW, CurrentTime);
 		return;
 	}
-	if (XGetGeometry(
-			 dpy, FW_W(fw), &JunkRoot, &JunkX, &JunkY,
-			 &JunkWidth, &JunkHeight, &JunkBW, &JunkDepth) != 0)
+	if (
+		XGetGeometry(
+			dpy, FW_W(fw), &JunkRoot, &JunkX, &JunkY,
+			(unsigned int*)&JunkWidth, (unsigned int*)&JunkHeight,
+			(unsigned int*)&JunkBW, (unsigned int*)&JunkDepth)
+		!= 0)
 	{
 		XKillClient(dpy, FW_W(fw));
 	}
@@ -2427,6 +2453,8 @@ void CMD_Exec(F_CMD_ARGS)
 	{
 		/* This is for fixing a problem with rox filer */
 		int fd;
+
+		fvmm_deinstall_signals();
 		fd = open("/dev/null", O_RDONLY, 0);
 		dup2(fd,STDIN_FILENO);
 		if (fvwm_setpgrp() == -1)
@@ -2623,7 +2651,7 @@ void CMD_QuitScreen(F_CMD_ARGS)
 
 void CMD_Echo(F_CMD_ARGS)
 {
-	unsigned int len;
+	int len;
 
 	if (!action)
 	{
@@ -2667,6 +2695,14 @@ void CMD_PrintInfo(F_CMD_ARGS)
 	else if (StrEquals(subject, "style"))
 	{
 		print_styles(verbose);
+	}
+	else if (StrEquals(subject, "ImageCache"))
+	{
+		PicturePrintImageCache(verbose);
+	}
+	else if (StrEquals(subject, "Bindings"))
+	{
+		print_bindings();
 	}
 	else
 	{
@@ -2768,7 +2804,6 @@ void CMD_ModulePath(F_CMD_ARGS)
 	return;
 }
 
-
 void CMD_ModuleTimeout(F_CMD_ARGS)
 {
 	int timeout;
@@ -2868,22 +2903,54 @@ void CMD_AddTitleStyle(F_CMD_ARGS)
 
 void CMD_PropertyChange(F_CMD_ARGS)
 {
-	char string[256] = "\0";
+	char string[256];
+	char *token;
+	char *rest;
 	int ret;
-	unsigned long argument, data1 = 0, data2 = 0;
+	unsigned long argument;
+	unsigned long data1;
+	unsigned long data2;
 
-	if (action == NULL || action == "\0")
+	/* argument */
+	token = PeekToken(action, &rest);
+	if (token == NULL)
 	{
 		return;
 	}
-	ret = sscanf(
-		action,"%lu %lu %lu %255c", &argument, &data1, &data2, string);
+	ret = sscanf(token, "%lu", &argument);
 	if (ret < 1)
 	{
 		return;
 	}
-	BroadcastPropertyChange(
-		argument, data1, data2, (string == NULL)? "":string);
+	/* data1 */
+	data1 = 0;
+	token = PeekToken(rest, &rest);
+	if (token != NULL)
+	{
+		ret = sscanf(token, "%lu", &data1);
+		if (ret < 1)
+		{
+			rest = NULL;
+		}
+	}
+	/* data2 */
+	data2 = 0;
+	token = PeekToken(rest, &rest);
+	if (token != NULL)
+	{
+		ret = sscanf(token, "%lu", &data2);
+		if (ret < 1)
+		{
+			rest = NULL;
+		}
+	}
+	/* string */
+	memset(string, 0, 256);
+	if (rest != NULL)
+	{
+		ret = sscanf(rest, "%255c", &(string[0]));
+	}
+	BroadcastPropertyChange(argument, data1, data2, string);
 
 	return;
 }
@@ -2970,7 +3037,7 @@ void CMD_DefaultFont(F_CMD_ARGS)
 	{
 		/* Try 'fixed', pass NULL font name */
 	}
-	if (!(new_font = FlocaleLoadFont(dpy, font, "FVWM")))
+	if (!(new_font = FlocaleLoadFont(dpy, font, "fvwm")))
 	{
 		if (Scr.DefaultFont == NULL)
 		{
@@ -4393,7 +4460,7 @@ void CMD_State(F_CMD_ARGS)
 	int n;
 	FvwmWindow * const fw = exc->w.fw;
 
-	n = GetIntegerArguments(action, &action, &state, 1);
+	n = GetIntegerArguments(action, &action, (int *)&state, 1);
 	if (n <= 0)
 	{
 		return;

@@ -17,7 +17,10 @@
 #include "config.h"
 
 #include <stdio.h>
+#include <X11/Xatom.h>
+
 #include "libs/fvwmlib.h"
+#include "libs/Target.h"
 #include "dragSource.h"
 #include "cursorStuff.h"
 #include "fvwmDragWell.h"
@@ -267,18 +270,19 @@ void xdndSrcReceiveFinished(DragSource *ds, XEvent *xev) {
  * action - the action we are exporting
  * typelist - the types we support */
 
-Atom xdndSrcDoDrag(DragSource *ds, Window srcWin, Atom action, Atom * typelist) {
+Atom xdndSrcDoDrag(DragSource *ds, Window srcWin, Atom action, Atom * typelist)
+{
   XEvent xev;
   float x_mouse, y_mouse, radiusSqr;
   int cacheTime = 0;
   XdndCursor *cursorPtr;
   Window trackWindow, root_return, child_return;
-  int mask_return;
+  unsigned int mask_return;
   Bool retBool;
   int version = 0;
   Atom retAction = None;
   Atom target;
-  short doneDrag = False;
+  short doneDrag = 0;
 
 
   /* User releases the mouse button without any motion->do nothing*/
@@ -341,6 +345,14 @@ Atom xdndSrcDoDrag(DragSource *ds, Window srcWin, Atom action, Atom * typelist) 
 	      &root_return, &child_return, &xev.xmotion.x_root,
 	      &xev.xmotion.y_root, &xev.xmotion.x,
 	      &xev.xmotion.y, &mask_return);
+      if (retBool == False)
+      {
+	      /* pointer is on a different screen */
+	      xev.xmotion.x_root = 0;
+	      xev.xmotion.y_root = 0;
+	      xev.xmotion.x = 0;
+	      xev.xmotion.y = 0;
+      }
 
       if (trackWindow != child_return) {
 	/*Cancel old drag if initiated.*/
@@ -421,7 +433,7 @@ Atom xdndSrcDoDrag(DragSource *ds, Window srcWin, Atom action, Atom * typelist) 
 	  }
 	}
       } else {
-	doneDrag = TRUE;
+	doneDrag = 1;
       }
       XUngrabPointer(ds->display,CurrentTime);
       break;
@@ -436,8 +448,8 @@ Atom xdndSrcDoDrag(DragSource *ds, Window srcWin, Atom action, Atom * typelist) 
 	  target = xev.xselectionrequest.target;
 	  ds->dropTargProperty = xev.xselectionrequest.property;
 	  XChangeProperty(
-		  ds->display,ds->dragSrcWin,ds->dropTargProperty,target,8,
-		  PropModeReplace,dropData,strlen(dropData)+1);
+		  ds->display, ds->dragSrcWin, ds->dropTargProperty, target, 8,
+		  PropModeReplace, (unsigned char*)dropData, strlen(dropData)+1);
 	  memset(&xev, 0, sizeof (XEvent));
 
 	  xev.xany.type = SelectionNotify;
@@ -455,7 +467,7 @@ Atom xdndSrcDoDrag(DragSource *ds, Window srcWin, Atom action, Atom * typelist) 
 	xdndSrcReceiveStatus(ds,&xev,0,0,cacheTime);
       } else if (xev.xclient.message_type==ds->atomSel->xdndFinished) {
 	xdndSrcReceiveFinished(ds,&xev);
-	doneDrag = TRUE;
+	doneDrag = 1;
       } else {
 	fprintf(stderr,"FvwmQFS:xdndDrag:Unknown client message in dragSource\n");
       }
@@ -482,7 +494,7 @@ int xdndErrorHandler(Display *dpy, XErrorEvent *errEv)
     /* Well, the specification for Xdnd states that we should handle
      * "BadWindow" errors with an error handler.  I'm not real sure how to go
      * beyond this point. One option is to use "goto".  Another is to make
-     * doneDrag in the xdndSrcDoDrag a global, and set it to TRUE here, but
+     * doneDrag in the xdndSrcDoDrag a global, and set it to 1 here, but
      * that is more dangerous.  For now, we will just exit */
     exit(1);
     /*goto gotoLabelDone;*/
@@ -556,7 +568,7 @@ int xdndSrcQueryDndAware (DragSource *ds, Window window, int *version,
   *version = 0;
 
   XGetWindowProperty(
-	  ds->display, window, ds->atomSel->xdndAware, 0, 0x8000000L, False,
+	  ds->display, window, ds->atomSel->xdndAware, 0L, 0x8000000L, False,
 	  XA_ATOM, &actual, &format, &count, &remaining, &data);
   if (actual != XA_ATOM || format != 32 || count == 0 || !data) {
     /* not supported */

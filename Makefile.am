@@ -11,6 +11,7 @@ SUBDIRS = \
 	bin \
 	utils \
 	$(FVWM_PERLLIB) \
+	doc \
 	docs \
 	rpm \
 	debian \
@@ -34,6 +35,8 @@ EXTRA_DIST = \
 #    make dist2       # instead of make dist
 #    make distcheck2  # instead of make distcheck
 #    make distclean2  # instead of make distclean
+
+DISTCHECK_CONFIGURE_FLAGS = --enable-htmldoc
 
 dist2: dist
 	gzip -dc $(distdir).tar.gz | bzip2 -9 >$(distdir).tar.bz2
@@ -76,7 +79,7 @@ rpm-this: rpm-regenerate
 #    make deb-dist
 #    make release=1 deb-dist
 #    make deb-this
-#    make version=2.3.22 release=2 deb-this 
+#    make version=2.3.22 release=2 deb-this
 #    make deb-dist cparams='--enable-gnome --quiet' mparams='CFLAGS="-O2 -g"'
 #    make deb-inplace release=1.mg fullname=migo # works on sources directly
 

@@ -1,6 +1,6 @@
 '\" t
 .\" @(#)@PACKAGE@-@VERSION@ @RELDATELONG@
-.TH fvwm-root 1 "@RELDATELONG@ (@VERSION@)" FVWM "FVWM Modules"
+.TH fvwm-root 1 "@RELDATELONG@ (@VERSION@)" Fvwm "Fvwm Modules"
 .UC
 
 .SH NAME
@@ -25,8 +25,12 @@ fvwm-root \- Sets the root window of the current X display to image
 .I fvwm-root
 reads the image file specified in the command line and displays it in the
 root window.  The supported image formats are
-.IR XBM ", " XPM " and " PNG
+.IR XBM ", " XPM ", " PNG " and " SVG
 if appropriated libraries are compiled in.
+
+SVG rendering options
+.RB " (as described in the " " ICONS AND IMAGES "
+section of the main fvwm documentation) can be utilized.
 
 .SH OPTIONS
 These command line options are recognized by fvwm-root:
@@ -39,7 +43,7 @@ Pixmap on the background to simulate transparency (for example,
 Eterm and Aterm use this method). This option should also be used for the
 RootTransparent colorset option, refer to the COLORSETS section of fvwm(1).
 If this option is not used, fvwm-root sets the _XSETROOT_ID property to
-None, and some programs, like FVWM modules, may use this to update their
+None, and some programs, like fvwm modules, may use this to update their
 background if the background is transparent (Transparent colorset).
 
 Note, a well behaved program, like fvwm, should listen to both _XSETROOT_ID
@@ -75,7 +79,7 @@ Causes fvwm-root to limit its color use to
 .I ncolors
 (if specified). This option is taken in account only with color depth  less
 or equal to 8 (and a TrueColor or GrayScale visual). The default is
-to use the same color limit than fvwm. So in normal situation this option
+to use the same color limit as fvwm. So in normal situation this option
 is not useful. However, if fvwm use a private colors map, as fvwm-root
 always use the default colors map you should use this option for
 limiting colors correctly. If

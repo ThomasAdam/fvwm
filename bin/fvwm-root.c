@@ -13,8 +13,10 @@
 #include <signal.h>
 #include <X11/Xos.h>
 #include <X11/Xatom.h>
-#include <libs/fvwmlib.h>
-#include <libs/Picture.h>
+#include "libs/fvwmlib.h"
+#include "libs/Picture.h"
+#include "libs/Graphics.h"
+#include "libs/Fsvg.h"
 
 int save_colors = 0;
 Display *dpy;
@@ -39,6 +41,9 @@ void usage(int verbose)
 #ifdef HAVE_PNG
 		", PNG"
 #endif
+#ifdef HAVE_RSVG
+		", SVG"
+#endif
 		"\n", VERSION);
 	fprintf(output,
 		"\nUsage: fvwm-root [ options ] file\n");
@@ -62,7 +67,8 @@ void usage(int verbose)
 int SetRootWindow(char *tline)
 {
 	Pixmap shapeMask = None, temp_pix = None, alpha = None;
-	int w, h, depth;
+	int w, h;
+	int depth;
 	int nalloc_pixels = 0;
 	Pixel *alloc_pixels = NULL;
 	char *file_path;
@@ -89,8 +95,11 @@ int SetRootWindow(char *tline)
 		 * --color-limit option */
 		PictureInitCMap(dpy);
 	}
-	/* try built-in image path first */
+	Frsvg_init();
+	/* try built-in image path first, but not before pwd */
+	PictureSetImagePath(".:+");
 	file_path = PictureFindImageFile(tline, NULL, R_OK);
+
 	if (file_path == NULL)
 	{
 		file_path = tline;

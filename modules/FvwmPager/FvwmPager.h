@@ -1,7 +1,7 @@
 /* -*-c-*- */
-#include <libs/Picture.h>
-#include <libs/vpacket.h>
-#include <libs/Flocale.h>
+#include "libs/Picture.h"
+#include "libs/vpacket.h"
+#include "libs/Flocale.h"
 
 typedef struct ScreenInfo
 {
@@ -68,6 +68,7 @@ typedef struct pager_window
   Pixel text;
   Pixel back;
   window_flags flags;
+  action_flags allowed_actions;
   struct
   {
     unsigned is_mapped : 1;
@@ -164,6 +165,7 @@ void list_mini_icon(unsigned long *body);
 void list_restack(unsigned long *body, unsigned long length);
 void list_property_change(unsigned long *body);
 void list_end(void);
+void list_reply(unsigned long *body);
 int My_XNextEvent(Display *dpy, XEvent *event);
 
 /* Stuff in x_pager.c */
@@ -171,7 +173,6 @@ void change_colorset(int colorset);
 void initialize_pager(void);
 void initialize_viz_pager(void);
 Pixel GetColor(char *name);
-void nocolor(char *a, char *b);
 void DispatchEvent(XEvent *Event);
 void ReConfigure(void);
 void ReConfigureAll(void);
@@ -184,7 +185,7 @@ void SwitchToDeskAndPage(int Desk, XEvent *Event);
 void AddNewWindow(PagerWindow *prev);
 void MoveResizePagerView(PagerWindow *t, Bool do_force_redraw);
 void ChangeDeskForWindow(PagerWindow *t,long newdesk);
-void MoveStickyWindow(void);
+void MoveStickyWindow(Bool is_new_page, Bool is_new_desk);
 void Hilight(PagerWindow *, int);
 void Scroll(int window_w, int window_h, int x, int y, int Desk,
 	    Bool do_scroll_icon);
@@ -200,7 +201,7 @@ void IconSwitchPage(XEvent *Event);
 void IconMoveWindow(XEvent *Event,PagerWindow *t);
 void HandleEnterNotify(XEvent *Event);
 void HandleExpose(XEvent *Event);
-void MoveStickyWindows(void);
 void MapBalloonWindow(PagerWindow *t, Bool is_icon_view);
 void UnmapBalloonWindow(void);
 void DrawInBalloonWindow(int i);
+void HandleScrollDone(void);

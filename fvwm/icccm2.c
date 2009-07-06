@@ -20,6 +20,7 @@
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #endif
+#include <X11/Xatom.h>
 
 #include "fvwm.h"
 #include "externs.h"
@@ -201,7 +202,7 @@ icccm2_handle_selection_request(const XEvent *e)
 		if (ev.property != None)
 		{
 			XGetWindowProperty(
-				dpy, ev.requestor, ev.property, 0, 256, False,
+				dpy, ev.requestor, ev.property, 0L, 256L, False,
 				_XA_ATOM_PAIR, &type, &format, &num, &rest,
 				&data);
 			/* FIXME: to be 100% correct, should deal with

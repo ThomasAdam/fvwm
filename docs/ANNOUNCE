@@ -1,53 +1,47 @@
-Fvwm is a powerful window manager.  Version 2.5.14 is a beta
-release that fixes a couple of bugs, including some crashes.  You
-are welcome to upgrade and test the new features or help
-stabilizing the code.  Please be aware that any features
-introduced in the 2.5.x development versions may be renamed,
-changed or removed without notice before 2.6.0.
+Fvwm is a powerful window manager.  Version 2.5.27 is a beta
+maintenance release that fixes a couple of bugs and adds some
+minor features.  Please be aware that any features introduced in
+the 2.5.x development versions may be renamed, changed or removed
+without notice before 2.6.0.
 
-2.5.14 is the first release that includes official (but
-experimental) support for 64-bit architectures, including AMD64
-support. For 64-bit support, upgrading from any earlier release is
-mandatory. Otherwise upgrading from any earlier 2.5.x release is
-recommended.
+Upgrading from 2.5.26 or earlier is recommended.
 
 This release is available at the home page: http://www.fvwm.org/.
 
 * New features:
 
-   - Fvwm now officially supports 64-bit architertures.
-   - New Test conditions EnvIsSet, EnvMatch, EdgeHasPointer and
-     EdgeIsActive.
-   - New window condition FixedPosition.
+   - New extended variable
+       $[w.visiblename]
 
-* New module features:
+   - Style matching now honours the window's visible name which
+     means it can be matched before the real name, hence:
 
-   - FvwmPerl module supports window context when preprocessing.
-   - FvwmPerl module accepts new --export option that by default
-     defines two fvwm functions "Eval" and ".", to be used like:
+        Style $[w.visiblename] Colorset 5
 
-       FvwmPerl -x
-       Eval $a = $[desk.n] - 2; cmd("GotoDesk 0 $a") if $a >= 0
-       . Exec xmessage %{2 + cos(0)}%    # embedded calculator
+        is now honoured.  Useful with IndexedWindowName as a style
+        option.
 
-   - New FvwmProxy option ProxyIconified.
-   - New FvwmTaskBar option Pad to control the gap between
-     buttons.
+   - New style InitialMapCommand allows to execute any command
+     when a window is mapped first.
 
-* Bug Fixes:
+   - New option to PrintInfo, "bindings" which prints out all of
+     the Key, PointerKey, Mouse and Stroke bindings which fvwm
+     knows about.
 
-   - Fixed a Solaris compiler error introduced in 2.5.13.
-   - Fixed a hang with layers set by applications (e.g. AbiWord).
-   - GotoDesk with a relative page argument now wraps around at
-     the end of the given range as documented. (Bug #1396).
-   - PopupDelayed menu style option was not copied on
-     CopyMenuStyle.
-   - Transparent Animated menus with non-transparent popup were
-     not animated correctly.
-   - Supported euc-jp class of encodings.
-   - A window's default layer is no longer set to 0 durin a
-     restart.
-   - Fixed an annoying MouseFocus/SloppyFocus problem in
-     conjunction with EdgeResistance + EdgeScroll (sometimes a
-     window did noit get the focus as it should have). This
-     problem first occured in 2.5.11.
+* Bug fixes:
+
+   - Fixed compilation without XRender support.
+   - Fixed handling of _NET_MOVERESIZE_WINDOWS requests.
+   - Fixed a bug in automatic detection mode of the style
+     MoveByProgramMethod.
+   - Fixed png detection when cross compiling.
+   - Fixed keeping fullscreen window mode over a restart.
+   - The style PositionPlacement now honours StartsOnPage.
+   - Reset signal handlers for executed modules and programs.
+   - Try to handle a bug an old version of the EWMH spec by
+     honouring both, the _NET_WM_STATE_MAXIMIZED_HORIZ hint and
+     the _NET_WM_STATE_MAXIMIZED_HORZ hitn.
+   - Fix the GNOME location prefix to application .desktop files.
+   - 'PositionPlacement UnderMouse' now forces the window
+     on-screen, just like the old UnderMousePlacement style option
+     used to.

@@ -59,9 +59,11 @@
 #include <X11/Intrinsic.h>
 
 #include "fvwmlib.h"
+#include "System.h"
 #include "Colorset.h"
 #include "Picture.h"
 #include "PictureUtils.h"
+#include "Fsvg.h"
 
 static FvwmPicture *FvwmPictureList=NULL;
 
@@ -109,12 +111,23 @@ FvwmPicture *PCacheFvwmPicture(
 	FvwmPictureAttributes fpa)
 {
 	char *path;
+	char *real_path;
 	FvwmPicture *p = FvwmPictureList;
 
 	/* First find the full pathname */
 	if ((path = PictureFindImageFile(name, ImagePath, R_OK)) == NULL)
 	{
 		return NULL;
+	}
+        /* Remove any svg rendering options from real_path */
+	if (USE_SVG && *path == ':' &&
+	    (real_path = strchr(path + 1, ':')))
+	{
+		real_path++;
+	}
+	else
+	{
+		real_path = path;
 	}
 
 	/* See if the picture is already cached */
@@ -131,8 +144,8 @@ FvwmPicture *PCacheFvwmPicture(
 		}
 
 		/* If we have found a picture with the wanted name and stamp */
-		if (!*p1 && !*p2 && !isFileStampChanged(&p->stamp, p->name) &&
-		    PICTURE_FPA_AGREE(p,fpa))
+		if (!*p1 && !*p2 && !isFileStampChanged(&p->stamp, real_path)
+		    && PICTURE_FPA_AGREE(p,fpa))
 		{
 			p->count++; /* Put another weight on the picture */
 			free(path);
@@ -288,3 +301,43 @@ FvwmPicture *PCloneFvwmPicture(FvwmPicture *pic)
 	return pic;
 }
 
+void PicturePrintImageCache(int verbose)
+{
+	FvwmPicture *p;
+	unsigned int count = 0;
+	unsigned int hits = 0;
+	unsigned int num_alpha = 0;
+	unsigned int num_mask = 0;
+
+	fflush(stderr);
+	fflush(stdout);
+	fprintf(stderr, "fvwm info on Image cache:\n");
+
+	for (p = FvwmPictureList; p != NULL; p = p->next)
+	{
+		int num_pixmaps = 1;
+		if (p->mask != None)
+		{
+			num_mask++;
+			num_pixmaps++;
+		}
+		if (p->alpha != None)
+		{
+			num_alpha++;
+			num_pixmaps++;
+		}
+		if (verbose > 0)
+		{
+			fprintf(stderr,
+				"Image: %s (%d pixmaps; used %d times)\n",
+				p->name, num_pixmaps, p->count);
+		}
+		count++;
+		hits += p->count-1;
+	}
+
+	fprintf(stderr, "%u images in cache (%d reuses) "
+		"(%u masks, %u alpha channels => %u pixmaps)\n",
+		count, hits, num_mask, num_alpha, count + num_mask + num_alpha);
+	fflush(stderr);
+}

@@ -50,10 +50,11 @@
 #include "libs/FRenderInit.h"
 #include "libs/Colorset.h"
 #include "libs/Flocale.h"
-#ifdef DEBUG
-#  define FVWM_DEBUG_MSGS   /* Do we need this? */
-#endif
 #include "libs/fvwmsignal.h"
+#include "libs/Grab.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
+#include "libs/System.h"
 
 #include "fvwm/fvwm.h"
 #include "FvwmPager.h"
@@ -313,20 +314,12 @@ int main(int argc, char **argv)
     }
 
   x_fd = XConnectionNumber(dpy);
-  PictureInitCMap(dpy);
-  FScreenInit(dpy);
-  AllocColorset(0);
-  FShapeInit(dpy);
-  FRenderInit(dpy);
+  flib_init_graphics(dpy);
 
   Scr.screen = DefaultScreen(dpy);
   Scr.Root = RootWindow(dpy, Scr.screen);
   /* make a temp window for any pixmaps, deleted later */
   initialize_viz_pager();
-
-#ifdef DEBUG
-  fprintf(stderr,"[main]: Connection to X server established.\n");
-#endif
 
   SetMessageMask(fd,
 		 M_VISIBLE_NAME |
@@ -350,10 +343,8 @@ int main(int argc, char **argv)
 		 M_RESTACK);
   SetMessageMask(fd,
 		 MX_VISIBLE_ICON_NAME|
-		 MX_PROPERTY_CHANGE);
-#ifdef DEBUG
-  fprintf(stderr,"[main]: calling ParseOptions\n");
-#endif
+		 MX_PROPERTY_CHANGE|
+		 MX_REPLY);
   ParseOptions();
   if (is_transient)
   {
@@ -369,10 +360,6 @@ int main(int argc, char **argv)
     xneg = 0;
     yneg = 0;
   }
-#ifdef DEBUG
-  fprintf(stderr,
-	  "[main]: back from calling ParseOptions, calling init pager\n");
-#endif
 
   if (PagerFore == NULL)
     PagerFore = safestrdup("black");
@@ -400,17 +387,11 @@ int main(int argc, char **argv)
 
   /* open a pager window */
   initialize_pager();
-#ifdef DEBUG
-  fprintf(stderr,"[main]: back from init pager, getting window list\n");
-#endif
 
   /* Create a list of all windows */
   /* Request a list of all windows,
    * wait for ConfigureWindow packets */
   SendInfo(fd,"Send_WindowList",0);
-#ifdef DEBUG
-  fprintf(stderr,"[main]: back from getting window list, looping\n");
-#endif
 
   if (is_transient)
   {
@@ -455,13 +436,13 @@ int main(int argc, char **argv)
   SendFinishedStartupNotification(fd);
 
   Loop(fd);
-#ifdef DEBUG
-  if (debug_term_signal)
+#ifdef FVWM_DEBUG_MSGS
+  if ( isTerminated )
   {
-    fprintf(stderr,"[main]: Terminated due to signal %d\n",
-		   debug_term_signal);
+    fprintf(stderr, "%s: Received signal: exiting...\n", MyName);
   }
 #endif
+
   return 0;
 }
 
@@ -565,6 +546,10 @@ void process_message( FvwmPacket* packet )
       break;
     case MX_PROPERTY_CHANGE:
       list_property_change(body);
+      break;
+    case MX_REPLY:
+	    list_reply(body);
+	    break;
     default:
       /* ignore unknown packet */
       break;
@@ -589,6 +574,76 @@ RETSIGTYPE DeadPipe(int nonsense)
 {
   exit(0);
   SIGNAL_RETURN;
+}
+
+
+/*
+ *  Procedure:
+ *	handle_config_win_package - updates a PagerWindow
+ *		with respect to a ConfigWinPacket
+ */
+void handle_config_win_package(PagerWindow *t,
+			       ConfigWinPacket *cfgpacket)
+{
+	if (t->w != None && t->w != cfgpacket->w)
+	{
+		/* Should never happen */
+		fprintf(stderr,"%s: Error: Internal window list corrupt\n",MyName);
+		/* might be a good idea to exit here */
+		return;
+	}
+	t->w = cfgpacket->w;
+	t->frame = cfgpacket->frame;
+	t->frame_x = cfgpacket->frame_x;
+	t->frame_y = cfgpacket->frame_y;
+	t->frame_width = cfgpacket->frame_width;
+	t->frame_height = cfgpacket->frame_height;
+
+	t->desk = cfgpacket->desk;
+
+	t->title_height = cfgpacket->title_height;
+	t->border_width = cfgpacket->border_width;
+
+	t->icon_w = cfgpacket->icon_w;
+	t->icon_pixmap_w = cfgpacket->icon_pixmap_w;
+
+	memcpy(&(t->flags), &(cfgpacket->flags), sizeof(cfgpacket->flags));
+	memcpy(&(t->allowed_actions), &(cfgpacket->allowed_actions),
+	       sizeof(cfgpacket->allowed_actions));
+
+	if (win_pix_set)
+	{
+		t->text = win_fore_pix;
+		t->back = win_back_pix;
+	}
+	else
+	{
+		t->text = cfgpacket->TextPixel;
+		t->back = cfgpacket->BackPixel;
+	}
+
+	if (IS_ICONIFIED(t))
+	{
+		/* For new windows icon_x and icon_y will be zero until
+		 * iconify message is recived
+		 */
+		t->x = t->icon_x;
+		t->y = t->icon_y;
+		t->width = t->icon_width;
+		t->height = t->icon_height;
+		if(IS_ICON_SUPPRESSED(t) || t->width == 0 || t->height == 0)
+		{
+			t->x = -32768;
+			t->y = -32768;
+		}
+	}
+	else
+	{
+		t->x = t->frame_x;
+		t->y = t->frame_y;
+		t->width = t->frame_width;
+		t->height = t->frame_height;
+	}
 }
 
 /*
@@ -619,38 +674,7 @@ void list_add(unsigned long *body)
 	}
 	*prev = (PagerWindow *)safemalloc(sizeof(PagerWindow));
 	memset(*prev, 0, sizeof(PagerWindow));
-	(*prev)->w = cfgpacket->w;
-	(*prev)->frame = cfgpacket->frame;
-	(*prev)->t = (char *) cfgpacket->fvwmwin;
-	(*prev)->x = cfgpacket->frame_x;
-	(*prev)->y = cfgpacket->frame_y;
-	(*prev)->width = cfgpacket->frame_width;
-	(*prev)->height = cfgpacket->frame_height;
-	(*prev)->desk = cfgpacket->desk;
-	memcpy(
-		&((*prev)->flags), &(cfgpacket->flags),
-		sizeof(cfgpacket->flags));
-	(*prev)->title_height = cfgpacket->title_height;
-	(*prev)->border_width = cfgpacket->border_width;
-	(*prev)->icon_w = cfgpacket->icon_w;
-	(*prev)->icon_pixmap_w = cfgpacket->icon_pixmap_w;
-	if (IS_ICONIFIED(*prev))
-	{
-		(*prev)->icon_x = 0;
-		(*prev)->icon_y = 0;
-		(*prev)->icon_width = 0;
-		(*prev)->icon_height = 0;
-	}
-	if (win_pix_set)
-	{
-		(*prev)->text = win_fore_pix;
-		(*prev)->back = win_back_pix;
-	}
-	else
-	{
-		(*prev)->text = cfgpacket->TextPixel;
-		(*prev)->back = cfgpacket->BackPixel;
-	}
+	handle_config_win_package(*prev, cfgpacket);
 	AddNewWindow(*prev);
 
 	return;
@@ -667,6 +691,7 @@ void list_configure(unsigned long *body)
   PagerWindow *t;
   Window target_w;
   struct ConfigWinPacket  *cfgpacket = (void *) body;
+  Bool is_new_desk;
 
   target_w = cfgpacket->w;
   t = Start;
@@ -680,48 +705,10 @@ void list_configure(unsigned long *body)
     return;
   }
 
-  t->t = (char *) cfgpacket->fvwmwin;
-  t->frame = cfgpacket->frame;
-  t->frame_x = cfgpacket->frame_x;
-  t->frame_y = cfgpacket->frame_y;
-  t->frame_width = cfgpacket->frame_width;
-  t->frame_height = cfgpacket->frame_height;
-  t->title_height = cfgpacket->title_height;
-  t->border_width = cfgpacket->border_width;
-  memcpy(&(t->flags), &(cfgpacket->flags), sizeof(cfgpacket->flags));
-  t->icon_w = cfgpacket->icon_w;
-  t->icon_pixmap_w = cfgpacket->icon_pixmap_w;
+  is_new_desk = (t->desk != cfgpacket->desk);
+  handle_config_win_package(t, cfgpacket);
 
-  if (win_pix_set)
-  {
-    t->text = win_fore_pix;
-    t->back = win_back_pix;
-  }
-  else
-  {
-    t->text = cfgpacket->TextPixel;
-    t->back = cfgpacket->BackPixel;
-  }
-  if (IS_ICONIFIED(t))
-  {
-    t->x = t->icon_x;
-    t->y = t->icon_y;
-    t->width = t->icon_width;
-    t->height = t->icon_height;
-    if(IS_ICON_SUPPRESSED(t) || t->width == 0 || t->height == 0)
-    {
-      t->x = -32768;
-      t->y = -32768;
-    }
-  }
-  else
-  {
-    t->x = t->frame_x;
-    t->y = t->frame_y;
-    t->width = t->frame_width;
-    t->height = t->frame_height;
-  }
-  if (t->desk != cfgpacket->desk)
+  if (is_new_desk)
   {
     ChangeDeskForWindow(t, cfgpacket->desk);
   }
@@ -846,7 +833,7 @@ void list_new_page(unsigned long *body)
     ReConfigure();
   }
   MovePage(False);
-  MoveStickyWindows();
+  MoveStickyWindow(True, False);
   Hilight(FocusWin,True);
 }
 
@@ -1006,7 +993,7 @@ void list_new_desk(unsigned long *body)
   MovePage(True);
   DrawGrid(oldDesk - desk1, 1, None, NULL);
   DrawGrid(Scr.CurrentDesk - desk1, 1, None, NULL);
-  MoveStickyWindows();
+  MoveStickyWindow(False, True);
 /*
   Hilight(FocusWin,False);
 */
@@ -1428,6 +1415,17 @@ void list_property_change(unsigned long *body)
   }
 }
 
+
+void list_reply(unsigned long *body)
+{
+	char *tline;
+	tline = (char*)&(body[3]);
+	if (strcmp(tline, "ScrollDone") == 0)
+	{
+		HandleScrollDone();
+	}
+}
+
 /*
  *
  * Waits for next X event, or for an auto-raise timeout.
@@ -1651,9 +1649,6 @@ void ParseOptions(void)
       }
       GetNextToken(next, &ImagePath);
 
-#ifdef DEBUG
-      fprintf(stderr, "[ParseOptions]: ImagePath = %s\n", ImagePath);
-#endif
       continue;
     }
     else if (StrEquals(token, "MoveThreshold"))
@@ -1934,11 +1929,6 @@ void ParseOptions(void)
 		dpy, Scr.Pager_w, ImagePath, arg2, fpa);
       }
 
-#ifdef DEBUG
-      fprintf(stderr,
-	      "[ParseOptions]: Desk %d: bgPixmap = %s\n",
-	      desk, arg2);
-#endif
     }
     else if (StrEquals(resource, "Pixmap"))
     {
@@ -1951,10 +1941,6 @@ void ParseOptions(void)
 
 	PixmapBack = PCacheFvwmPicture(
 		dpy, Scr.Pager_w, ImagePath, arg1, fpa);
-#ifdef DEBUG
-	fprintf(stderr,
-		"[ParseOptions]: Global: bgPixmap = %s\n", arg1);
-#endif
 
       }
     }
@@ -1969,11 +1955,6 @@ void ParseOptions(void)
 
 	HilightPixmap = PCacheFvwmPicture (
 		dpy, Scr.Pager_w, ImagePath, arg1, fpa);
-
-#ifdef DEBUG
-	fprintf(stderr,
-		"[ParseOptions]: HilightPixmap = %s\n", arg1);
-#endif
 
       }
     }

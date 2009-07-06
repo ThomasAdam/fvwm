@@ -1,3 +1,71 @@
+2009-03-18  Mikhael Goikhman  <migo@homemail.com>
+
+	* FVWM/Module.pm.in:
+	add new request_query method;
+	fix small typo in the code to support old API
+
+	* FVWM/EventNames.pm:
+	add new event type MX_REPLY
+
+2009-03-17  Mikhael Goikhman  <migo@homemail.com>
+
+	* FVWM/Commands.pm:
+	* FVWM/Event.pm:
+	* FVWM/EventNames.pm:
+	* FVWM/Module.pm.in:
+	* FVWM/Tracker.pm:
+	* FVWM/create-commands:
+	* FVWM/Module/Gtk.pm:
+	* FVWM/Module/Gtk2.pm:
+	* FVWM/Module/Terminal.pm:
+	* FVWM/Module/Tk.pm:
+	* FVWM/Module/Toolkit.pm:
+	* FVWM/Tracker/Colorsets.pm:
+	* FVWM/Tracker/GlobalConfig.pm:
+	* FVWM/Tracker/ModuleConfig.pm:
+	* FVWM/Tracker/PageInfo.pm:
+	* FVWM/Tracker/Scheduler.pm:
+	* FVWM/Tracker/WindowList.pm:
+	* General/FileSystem.pm:
+	* General/Parse.pm:
+	convert my old code to use var_name and function_name coding style
+
+	* FVWM/Constants.pm:
+	* FVWM/Commands.pm:
+	regenerated
+
+	* FVWM/Makefile.am:
+	add "regenerate" target
+
+2007-08-07  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
+
+	* FVWM/EventNames.pm:
+	* FVWM/create-constants:
+	* FVWM/Event.pm:
+	* FVWM/Commands.pm:
+	* FVWM/Tracker/PageInfo.pm:
+	* FVWM/Module.pm.in:
+	* FVWM/create-commands:
+	* FVWM/Module/Toolkit.pm:
+	write fvwm in lower case
+
+2007-01-15  Viktor Griph  <griph(at)dd(dot)chalmers(dot)se>
+
+	* FVWM/Module.pm.in:
+	use datarootdir
+
+2006-03-21  Serge Koksharov  <gentoosiast dog yandex dot ru>
+
+	* FVWM/Module/Tk.pm:
+	* FVWM/Tracker.pm:
+	* FVWM/Module.pm.in:
+	corrected typos
+
+2006-02-10  Mikhael Goikhman  <migo@homemail.com>
+
+	* FVWM/Commands.pm:
+	regenerated
+
 2005-08-10  Mikhael Goikhman  <migo@homemail.com>
 
 	* FVWM/Module.pm.in:

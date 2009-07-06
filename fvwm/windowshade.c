@@ -21,12 +21,15 @@
 #include <stdio.h>
 
 #include "libs/fvwmlib.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
 #include "fvwm.h"
 #include "externs.h"
 #include "execcontext.h"
 #include "misc.h"
 #include "commands.h"
 #include "screen.h"
+#include "module_list.h"
 #include "module_interface.h"
 #include "geometry.h"
 #include "gnome.h"
@@ -87,13 +90,37 @@ void CMD_WindowShade(F_CMD_ARGS)
 	{
 		do_force_shading = True;
 		action = naction;
+		token = PeekToken(action, &naction);
 	}
 	else
 	{
 		do_force_shading = False;
 	}
 	/* parse arguments */
-	shade_dir = gravity_parse_dir_argument(action, NULL, -1);
+	if (StrEquals("Last", token))
+	{
+		/* last given instead of a direction will make
+		 * fvwm to reuse the last used shading direction.
+		 * A new, nevershaded window will have
+		 * USED_TITLE_DIR_FOR_SHADING set (in add_window.c:
+		 * setup_window_structure)
+		 */
+		action = naction;
+		if (!USED_TITLE_DIR_FOR_SHADING(fw))
+		{
+			shade_dir = SHADED_DIR(fw);
+		}
+		else
+		{
+			shade_dir = DIR_NONE;
+		}
+	}
+	else
+	{
+		/* parse normal direction if last was not given */
+		shade_dir = gravity_parse_dir_argument(action, NULL, -1);
+	}
+
 	if (shade_dir >= 0 && shade_dir <= DIR_MASK)
 	{
 		has_dir = True;
@@ -163,7 +190,7 @@ void CMD_WindowShade(F_CMD_ARGS)
 		SET_USED_TITLE_DIR_FOR_SHADING(fw, !has_dir);
 	}
 	/* draw the animation */
-	start_g = fw->frame_g;
+	start_g = fw->g.frame;
 	get_unshaded_geometry(fw, &end_g);
 	if (toggle == 1)
 	{

@@ -20,9 +20,11 @@
 #include "x.h"
 #include "xmanager.h"
 
-#include <libs/fvwmlib.h>
-#include <libs/FScreen.h>
-#include <libs/Module.h>
+#include "libs/fvwmlib.h"
+#include "libs/FScreen.h"
+#include "libs/Module.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
 
 static WinData *fvwm_focus_win = NULL;
 
@@ -275,7 +277,7 @@ static void focus_change(FvwmPacketBody *body)
 
 	if (fvwm_focus_win &&
 	    fvwm_focus_win->button &&
-	    fvwm_focus_win->manager->showonlyfocused) 
+	    fvwm_focus_win->manager->showonlyfocused)
 	  delete_windows_button(fvwm_focus_win);
 
 	if (fvwm_focus_win && win != fvwm_focus_win)
@@ -384,7 +386,8 @@ static void visible_icon_name(FvwmPacketBody *body)
 	}
 
 	copy_string(&win->visible_icon_name, (char *)name);
-	ConsoleDebug(FVWM, "new visible icon name: %s\n", win->visible_icon_name);
+	ConsoleDebug(
+		FVWM, "new visible icon name: %s\n", win->visible_icon_name);
 	if (change_windows_manager(win) == 0 && win->button &&
 		(win->manager->format_depend & ICON_NAME))
 	{
@@ -659,7 +662,8 @@ static void property_change(FvwmPacketBody *body)
 		{
 			unsigned long u;
 
-			if (sscanf(body->property_data.str,"%lu",&u) == 1)
+			if (sscanf((char *)body->property_data.str, "%lu",
+				   &u) == 1)
 			{
 				man->swallower_win = (Window)u;
 			}
@@ -675,7 +679,7 @@ static void ProcessMessage(Ulong type, FvwmPacketBody *body)
 {
 	int i;
 
-	ConsoleDebug(FVWM, "FVWM Message type: %ld\n", type);
+	ConsoleDebug(FVWM, "fvwm message type: %ld\n", type);
 
 	switch(type)
 	{
@@ -739,7 +743,7 @@ static void ProcessMessage(Ulong type, FvwmPacketBody *body)
 		break;
 
 	case MX_VISIBLE_ICON_NAME:
-		ConsoleDebug(FVWM, "DEBUG::M_VISIBLE_ICON_NAME\n");
+		ConsoleDebug(FVWM, "DEBUG::MX_VISIBLE_ICON_NAME\n");
 		visible_icon_name(body);
 		break;
 

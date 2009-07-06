@@ -36,7 +36,6 @@
 #include <pwd.h>
 #include <sys/param.h>
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <netdb.h>
 
 #include <X11/Xlib.h>
@@ -46,12 +45,15 @@
 #include <X11/Intrinsic.h>
 
 #include "libs/Module.h"
+#include "libs/fvwm_sys_stat.h"
 
 #include "FvwmCpp.h"
 #include "libs/fvwmlib.h"
 #include "libs/FShape.h"
 #include "libs/PictureBase.h"
 #include "libs/FSMlib.h"
+#include "libs/Strings.h"
+#include "libs/System.h"
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #define Resolution(pixels, mm) ((((pixels) * 2000 / (mm)) + 1) / 2)
@@ -276,7 +278,10 @@ static char *cpp_defs(Display *display, const char *host, char *cpp_options, cha
 		 */
 		/* first try to unlink it */
 		unlink(tmp_name);
-		if ((fd = open(tmp_name, O_WRONLY|O_EXCL|O_CREAT, 0600)) < 0)
+		fd = open(
+			tmp_name, O_WRONLY|O_EXCL|O_CREAT,
+			FVWM_S_IRUSR | FVWM_S_IWUSR);
+		if (fd < 0)
 		{
 			fprintf(
 				stderr,

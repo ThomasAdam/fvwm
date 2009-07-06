@@ -24,6 +24,9 @@
 #include "libs/fvwmlib.h"
 #include "libs/Flocale.h"
 #include "libs/Picture.h"
+#include "libs/Module.h"
+#include "libs/Parse.h"
+#include "libs/Strings.h"
 #include "ButtonArray.h"
 #include "Mallocs.h"
 #include "Start.h"
@@ -31,8 +34,7 @@
 extern Display *dpy;
 extern Window Root, win;
 extern FlocaleFont *FButtonFont, *FSelButtonFont;
-extern char *Module;
-extern int Clength;
+extern ModuleArgs *module;
 extern char *ImagePath;
 
 Button *StartButton;
@@ -44,7 +46,7 @@ int WindowButtonsRightMargin = 2;   /* default value is 2 */
 int StartButtonRightMargin = 0;     /* default value is 0 */
 int has_wb_left_margin = 0;
 int has_wb_right_margin = 0;
-Bool StartButtonOpensAboveTaskBar = FALSE;
+Bool StartButtonOpensAboveTaskBar = False;
 char *StartName     = NULL,
      *StartCommand  = NULL,
      *StartPopup    = NULL,
@@ -74,12 +76,11 @@ Bool StartButtonParseConfig(char *tline)
 	int i, j, k;
 	int titleRecorded = 0, iconRecorded = 0;
 	char *tokens[100];  /* This seems really big */
-	char *strtok_ptr;
 	StartAndLaunchButtonItem *tempPtr;
 	int mouseButton;
 	char **tmpStrPtr;
 
-	option = tline + Clength;
+	option = tline + module->namelen+1;
 	i = GetTokenIndex(option, startopts, -1, &rest);
 	while (*rest && *rest != '\n' && isspace(*rest))
 	{
@@ -94,9 +95,9 @@ Bool StartButtonParseConfig(char *tline)
 				(StartAndLaunchButtonItem*)safemalloc(
 					sizeof(StartAndLaunchButtonItem));
 			StartAndLaunchButtonItemInit(First_Start_Button);
-			First_Start_Button->isStartButton = TRUE;
+			First_Start_Button->isStartButton = True;
 		}
-		else if (First_Start_Button->isStartButton == FALSE)
+		else if (First_Start_Button->isStartButton == False)
 		{
 			/* shortcut button has been declared before start
 			 * button */
@@ -105,7 +106,7 @@ Bool StartButtonParseConfig(char *tline)
 			StartAndLaunchButtonItemInit(tempPtr);
 			tempPtr->tail = First_Start_Button;
 			First_Start_Button = tempPtr;
-			First_Start_Button->isStartButton = TRUE;
+			First_Start_Button->isStartButton = True;
 		}
 		else if (First_Start_Button->buttonCaption != NULL)
 		{
@@ -122,9 +123,9 @@ Bool StartButtonParseConfig(char *tline)
 				(StartAndLaunchButtonItem*)safemalloc(
 					sizeof(StartAndLaunchButtonItem));
 			StartAndLaunchButtonItemInit(First_Start_Button);
-			First_Start_Button->isStartButton = TRUE;
+			First_Start_Button->isStartButton = True;
 		}
-		else if (First_Start_Button->isStartButton == FALSE)
+		else if (First_Start_Button->isStartButton == False)
 		{
 			/* shortcut button has been declared before start
 			 * button */
@@ -133,7 +134,7 @@ Bool StartButtonParseConfig(char *tline)
 			StartAndLaunchButtonItemInit(tempPtr);
 			tempPtr->tail = First_Start_Button;
 			First_Start_Button = tempPtr;
-			First_Start_Button->isStartButton = TRUE;
+			First_Start_Button->isStartButton = True;
 		}
 		tmpStrPtr = (mouseButton ?
 			     &(First_Start_Button->buttonCommands[mouseButton-1])
@@ -153,9 +154,9 @@ Bool StartButtonParseConfig(char *tline)
 				(StartAndLaunchButtonItem*)safemalloc(
 					sizeof(StartAndLaunchButtonItem));
 			StartAndLaunchButtonItemInit(First_Start_Button);
-			First_Start_Button->isStartButton = TRUE;
+			First_Start_Button->isStartButton = True;
 		}
-		else if (First_Start_Button->isStartButton == FALSE)
+		else if (First_Start_Button->isStartButton == False)
 		{
 			/* shortcut button has been declared before start
 			 * button */
@@ -164,7 +165,7 @@ Bool StartButtonParseConfig(char *tline)
 			StartAndLaunchButtonItemInit(tempPtr);
 			tempPtr->tail = First_Start_Button;
 			First_Start_Button = tempPtr;
-			First_Start_Button->isStartButton = TRUE;
+			First_Start_Button->isStartButton = True;
 		}
 		else if (First_Start_Button->buttonIconFileName != NULL)
 		{
@@ -181,9 +182,9 @@ Bool StartButtonParseConfig(char *tline)
 				(StartAndLaunchButtonItem*)safemalloc(
 					sizeof(StartAndLaunchButtonItem));
 			StartAndLaunchButtonItemInit(First_Start_Button);
-			First_Start_Button->isStartButton = TRUE;
+			First_Start_Button->isStartButton = True;
 		}
-		else if (First_Start_Button->isStartButton == FALSE)
+		else if (First_Start_Button->isStartButton == False)
 		{
 			/* shortcut button has been declared before start
 			 * button */
@@ -192,7 +193,7 @@ Bool StartButtonParseConfig(char *tline)
 			StartAndLaunchButtonItemInit(tempPtr);
 			tempPtr->tail = First_Start_Button;
 			First_Start_Button = tempPtr;
-			First_Start_Button->isStartButton = TRUE;
+			First_Start_Button->isStartButton = True;
 		}
 		tmpStrPtr =
 			(mouseButton ?
@@ -226,12 +227,16 @@ Bool StartButtonParseConfig(char *tline)
 		StartAndLaunchButtonItemInit(Last_Start_Button);
 		j=0;
 		titleRecorded = iconRecorded = 0;
-		tokens[j++] = strtok_r(rest, ",", &strtok_ptr);
-		while((tokens[j++] = strtok_r(NULL, ",", &strtok_ptr)))
 		{
-			while(isspace(*(tokens[j-1])))
+			char *strtok_ptr = 0;
+
+			tokens[j++] = strtok_r(rest, ",", &strtok_ptr);
+			while((tokens[j++] = strtok_r(NULL, ",", &strtok_ptr)))
 			{
-				tokens[j-1]+=sizeof(char);
+				while(isspace(*(tokens[j-1])))
+				{
+					tokens[j-1]+=sizeof(char);
+				}
 			}
 		}
 		j--;
@@ -361,13 +366,15 @@ char *ParseButtonOptions(char *pos, int *mouseButton)
       pos = rest;
       if (*mouseButton < 1 || *mouseButton > NUMBER_OF_EXTENDED_MOUSE_BUTTONS)
       {
-        fprintf(stderr,"%s: Invalid mouse button %d", Module, *mouseButton);
+        fprintf(stderr,"%s: Invalid mouse button %d", module->name,
+                *mouseButton);
         *mouseButton = 0;
       }
       break;
 
     default:
-      fprintf(stderr,"%s: Invalid taskbar button option '%s'", Module, token);
+      fprintf(stderr,"%s: Invalid taskbar button option '%s'", module->name,
+              token);
     }
     while (*pos && *pos != ',' && *pos != ')')
       pos++;
@@ -404,7 +411,7 @@ void StartButtonInit(int height)
     StartButtonParseConfig("*FvwmTaskBarStartIcon mini.start.xpm");
   }
   /* some defaults */
-  if (First_Start_Button && First_Start_Button->isStartButton == TRUE)
+  if (First_Start_Button && First_Start_Button->isStartButton == True)
   {
     if (First_Start_Button->buttonCaption == NULL)
       UpdateString(&(First_Start_Button->buttonCaption), "Start");
@@ -570,33 +577,29 @@ void StartButtonDraw(int force, XEvent *evp)
 
 /* Returns 1 if in the start or a minibutton, 0 if not; index of button
  * pressed put in startButtonPressed */
-int MouseInStartButton(int x, int y, int *whichButton, Bool *startButtonPressed)
+int MouseInStartButton(int x, int y, int *whichButton,
+		       Bool *startButtonPressed, int *button_x)
 {
-  int i=0, j=0;
+  int i = 0;
   int tempsum = 0;
 
   StartAndLaunchButtonItem *tempPtr = First_Start_Button;
-  StartAndLaunchButtonItem *tempPtr2 = First_Start_Button;
-  *startButtonPressed = FALSE;
+  *startButtonPressed = False;
 
   while(tempPtr != NULL)
     {
-      tempsum = 0;
-      j = 0;
-      tempPtr2 = First_Start_Button;
-      while((tempPtr2 != NULL) && (j<i))
-      {
-	tempsum+=tempPtr2->width;
-	tempPtr2 = tempPtr2->tail;
-	j++;
-      }
       if (x >= tempsum && x < tempsum+tempPtr->width && y > 0 && y < First_Start_Button->height)
       {
 	*whichButton = i;
+	if (button_x)
+	{
+		*button_x = tempsum;
+	}
 	if(tempPtr->isStartButton)
-	  *startButtonPressed = TRUE;
+	  *startButtonPressed = True;
 	return 1;
       }
+      tempsum += tempPtr->width;
       tempPtr = tempPtr->tail;
       i++;
     }
@@ -645,7 +648,7 @@ void StartAndLaunchButtonItemInit(StartAndLaunchButtonItem *item)
   item->index = 0;
   item->width = 0;
   item->height = 0;
-  item->isStartButton = FALSE;
+  item->isStartButton = False;
   item->buttonItem = NULL;
   item->buttonCommand = NULL;
   item->buttonStartCommand = NULL;

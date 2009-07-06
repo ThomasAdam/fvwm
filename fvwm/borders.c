@@ -40,6 +40,8 @@
 #include <stdio.h>
 
 #include "libs/fvwmlib.h"
+#include "libs/Parse.h"
+#include "libs/Graphics.h"
 #include "libs/Picture.h"
 #include "libs/PictureGraphics.h"
 #include "libs/FRenderInit.h"
@@ -125,8 +127,8 @@ typedef struct
 	Pixel fore_color;
 	Pixel back_color;
 	int cs;
-	int border_cs;           /* for UseBorderStyle */
-	int bg_border_cs;        /* for UseBorderStyle */
+	int border_cs;		/* for UseBorderStyle */
+	int bg_border_cs;	/* for UseBorderStyle */
 	Pixmap back_pixmap;
 	XSetWindowAttributes attributes;
 	unsigned long valuemask;
@@ -206,20 +208,20 @@ typedef struct
 {
 	common_decorations_type *cd;
 	rectangle frame_g;
-	rectangle bar_g;             /* titlebar geo vs the frame */
-	rectangle left_buttons_g;    /* vs the frame */
-	rectangle right_buttons_g;   /* vs the frame */
+	rectangle bar_g;		/* titlebar geo vs the frame */
+	rectangle left_buttons_g;	/* vs the frame */
+	rectangle right_buttons_g;	/* vs the frame */
 	frame_title_layout_t layout;
 	frame_title_layout_t old_layout;
 	border_titlebar_state tbstate;
-	int length;                   /* text */
-	int offset;                   /* text offset */
+	int length;			/* text */
+	int offset;			/* text offset */
 	/* MultiPixmap Geometries */
-	rectangle under_text_g;      /* vs the titlebar */
-	rectangle left_main_g;       /* vs the titlebar */
-	rectangle right_main_g;      /* vs the titlebar */
-	rectangle full_left_main_g;  /* vs the frame */
-	rectangle full_right_main_g; /* vs the frame */
+	rectangle under_text_g;		/* vs the titlebar */
+	rectangle left_main_g;		/* vs the titlebar */
+	rectangle right_main_g;		/* vs the titlebar */
+	rectangle full_left_main_g;	/* vs the frame */
+	rectangle full_right_main_g;	/* vs the frame */
 	int left_end_length;
 	int left_of_text_length;
 	int right_end_length;
@@ -228,7 +230,7 @@ typedef struct
 	rotation_t restore_rotation;
 	unsigned td_is_rotated : 1;
 	unsigned has_been_saved : 1;
-	unsigned has_vt : 1;             /* vertical title ? */
+	unsigned has_vt : 1;		/* vertical title ? */
 	unsigned has_an_upsidedown_rotation : 1;  /* 270 || 180 */
 } titlebar_descr;
 
@@ -544,7 +546,7 @@ static int border_get_parts_and_pos_to_draw(
 	draw_parts |= force_draw_parts;
 	if (old_g == NULL)
 	{
-		old_g = &fw->frame_g;
+		old_g = &fw->g.frame;
 	}
 	if ((draw_parts & PART_FRAME) == PART_FRAME)
 	{
@@ -911,13 +913,13 @@ static void border_fetch_mwm_layout(
 	 * HHCCCCS  from outside to inside on the left and top border
 	 * SSCCCCH  from outside to inside on the bottom and right border
 	 * |||||||
-	 * |||||||__ w_shin       (inner shadow area)
-	 * ||||||___ w_c          (transparent area)
-	 * |||||____ w_c          (transparent area)
-	 * ||||_____ w_c          (transparent area)
-	 * |||______ w_c          (transparent area)
-	 * ||_______ w_hiout      (outer hilight area)
-	 * |________ w_hiout      (outer hilight area)
+	 * |||||||__ w_shin	(inner shadow area)
+	 * ||||||___ w_c	(transparent area)
+	 * |||||____ w_c	(transparent area)
+	 * ||||_____ w_c	(transparent area)
+	 * |||______ w_c	(transparent area)
+	 * ||_______ w_hiout	(outer hilight area)
+	 * |________ w_hiout	(outer hilight area)
 	 *
 	 *
 	 * C = original colour
@@ -947,13 +949,13 @@ static void border_fetch_fvwm_layout(
 	 * SHHCCSS  from outside to inside on the left and top border
 	 * SSCCHHS  from outside to inside on the bottom and right border
 	 * |||||||
-	 * |||||||__ w_din        (inner dark area)
-	 * ||||||___ w_shin       (inner shadow area)
-	 * |||||____ w_trin       (inner transparent/shadow area)
-	 * ||||_____ w_c          (transparent area)
-	 * |||______ w_trout      (outer transparent/hilight area)
-	 * ||_______ w_hiout      (outer hilight area)
-	 * |________ w_dout       (outer dark area)
+	 * |||||||__ w_din	(inner dark area)
+	 * ||||||___ w_shin	(inner shadow area)
+	 * |||||____ w_trin	(inner transparent/shadow area)
+	 * ||||_____ w_c	(transparent area)
+	 * |||______ w_trout	(outer transparent/hilight area)
+	 * ||_______ w_hiout	(outer hilight area)
+	 * |________ w_dout	(outer dark area)
 	 *
 	 * C = original colour
 	 * H = hilight
@@ -964,11 +966,11 @@ static void border_fetch_fvwm_layout(
 	 * SHHCS
 	 * SSCHS
 	 * |||||
-	 * |||||__ w_din        (inner dark area)
-	 * ||||___ w_trin       (inner transparent/shadow area)
-	 * |||____ w_trout      (outer transparent/hilight area)
-	 * ||_____ w_hiout      (outer hilight area)
-	 * |______ w_dout       (outer dark area)
+	 * |||||__ w_din	(inner dark area)
+	 * ||||___ w_trin	(inner transparent/shadow area)
+	 * |||____ w_trout	(outer transparent/hilight area)
+	 * ||_____ w_hiout	(outer hilight area)
+	 * |______ w_dout	(outer dark area)
 	 */
 	ret_size_descr->w_dout = 1;
 	ret_size_descr->w_hiout = 1;
@@ -1544,13 +1546,13 @@ static void border_draw_one_border_part(
 	}
 	p = border_create_decor_pixmap(cd, &part_g);
 	/* set the background tile */
-	relative_g.width = fw->frame_g.width;
-	relative_g.height = fw->frame_g.height;
+	relative_g.width = fw->g.frame.width;
+	relative_g.height = fw->g.frame.height;
 	relative_g.x = part_g.x;
 	relative_g.y = part_g.y;
 	border_get_border_background(
 		&bg, cd, &part_g, &relative_g, &free_bg_pixmap, w);
-	if (cd->texture_pixmap) 
+	if (cd->texture_pixmap)
 	{
 		switch (part)
 		{
@@ -3422,8 +3424,9 @@ static void border_draw_title_stick_lines(
 	int left_length = 0;
 	rotation_t rotation;
 
-	if (!IS_STICKY_ACROSS_PAGES(fw) && !IS_STICKY_ACROSS_DESKS(fw) &&
-	    !HAS_STIPPLED_TITLE(fw))
+	if (!( (HAS_STICKY_STIPPLED_TITLE(fw) &&
+		(IS_STICKY_ACROSS_PAGES(fw) || IS_STICKY_ACROSS_DESKS(fw)))
+	       || HAS_STIPPLED_TITLE(fw)))
 	{
 		return;
 	}
@@ -3454,6 +3457,18 @@ static void border_draw_title_stick_lines(
 		right_length = td->right_main_g.width -
 			td->right_of_text_length - td->right_end_length;
 	}
+
+	/* If the window is sticky either across pages or
+	 * desks and it has a stippled title, but nothing for
+	 * sticky_stippled_title, then don't bother drawing them, just
+	 * return immediately. -- Thomas Adam
+	 */
+	if ( (IS_STICKY_ACROSS_PAGES(fw) || IS_STICKY_ACROSS_DESKS(fw)) &&
+	    (!HAS_STICKY_STIPPLED_TITLE(fw) && HAS_STIPPLED_TITLE(fw)) )
+	{
+		return;
+	}
+
 	num = (int)(fw->title_thickness / WINDOW_TITLE_STICK_VERT_DIST / 2) *
 		2 - 1;
 	min = fw->title_thickness / 2 - num * 2 + 1;
@@ -3912,6 +3927,10 @@ static void border_rotate_titlebar_descr(
 #define ROTATE_RECTANGLE(rot, r, vs_frame, vs_titlebar, vs_title) \
 	{ \
 		rectangle tr; \
+		tr.x = r->x; \
+		tr.y = r->y; \
+		tr.width = r->width; \
+		tr.height = r->height; \
 		switch(rot) \
 		{ \
 		case ROTATION_270: /* ccw */ \
@@ -3979,9 +3998,6 @@ static void border_rotate_titlebar_descr(
 			{ \
 				tr.x = r->x; \
 			} \
-			tr.y = r->y; \
-			tr.width = r->width; \
-			tr.height = r->height; \
 			break; \
 		case ROTATION_0: \
 			break; \
@@ -3995,7 +4011,8 @@ static void border_rotate_titlebar_descr(
 	switch(rotation)
 	{
 	case ROTATION_90:
-		td->offset = td->layout.title_g.height - td->offset - td->length;
+		td->offset =
+			td->layout.title_g.height - td->offset - td->length;
 		tmpi = td->left_end_length;
 		td->left_end_length = td->right_end_length;
 		td->right_end_length = tmpi;
@@ -4115,7 +4132,7 @@ static window_parts border_get_titlebar_descr(
 	ret_td->frame_g = *new_g;
 	if (old_g == NULL)
 	{
-		old_g = &fw->frame_g;
+		old_g = &fw->g.frame;
 	}
 	frame_get_titlebar_dimensions(fw, old_g, NULL, &ret_td->old_layout);
 	frame_get_titlebar_dimensions(fw, new_g, NULL, &ret_td->layout);
@@ -4751,7 +4768,7 @@ void border_draw_decorations(
 	pressed_parts = border_context_to_parts(context);
 	if (new_g == NULL)
 	{
-		new_g = &fw->frame_g;
+		new_g = &fw->g.frame;
 	}
 	if (do_redraw_titlebar)
 	{

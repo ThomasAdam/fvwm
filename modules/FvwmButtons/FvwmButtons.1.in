@@ -1,8 +1,8 @@
 .\" @(#)@PACKAGE@-@VERSION@ @RELDATELONG@
-.TH FvwmButtons 1 "@RELDATELONG@ (@VERSION@)" FVWM "FVWM Modules"
+.TH FvwmButtons 1 "@RELDATELONG@ (@VERSION@)" Fvwm "Fvwm Modules"
 .UC
 .SH NAME
-FvwmButtons \- the FVWM buttonbox module
+FvwmButtons \- the fvwm buttonbox module
 .SH SYNOPSIS
 .nf
 Module FvwmButtons [-g geometry] [-transient | -transientpanel] [name[configfile]]
@@ -269,6 +269,10 @@ relief color and a shadow color are calculated from this.
 .IP "Center"
 The contents of the button is centered on the button. This is the
 default but may be changed by \fILeft\fP or \fIRight\fP.
+
+.IP "Top"
+The contents of the button is vertically aligned at the top of the 
+button. The default is to vertically center it.
 
 .IP "Colorset \fIcolorset\fP"
 The given colorset can be applied to a container, a swallowed
@@ -1014,6 +1018,19 @@ has the same syntax as described in
 .B ChangeButton
 above. Command may be any fvwm command with variables $var that
 are expanded if supported.
+
+.IP "PressButton \fIbutton_id\fP [\fImouse_button\fP]"
+where
+.I button_id
+is the id of the button to press as specified using the
+.B Id
+button option and
+.I mouse_button
+is the number of mouse button used to click on the button e.g "1" for left
+mouse button etc. Quotes around the number is not needed. If
+.I mouse_button
+option is omitted "1" assumed. This command behaves exactly like if
+the button in question was pressed using the mouse.
 
 .IP Silent
 This prefix may be specified before other actions. It disables

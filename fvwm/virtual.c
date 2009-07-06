@@ -20,9 +20,12 @@
 
 #include <stdio.h>
 
+#include <X11/keysym.h>
 #include "libs/fvwmlib.h"
 #include "libs/FScreen.h"
 #include "libs/FGettext.h"
+#include "libs/Grab.h"
+#include "libs/Parse.h"
 #include "fvwm.h"
 #include "externs.h"
 #include "execcontext.h"
@@ -33,6 +36,7 @@
 #include "screen.h"
 #include "virtual.h"
 #include "module_interface.h"
+#include "module_list.h"
 #include "focus.h"
 #include "gnome.h"
 #include "ewmh.h"
@@ -42,6 +46,7 @@
 #include "geometry.h"
 #include "icons.h"
 #include "stack.h"
+#include "functions.h"
 
 /* ---------------------------- local definitions -------------------------- */
 
@@ -78,16 +83,161 @@
  */
 static int edge_thickness = 2;
 static int last_edge_thickness = 2;
-static unsigned int prev_page_x = 0;
-static unsigned int prev_page_y = 0;
+static int prev_page_x = 0;
+static int prev_page_y = 0;
 static int prev_desk = 0;
 static int prev_desk_and_page_desk = 0;
-static unsigned int prev_desk_and_page_page_x = 0;
-static unsigned int prev_desk_and_page_page_y = 0;
+static int prev_desk_and_page_page_x = 0;
+static int prev_desk_and_page_page_y = 0;
 
 /* ---------------------------- exported variables (globals) --------------- */
 
 /* ---------------------------- local functions ---------------------------- */
+
+
+static void __drag_viewport(const exec_context_t *exc, int scroll_speed)
+{
+	XEvent e;
+	int x;
+	int y;
+	unsigned int button_mask = 0;
+	Bool is_finished = False;
+
+	if (!GrabEm(CRS_MOVE, GRAB_NORMAL))
+	{
+		XBell(dpy, 0);
+		return;
+	}
+
+	if (FQueryPointer(
+		    dpy, Scr.Root, &JunkRoot, &JunkChild, &x, &y,
+		    &JunkX, &JunkY, &button_mask) == False)
+	{
+		/* pointer is on a different screen */
+		/* Is this the best thing to do? */
+		UngrabEm(GRAB_NORMAL);
+		return;
+	}
+	MyXGrabKeyboard(dpy);
+	button_mask &= DEFAULT_ALL_BUTTONS_MASK;
+	memset(&e, 0, sizeof(e));
+	while (!is_finished)
+	{
+		int old_x;
+		int old_y;
+
+		old_x = x;
+		old_y = y;
+		FMaskEvent(
+			dpy, ButtonPressMask | ButtonReleaseMask |
+			KeyPressMask | PointerMotionMask |
+			ButtonMotionMask | ExposureMask |
+			EnterWindowMask | LeaveWindowMask, &e);
+		/* discard extra events before a logical release */
+		if (e.type == MotionNotify ||
+		    e.type == EnterNotify || e.type == LeaveNotify)
+		{
+			while (FPending(dpy) > 0 &&
+			       FCheckMaskEvent(
+				       dpy, ButtonMotionMask |
+				       PointerMotionMask | ButtonPressMask |
+				       ButtonRelease | KeyPressMask |
+				       EnterWindowMask | LeaveWindowMask, &e))
+			{
+				if (e.type == ButtonPress ||
+				    e.type == ButtonRelease ||
+				    e.type == KeyPress)
+				{
+					break;
+				}
+			}
+		}
+		if (e.type == EnterNotify || e.type == LeaveNotify)
+		{
+			XEvent e2;
+			int px;
+			int py;
+
+			/* Query the pointer to catch the latest information.
+			 * This *is* necessary. */
+			if (FQueryPointer(
+				    dpy, Scr.Root, &JunkRoot, &JunkChild, &px,
+				    &py, &JunkX, &JunkY, &JunkMask) == True)
+			{
+				fev_make_null_event(&e2, dpy);
+				e2.type = MotionNotify;
+				e2.xmotion.time = fev_get_evtime();
+				e2.xmotion.x_root = px;
+				e2.xmotion.y_root = py;
+				e2.xmotion.state = JunkMask;
+				e2.xmotion.same_screen = True;
+				e = e2;
+				fev_fake_event(&e);
+			}
+			else
+			{
+				/* pointer is on a different screen,
+				 * ignore event */
+			}
+		}
+		/* Handle a limited number of key press events to allow
+		 * mouseless operation */
+		if (e.type == KeyPress)
+		{
+			Keyboard_shortcuts(
+				&e, NULL, NULL, NULL, ButtonRelease);
+		}
+		switch (e.type)
+		{
+		case KeyPress:
+			/* simple code to bag out of move - CKH */
+			if (XLookupKeysym(&(e.xkey), 0) == XK_Escape)
+			{
+				is_finished = True;
+			}
+			break;
+		case ButtonPress:
+			if (e.xbutton.button <= NUMBER_OF_MOUSE_BUTTONS &&
+			    ((Button1Mask << (e.xbutton.button - 1)) &
+			     button_mask))
+			{
+				/* No new button was pressed, just a delayed
+				 * event */
+				break;
+			}
+			/* fall through */
+		case ButtonRelease:
+			x = e.xbutton.x_root;
+			y = e.xbutton.y_root;
+			is_finished = True;
+			break;
+		case MotionNotify:
+			if (e.xmotion.same_screen == False)
+			{
+				continue;
+			}
+			x = e.xmotion.x_root;
+			y = e.xmotion.y_root;
+			break;
+		case Expose:
+			dispatch_event(&e);
+			break;
+		default:
+			/* cannot happen */
+			break;
+		} /* switch */
+		if (x != old_x || y != old_y)
+		{
+			MoveViewport(
+				Scr.Vx + scroll_speed * (x - old_x),
+				Scr.Vy + scroll_speed * (y - old_y), False);
+			FlushAllMessageQueues();
+		}
+	} /* while*/
+	UngrabEm(GRAB_NORMAL);
+	MyXUngrabKeyboard(dpy);
+	WaitForButtonsUp(True);
+}
 
 /*
  *
@@ -255,6 +405,7 @@ static void unmap_window(FvwmWindow *t)
 	if (ret)
 	{
 		XSelectInput(dpy, FW_W(t), eventMask);
+		XFlush(dpy);
 	}
 
 	return;
@@ -317,6 +468,7 @@ static void map_window(FvwmWindow *t)
 	if (ret)
 	{
 		XSelectInput(dpy, FW_W(t), eventMask);
+		XFlush(dpy);
 	}
 
 	return;
@@ -477,9 +629,9 @@ static void MapDesk(int desk, Bool grab)
 int HandlePaging(
 	XEvent *pev, int HorWarpSize, int VertWarpSize, int *xl, int *yt,
 	int *delta_x, int *delta_y, Bool Grab, Bool fLoop,
-	Bool do_continue_previous)
+	Bool do_continue_previous, int delay)
 {
-	static unsigned int add_time = 0;
+	static int add_time = 0;
 	int x,y;
 	XEvent e;
 	static Time my_timestamp = 0;
@@ -500,7 +652,6 @@ int HandlePaging(
 	{
 		x = pev->xmotion.x_root;
 		y = pev->xmotion.y_root;
-		/* need to move the viewport */
 		if ((Scr.VxMax == 0 ||
 		     (x >= edge_thickness &&
 		      x < Scr.MyDisplayWidth  - edge_thickness)) &&
@@ -511,8 +662,7 @@ int HandlePaging(
 			return -1;
 		}
 	}
-	if (Scr.ScrollResistance >= 10000 ||
-	    (HorWarpSize == 0 && VertWarpSize==0))
+	if (delay < 0 || (HorWarpSize == 0 && VertWarpSize==0))
 	{
 		is_timestamp_valid = False;
 		add_time = 0;
@@ -596,11 +746,9 @@ int HandlePaging(
 		is_last_position_valid = True;
 		usleep(10000);
 		add_time += 10;
-	} while (fLoop &&
-		 fev_get_evtime() - my_timestamp + add_time <
-		 Scr.ScrollResistance);
+	} while (fLoop && fev_get_evtime() - my_timestamp + add_time < delay);
 
-	if (fev_get_evtime() - my_timestamp + add_time < Scr.ScrollResistance)
+	if (fev_get_evtime() - my_timestamp + add_time < delay)
 	{
 		return 0;
 	}
@@ -648,6 +796,13 @@ int HandlePaging(
 	if (Scr.VyMax == 0)
 	{
 		*delta_y = 0;
+	}
+
+	is_timestamp_valid = False;
+	add_time = 0;
+	if (*delta_x == 0 && *delta_y == 0)
+	{
+		return 0;
 	}
 
 	/* Ouch! lots of bounds checking */
@@ -729,13 +884,6 @@ int HandlePaging(
 	if (*yt >= Scr.MyDisplayHeight - edge_thickness)
 	{
 		*yt = Scr.MyDisplayHeight - edge_thickness -1;
-	}
-
-	is_timestamp_valid = False;
-	add_time = 0;
-	if (*delta_x == 0 && *delta_y == 0)
-	{
-		return 0;
 	}
 
 	if (Grab)
@@ -1129,7 +1277,7 @@ void MoveViewport(int newx, int newy, Bool grab)
 		 * of the stacking order up, to minimize the expose-redraw
 		 * overhead. Windows that will be moving into view will be
 		 * moved top down, for the same reason. Use the new
-		 * stacking-order chain, rather than the old last-focussed
+		 * stacking-order chain, rather than the old last-focused
 		 * chain.
 		 *
 		 * domivogt (29-Nov-1999): It's faster to first map windows
@@ -1141,18 +1289,18 @@ void MoveViewport(int newx, int newy, Bool grab)
 			/*
 			 * If the window is moving into the viewport...
 			 */
-			txl = t->frame_g.x;
-			tyt = t->frame_g.y;
-			txr = t->frame_g.x + t->frame_g.width - 1;
-			tyb = t->frame_g.y + t->frame_g.height - 1;
+			txl = t->g.frame.x;
+			tyt = t->g.frame.y;
+			txr = t->g.frame.x + t->g.frame.width - 1;
+			tyb = t->g.frame.y + t->g.frame.height - 1;
 			if (is_window_sticky_across_pages(t) &&
 			    !IS_VIEWPORT_MOVED(t))
 			{
 				/* the absolute position has changed */
-				t->normal_g.x -= deltax;
-				t->normal_g.y -= deltay;
-				t->max_g.x -= deltax;
-				t->max_g.y -= deltay;
+				t->g.normal.x -= deltax;
+				t->g.normal.y -= deltay;
+				t->g.max.x -= deltax;
+				t->g.max.y -= deltay;
 				/*  Block double move.  */
 				SET_VIEWPORT_MOVED(t, 1);
 			}
@@ -1177,10 +1325,10 @@ void MoveViewport(int newx, int newy, Bool grab)
 							t, False);
 					}
 					frame_setup_window(
-						t, t->frame_g.x + deltax,
-						t->frame_g.y + deltay,
-						t->frame_g.width,
-						t->frame_g.height, False);
+						t, t->g.frame.x + deltax,
+						t->g.frame.y + deltay,
+						t->g.frame.width,
+						t->g.frame.height, False);
 				}
 			}
 			/*  Bump to next win...  */
@@ -1193,10 +1341,10 @@ void MoveViewport(int newx, int newy, Bool grab)
 			 *If the window is not moving into the viewport...
 			 */
 			SET_VIEWPORT_MOVED(t, 1);
-			txl = t1->frame_g.x;
-			tyt = t1->frame_g.y;
-			txr = t1->frame_g.x + t1->frame_g.width - 1;
-			tyb = t1->frame_g.y + t1->frame_g.height - 1;
+			txl = t1->g.frame.x;
+			tyt = t1->g.frame.y;
+			txr = t1->g.frame.x + t1->g.frame.width - 1;
+			tyb = t1->g.frame.y + t1->g.frame.height - 1;
 			if (! (txr >= PageLeft && txl <= PageRight
 			       && tyb >= PageTop && tyt <= PageBottom)
 			    && !IS_VIEWPORT_MOVED(t1)
@@ -1216,10 +1364,10 @@ void MoveViewport(int newx, int newy, Bool grab)
 							t1, False);
 					}
 					frame_setup_window(
-						t1, t1->frame_g.x + deltax,
-						t1->frame_g.y + deltay,
-						t1->frame_g.width,
-						t1->frame_g.height, False);
+						t1, t1->g.frame.x + deltax,
+						t1->g.frame.y + deltay,
+						t1->g.frame.width,
+						t1->g.frame.height, False);
 				}
 			}
 			/*  Bump to next win...  */
@@ -1771,6 +1919,7 @@ void CMD_EdgeThickness(F_CMD_ARGS)
 void CMD_EdgeScroll(F_CMD_ARGS)
 {
 	int val1, val2, val1_unit, val2_unit, n;
+	char *token;
 
 	n = GetTwoArguments(action, &val1, &val2, &val1_unit, &val2_unit);
 	if (n != 2)
@@ -1785,7 +1934,7 @@ void CMD_EdgeScroll(F_CMD_ARGS)
 	 * if edgescroll >1000 and <100000
 	 * wrap at edges of desktop (a "spherical" desktop)
 	 */
-	if (val1 >= 1000)
+	if (val1 >= 1000 && val1_unit != 100)
 	{
 		val1 /= 1000;
 		Scr.flags.do_edge_wrap_x = 1;
@@ -1794,7 +1943,7 @@ void CMD_EdgeScroll(F_CMD_ARGS)
 	{
 		Scr.flags.do_edge_wrap_x = 0;
 	}
-	if (val2 >= 1000)
+	if (val2 >= 1000 && val2_unit != 100)
 	{
 		val2 /= 1000;
 		Scr.flags.do_edge_wrap_y = 1;
@@ -1802,6 +1951,26 @@ void CMD_EdgeScroll(F_CMD_ARGS)
 	else
 	{
 		Scr.flags.do_edge_wrap_y = 0;
+	}
+
+	action=SkipNTokens(action,2);
+	token = PeekToken(action, NULL);
+
+	if (token)
+	{
+		if (StrEquals(token, "wrap"))
+		{
+			Scr.flags.do_edge_wrap_x = 1;
+			Scr.flags.do_edge_wrap_y = 1;
+		}
+		else if (StrEquals(token, "wrapx"))
+		{
+			Scr.flags.do_edge_wrap_x = 1;
+		}
+		else if (StrEquals(token, "wrapy"))
+		{
+			Scr.flags.do_edge_wrap_y = 1;
+		}
 	}
 
 	Scr.EdgeScrollX = val1 * val1_unit / 100;
@@ -1817,16 +1986,63 @@ void CMD_EdgeResistance(F_CMD_ARGS)
 	int val[3];
 	int n;
 
+	val[0] = 0;
 	n = GetIntegerArguments(action, NULL, val, 3);
-	if (n < 2 || n > 3)
+       	if (n > 1 && val[0] >= 10000)
 	{
-		fvwm_msg(ERR, "SetEdgeResistance",
-			 "EdgeResistance requires two or three arguments");
+		/* map val[0] >= 10000 in old syntax to -1 in new syntax */
+		val[0] = -1;
+	}
+	if (n == 1)
+	{
+		Scr.ScrollDelay = val[0];
+	}
+	else if (n >= 2 && n <= 3)
+	{
+		char cmd[99];
+		char stylecmd[99];
+		char stylecmd2[99];
+
+		Scr.ScrollDelay = val[0];
+		sprintf(cmd, "EdgeResistance %d", val[0]);
+		sprintf(stylecmd, "Style * EdgeMoveDelay %d", val[0]);
+		if (n == 2)
+		{
+			sprintf(
+				stylecmd2, "Style * EdgeMoveResistance %d",
+				val[1]);
+		}
+		else
+		{
+			sprintf(
+				stylecmd2, "Style * EdgeMoveResistance %d %d",
+				val[1], val[2]);
+		}
+		fvwm_msg(
+			OLD, "CMD_EdgeResistance",
+			"The command EdgeResistance with three arguments is"
+			" obsolete. Please use the following commands"
+			" instead:");
+		fvwm_msg(OLD, "", cmd);
+		fvwm_msg(OLD, "", stylecmd);
+		fvwm_msg(OLD, "", stylecmd2);
+		execute_function(
+			cond_rc, exc, cmd,
+			FUNC_DONT_REPEAT | FUNC_DONT_EXPAND_COMMAND);
+		execute_function(
+			cond_rc, exc, stylecmd,
+			FUNC_DONT_REPEAT | FUNC_DONT_EXPAND_COMMAND);
+		execute_function(
+			cond_rc, exc, stylecmd2,
+			FUNC_DONT_REPEAT | FUNC_DONT_EXPAND_COMMAND);
+	}
+	else
+	{
+		fvwm_msg(
+			ERR, "CMD_EdgeResistance",
+			"EdgeResistance requires two or three arguments");
 		return;
 	}
-	Scr.ScrollResistance = val[0];
-	Scr.MoveResistance = val[1];
-	Scr.XiMoveResistance = (n < 3) ? val[1] : val[2];
 
 	return;
 }
@@ -2106,7 +2322,21 @@ void CMD_Scroll(F_CMD_ARGS)
 
 	if (GetTwoArguments(action, &val1, &val2, &val1_unit, &val2_unit) != 2)
 	{
-		/* to few parameters */
+		/* less then two integer parameters implies interactive
+		 * scroll check if we are scrolling in reverse direction */
+		char *option;
+		int scroll_speed = 1;
+
+		option = PeekToken(action, NULL);
+		if (option != NULL)
+		{
+			if (StrEquals(option, "Reverse"))
+			{
+				scroll_speed *= -1;
+			}
+		}
+		__drag_viewport(exc, scroll_speed);
+
 		return;
 	}
 	if ((val1 > -100000)&&(val1 < 100000))

@@ -38,6 +38,10 @@
 /* temporary flags */
 #define MI_WAS_DESELECTED(i)    ((i)->flags.was_deselected)
 
+/* ---------------------------- forward declarations ----------------------- */
+
+struct MenuStyle;
+
 /* ---------------------------- type definitions --------------------------- */
 
 /* IMPORTANT NOTE: Don't put members into this struct that can change while the
@@ -51,9 +55,9 @@ typedef struct MenuItem
 	/* the strings displayed in the item */
 	char *label[MAX_MENU_ITEM_LABELS];
 	/* witdh of label[i] */
-	unsigned short label_offset[MAX_MENU_ITEM_LABELS];
+	int label_offset[MAX_MENU_ITEM_LABELS];
 	/* strlen(label[i]) */
-	unsigned short label_strlen[MAX_MENU_ITEM_LABELS];
+	int label_strlen[MAX_MENU_ITEM_LABELS];
 
 	/* Pixmap to show above label*/
 	FvwmPicture *picture;
@@ -61,15 +65,15 @@ typedef struct MenuItem
 	FvwmPicture *lpicture[MAX_MENU_ITEM_MINI_ICONS];
 
 	/* y offset and height for item */
-	short y_offset;
-	short height;
+	int y_offset;
+	int height;
 
 	/* action to be performed */
 	char *action;
 	/* type of built in function */
 	short func_type;
 	/* Hot key offset (pete@tecc.co.uk). */
-	short hotkey_coffset;
+	int hotkey_coffset;
 	/* The column number the hotkey is defined in*/
 	char hotkey_column;
 	struct
@@ -91,24 +95,24 @@ typedef struct MenuItem
 	} flags;
 } MenuItem;
 
-typedef struct
+typedef struct MenuItemPartSizesT
 {
-	unsigned short label_width[MAX_MENU_ITEM_LABELS];
-	unsigned short icon_width[MAX_MENU_ITEM_MINI_ICONS];
-	unsigned short picture_width;
-	unsigned short triangle_width;
-	unsigned short title_width;
+	int label_width[MAX_MENU_ITEM_LABELS];
+	int icon_width[MAX_MENU_ITEM_MINI_ICONS];
+	int picture_width;
+	int triangle_width;
+	int title_width;
 } MenuItemPartSizesT;
 
-typedef struct
+typedef struct MenuPaintItemParameters
 {
-	MenuStyle *ms;
+	struct MenuStyle *ms;
 	Window w;
-	MenuItem *selected_item;
-	MenuDimensions *dim;
+	struct MenuItem *selected_item;
+	struct MenuDimensions *dim;
 	FvwmWindow *fw;
 	XEvent *ev;
-	unsigned int used_mini_icons;
+	int used_mini_icons;
 	struct MenuRoot *cb_mr;
 	/* number of item labels present in the item format */
 	Bool (*cb_reset_bg)(struct MenuRoot *mr, XEvent *pevent);
@@ -123,14 +127,14 @@ typedef struct
 
 /* ---------------------------- interface functions ------------------------ */
 
-MenuItem *menuitem_clone(MenuItem *mi);
-MenuItem *menuitem_create(void);
-void menuitem_free(MenuItem *mi);
+struct MenuItem *menuitem_clone(struct MenuItem *mi);
+struct MenuItem *menuitem_create(void);
+void menuitem_free(struct MenuItem *mi);
 void menuitem_get_size(
-	MenuItem *mi, MenuItemPartSizesT *mipst, FlocaleFont *font,
-	Bool do_reverse_icon_order);
+	struct MenuItem *mi, struct MenuItemPartSizesT *mipst,
+	FlocaleFont *font, Bool do_reverse_icon_order);
 void menuitem_paint(
-	MenuItem *mi, MenuPaintItemParameters *mpip);
-int menuitem_middle_y_offset(MenuItem *mi, MenuStyle *ms);
+	struct MenuItem *mi, struct MenuPaintItemParameters *mpip);
+int menuitem_middle_y_offset(struct MenuItem *mi, struct MenuStyle *ms);
 
 #endif /* MENUITEM_H */

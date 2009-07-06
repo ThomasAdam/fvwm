@@ -28,11 +28,14 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <X11/Xatom.h>
 
 #include "libs/ftime.h"
 #ifdef FVWM_DEBUG_TIME
 #include <sys/times.h>
 #endif
+#include "libs/Parse.h"
+#include "libs/Target.h"
 #include "fvwm.h"
 #include "externs.h"
 #include "execcontext.h"
@@ -60,7 +63,7 @@
 
 /* ---------------------------- local variables ---------------------------- */
 
-static unsigned int grab_count[GRAB_MAXVAL] = { 1, 1, 0, 0, 0, 0, 0 };
+static int grab_count[GRAB_MAXVAL] = { 1, 1, 0, 0, 0, 0, 0 };
 
 /* ---------------------------- exported variables (globals) --------------- */
 
@@ -369,7 +372,7 @@ void fvwm_msg(fvwm_msg_t type, char *id, char *msg, ...)
 		t_ptr->tm_hour, t_ptr->tm_min, t_ptr->tm_sec, time_taken);
 #endif
 
-	strcpy(fvwm_id, "FVWM");
+	strcpy(fvwm_id, "fvwm");
 	if (Scr.NumberOfScreens > 1)
 	{
 		sprintf(&fvwm_id[strlen(fvwm_id)], ".%d", (int)Scr.screen);
@@ -516,10 +519,10 @@ int truncate_to_multiple (int x, int m)
 Bool IsRectangleOnThisPage(const rectangle *rec, int desk)
 {
 	return (desk == Scr.CurrentDesk &&
-		rec->x + rec->width > 0 &&
-		rec->x < Scr.MyDisplayWidth &&
-		rec->y + rec->height > 0 &&
-		rec->y < Scr.MyDisplayHeight) ?
+		rec->x + (signed int)rec->width > 0 &&
+		(rec->x < 0 || rec->x < Scr.MyDisplayWidth) &&
+		rec->y + (signed int)rec->height > 0 &&
+		(rec->y < 0 || rec->y < Scr.MyDisplayHeight)) ?
 		True : False;
 }
 
