@@ -2152,14 +2152,9 @@ static int compare_windows(SortType type, WinData *a, WinData *b)
 		wa = compute_weight(a);
 		wb = compute_weight(b);
 
-		fprintf(stderr, "wa = %d | wb = %d\n",
-				wa, wb);
-
 		if (wa != wb)
 		{
-			fprintf(stderr, "wa != wb -- returning:  %d\n",
-					wa - wb);
-			return wa - wb;
+			return (wa - wb) < wa ? (wa - wb) : wa;
 		}
 		return strcmp((a->display_string)? a->display_string:"",
 			      (b->display_string)? b->display_string:"");
