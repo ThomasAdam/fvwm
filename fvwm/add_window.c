@@ -2378,10 +2378,11 @@ FvwmWindow *AddWindow(
 	}
 	else
 	{
-		attributes.event_mask = XEVMASK_CLIENTW;
+		attributes.event_mask = XEVMASK_CLIENTW | \
+			SubstructureRedirectMask | SubstructureNotifyMask;
 	}
 	attributes.do_not_propagate_mask = ButtonPressMask | ButtonReleaseMask;
-	XChangeWindowAttributes(dpy, FW_W(fw), valuemask, &attributes);
+	XChangeWindowAttributes(dpy, FW_W_PARENT(fw), valuemask, &attributes);
 	/****** make sure the window is not destroyed when fvwm dies ******/
 	if (!IS_TEAR_OFF_MENU(fw))
 	{
