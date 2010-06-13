@@ -1151,7 +1151,7 @@ static inline int __handle_cr_on_client(
 	{
 		new_g.x = fw->g.frame.x + d_g.x;
 	}
-	else if (!(cre.value_mask & CWX) && d_g.width)
+	else if (!(cre.value_mask & CWX) && d_g.width > new_g.width)
 	{
 		gravity_resize(gravity, &new_g, d_g.width, 0);
 	}
@@ -1164,7 +1164,7 @@ static inline int __handle_cr_on_client(
 	{
 		new_g.y = fw->g.frame.y + d_g.y;
 	}
-	else if (!(cre.value_mask & CWY) && d_g.height)
+	else if (!(cre.value_mask & CWY) && d_g.height > new_g.height)
 	{
 		gravity_resize(gravity, &new_g, 0, d_g.height);
 	}
