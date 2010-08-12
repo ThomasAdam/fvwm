@@ -191,73 +191,243 @@ c | c
 l | l.
 Event@Trigger
 _
-startup@Runs when fvwm is started/restarted.
+T{
+startup
+T}
+@T{
+Runs when fvwm is started/restarted.
+T}
 _
-shutdown@Runs when fvwm is exited.
+T{
+shutdown
+T}
+@T{
+Runs when fvwm is exited.
+T}
 _
-new_page@Runs when fvwm is switched to a page.
+T{
+new_page
+T}
+@T{
+Runs when fvwm is switched to a page.
+T}
 _
-new_desk@Runs when fvwm is switched to a desk.
+T{
+new_desk
+T}
+@T{
+Runs when fvwm is switched to a desk.
+T}
 _
-old_add_window@Deprecated.  See \fIadd_window\fP.
+T{
+old_add_window
+T}
+@T{
+Deprecated.  See \fIadd_window\fP.
+T}
 _
-raise_window@Runs when a window is raised.
+T{
+raise_window
+T}
+@T{
+Runs when a window is raised.
+T}
 _
-lower_window@Runs when a window is lowered.
+T{
+lower_window
+T}
+@T{
+Runs when a window is lowered.
+T}
 _
-old_configure_window@Deprecated.  See \fIconfigure_window\fP.
+T{
+old_configure_window
+T}
+@T{
+Deprecated.  See \fIconfigure_window\fP.
+T}
 _
-focus_change@Runs when a window loses/gains focus.  The event is triggered on the window which receives the focus.
+T{
+focus_change
+T}
+@T{
+Runs when a window loses/gains focus.  The event is triggered on the window which receives the focus.
+T}
 _
-enter_window@Runs when the pointer enters into a window, regardless of whether the window receives focus or not.  See \fIfocus_change\fP.
+T{
+enter_window
+T}
+@T{
+Runs when the pointer enters into a window, regardless of whether the window receives focus or not.  See \fIfocus_change\fP.
+T}
 _
-leave_window@Runs when the pointer leaves a window, reardless of whether the window loses focus or not.  See \fIenter_window\fP.
+T{
+leave_window
+T}
+@T{
+Runs when the pointer leaves a window, reardless of whether the window loses focus or not.  See \fIenter_window\fP.
+T}
 _
-destroy_window@Runs when a window is closed.
+T{
+destroy_window
+T}
+@T{
+Runs when a window is closed.
+T}
 _
-iconify@Runs when a window is iconified.
+T{
+iconify
+T}
+@T{
+Runs when a window is iconified.
+T}
 _
-deiconify@Runs when a window transitions from the iconic state to the normal state.
+T{
+deiconify
+T}
+@T{
+Runs when a window transitions from the iconic state to the normal state.
+T}
 _
-window_name@Runs when WM_NAME of the window changes.
+T{
+window_name
+T}
+@T{
+Runs when WM_NAME of the window changes.
+T}
 _
-icon_name@Runs when the WM_ICON_TITLE property of a window changes.
+T{
+icon_name
+T}
+@T{
+Runs when the WM_ICON_TITLE property of a window changes.
+T}
 _
-visible_icon_name@Runs when the visible icon name changes.  See \fIicon_name\fP.
+T{
+visible_icon_name
+T}
+@T{
+Runs when the visible icon name changes.  See \fIicon_name\fP.
+T}
 _
-res_class@Runs when the WM_CLASS property of a window changes.
+T{
+res_class
+T}
+@T{
+Runs when the WM_CLASS property of a window changes.
+T}
 _
-res_name@Runs when the WM_CLASS property of a window changes (for the resource).
+T{
+res_name
+T}
+@T{
+Runs when the WM_CLASS property of a window changes (for the resource).
+T}
 _
-end_windowlist@Runs when a module requests a window list.  Generally not useful as an end-user event.
+T{
+end_windowlist
+T}
+@T{
+Runs when a module requests a window list.  Generally not useful as an end-user event.
+T}
 _
-icon_location@Runs when the position of the icon changes.
+T{
+icon_location
+T}
+@T{
+Runs when the position of the icon changes.
+T}
 _
-map@Deprecated.  Runs when a window is mapped.  See \fIadd_window\fP.
+T{
+map
+T}
+@T{
+Deprecated.  Runs when a window is mapped.  See \fIadd_window\fP.
+T}
 _
-icon_file@Runs when the location of the icon changes.
+T{
+icon_file
+T}
+@T{
+Runs when the location of the icon changes.
+T}
 _
-default_icon@Runs if the default icon for a given window changes.
+T{
+default_icon
+T}
+@T{
+Runs if the default icon for a given window changes.
+T}
 _
-string@Deprecated.  See \fIvisible_name\fP.
+T{
+string
+T}
+@T{
+Deprecated.  See \fIvisible_name\fP.
+T}
 _
-mini_icon@Runs when the mini icon of a window is changed.
+T{
+mini_icon
+T}
+@T{
+Runs when the mini icon of a window is changed.
+T}
 _
-windowshade@Runs if a window is shaded.
+T{
+windowshade
+T}
+@T{
+Runs if a window is shaded.
+T}
 _
-dewindowshade@Runs if a window is unshaded.
+T{
+dewindowshade
+T}
+@T{
+Runs if a window is unshaded.
+T}
 _
-visible_name@Runs when the title of the window (typically what appears in the titlebar of a window) has changed.
+T{
+visible_name
+T}
+@T{
+Runs when the title of the window (typically what appears in the titlebar of a window) has changed.
+T}
 _
-restack@Runs if the stacking order of the window is changed, typically through changing layers, etc., although this cannot be used for layer change events specifically.
+T{
+restack
+T}
+@T{
+Runs if the stacking order of the window is changed, typically through changing layers, etc., although this cannot be used for layer change events specifically.
+T}
 _
-add_window@Runs when a window is initially mapped.
+T{
+add_window
+T}
+@T{
+Runs when a window is initially mapped.
+T}
 _
-configure_window@Runs when the window receives a ConfigureNotify request -- typically this happens when a window is moved, or resized, or the window changes layer.
+T{
+configure_window
+T}
+@T{
+Runs when the window receives a ConfigureNotify request -- typically this happens when a window is moved, or resized, or the window changes layer.
+T}
 _
-visible_icon_name@Runs when the text for the icon title changes.
+T{
+visible_icon_name
+T}
+@T{
+Runs when the text for the icon title changes.
+T}
 _
-property_change@Runs when the window receives a PropertyNotify event, which typically involves updating different window properties such as WM_TITLE, etc.
+T{
+property_change
+T}
+@T{
+Runs when the window receives a PropertyNotify event, which typically involves updating different window properties such as WM_TITLE, etc.
+T}
 .TE
 
 .SH RPLAY OPTIONS
