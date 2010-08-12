@@ -140,56 +140,6 @@ hexadecimal string preceded by 0x, desk numbers are decimal.
 .IP "*FvwmEvent: \fIwindow-manager-event action-or-filename\fP"
 Binds particular actions to window manager events.
 
-e.g. for audio-events:
-.nf
-.sp
-	*FvwmEvent: startup TaDa.au
-	*FvwmEvent: shutdown Elvis_Left.au
-	*FvwmEvent: unknown doh.au
-
-	*FvwmEvent: new_page beam_trek.au
-	*FvwmEvent: new_desk beam_trek.au
-	*FvwmEvent: old_add_window drip.au
-	*FvwmEvent: raise_window swoosh.au
-	*FvwmEvent: lower_window swoosh.au
-	*FvwmEvent: old_configure_window hammer.au
-	*FvwmEvent: focus_change boing.au
-	*FvwmEvent: enter_window boing.au
-	*FvwmEvent: leave_window boing.au
-	*FvwmEvent: destroy_window explosion.au
-	*FvwmEvent: iconify ploop.au
-	*FvwmEvent: deiconify ploop.au
-	*FvwmEvent: window_name huh.au
-	*FvwmEvent: icon_name beep.au
-	*FvwmEvent: visible_icon_name beep.au
-	*FvwmEvent: res_class beep.au
-	*FvwmEvent: res_name beep.au
-	*FvwmEvent: end_windowlist twang.au
-
-	*FvwmEvent: icon_location beep.au
-	*FvwmEvent: map beep.au
-	*FvwmEvent: error beep.au
-	*FvwmEvent: config_info beep.au
-	*FvwmEvent: end_config_info beep.au
-	*FvwmEvent: icon_file beep.au
-	*FvwmEvent: default_icon beep.au
-	*FvwmEvent: string plapper.au
-	*FvwmEvent: mini_icon beep.au
-	*FvwmEvent: windowshade beep.au
-	*FvwmEvent: dewindowshade beep.au
-
-	*FvwmEvent: visible_name beep.au
-	*FvwmEvent: sendconfig beep.au
-	*FvwmEvent: restack beep.au
-	*FvwmEvent: add_window beep.au
-	*FvwmEvent: configure_window beep.au
-
-	*FvwmEvent: visible_icon_name beep.au
-	*FvwmEvent: enter_window beep.au
-	*FvwmEvent: leave_window beep.au
-	*FvwmEvent: property_change beep.au
-.sp
-.fi
 The window related event handlers are executed within a window
 context.  Previously PassId was used for this purpose, but now using
 PassId is not needed.
@@ -230,6 +180,85 @@ Specifies that an event-action will only be executed if it occurs at
 least \fIdelay\fP seconds after the startup event. Events that occur during
 the delay period are ignored.  This option is useful when \fIfvwm\fP
 starts and restarts using an audio player.  The default delay is 0.
+
+.SH EVENT TYPES
+The following table shows the events supported by FvwmEvent and when they
+are triggered.
+
+.TS
+tab(@), left, box;
+c | c
+l | l.
+Event@Trigger
+_
+startup@Runs when fvwm is started/restarted.
+_
+shutdown@Runs when fvwm is exited.
+_
+new_page@Runs when fvwm is switched to a page.
+_
+new_desk@Runs when fvwm is switched to a desk.
+_
+old_add_window@Deprecated.  See \fIadd_window\fP.
+_
+raise_window@Runs when a window is raised.
+_
+lower_window@Runs when a window is lowered.
+_
+old_configure_window@Deprecated.  See \fIconfigure_window\fP.
+_
+focus_change@Runs when a window loses/gains focus.  The event is triggered on the window which receives the focus.
+_
+enter_window@Runs when the pointer enters into a window, regardless of whether the window receives focus or not.  See \fIfocus_change\fP.
+_
+leave_window@Runs when the pointer leaves a window, reardless of whether the window loses focus or not.  See \fIenter_window\fP.
+_
+destroy_window@Runs when a window is closed.
+_
+iconify@Runs when a window is iconified.
+_
+deiconify@Runs when a window transitions from the iconic state to the normal state.
+_
+window_name@Runs when WM_NAME of the window changes.
+_
+icon_name@Runs when the WM_ICON_TITLE property of a window changes.
+_
+visible_icon_name@Runs when the visible icon name changes.  See \fIicon_name\fP.
+_
+res_class@Runs when the WM_CLASS property of a window changes.
+_
+res_name@Runs when the WM_CLASS property of a window changes (for the resource).
+_
+end_windowlist@Runs when a module requests a window list.  Generally not useful as an end-user event.
+_
+icon_location@Runs when the position of the icon changes.
+_
+map@Deprecated.  Runs when a window is mapped.  See \fIadd_window\fP.
+_
+icon_file@Runs when the location of the icon changes.
+_
+default_icon@Runs if the default icon for a given window changes.
+_
+string@Deprecated.  See \fIvisible_name\fP.
+_
+mini_icon@Runs when the mini icon of a window is changed.
+_
+windowshade@Runs if a window is shaded.
+_
+dewindowshade@Runs if a window is unshaded.
+_
+visible_name@Runs when the title of the window (typically what appears in the titlebar of a window) has changed.
+_
+restack@Runs if the stacking order of the window is changed, typically through changing layers, etc., although this cannot be used for layer change events specifically.
+_
+add_window@Runs when a window is initially mapped.
+_
+configure_window@Runs when the window receives a ConfigureNotify request -- typically this happens when a window is moved, or resized, or the window changes layer.
+_
+visible_icon_name@Runs when the text for the icon title changes.
+_
+property_change@Runs when the window receives a PropertyNotify event, which typically involves updating different window properties such as WM_TITLE, etc.
+.TE
 
 .SH RPLAY OPTIONS
 The following options are only valid with builtin rplay support.
