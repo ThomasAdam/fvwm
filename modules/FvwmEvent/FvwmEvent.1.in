@@ -296,13 +296,13 @@ _
 T{
 res_class
 T}@T{
-Runs when the WM_CLASS property of a window changes.
+This event is triggered when the window has been mapped (see \fIadd_window\fP), sending the class name of the window.
 T}
 _
 T{
 res_name
 T}@T{
-Runs when the WM_CLASS property of a window changes (for the resource).
+This event is triggered when the window has been mapped (see \fIadd_window\fP), sending the resource name of the window.
 T}
 _
 T{
@@ -320,7 +320,7 @@ _
 T{
 map
 T}@T{
-Deprecated.  Runs when a window is mapped.  See \fIadd_window\fP.
+Runs when a window is mapped.  This is subtly different from \fIadd_window\fP, but to all intent and purposes runs more or less at the same time as \fIadd_window\fP.  Hence it is recommended to use \fIadd_window\fP for synchronising on events for new windows.
 T}
 _
 T{
@@ -332,9 +332,8 @@ _
 T{
 default_icon
 T}@T{
-Runs if the default icon for a given window changes.
-T}
-_
+This information is sent as part of \fIend_windowlist\fP.
+T}_
 T{
 string
 T}@T{
@@ -374,7 +373,7 @@ _
 T{
 add_window
 T}@T{
-Runs when a window is initially mapped.
+Runs when a window is added to the window stack -- see \fImap\fP.  This is useful to know when a window has been mapped.
 T}
 _
 T{
