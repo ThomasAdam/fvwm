@@ -39,7 +39,7 @@ to bind \fIactions\fP to window manager \fIevents\fP.  Different actions
 may be assigned to distinct window manager events.
 
 \fIFvwmEvent\fP can be used to bind sound files to events like
-\fIFvwmAudio\fP (RiP) did. It can be used for logging event traces to
+\fIFvwmAudio\fP did. It can be used for logging event traces to
 a log file, while debugging \fIfvwm\fP.
 
 \fIFvwmEvent\fP can also have builtin support for the rplay library.
