@@ -2092,7 +2092,7 @@ void frame_setup_shape(FvwmWindow *fw, int w, int h, int shape_mode)
 	rectangle r;
 	size_borders b;
 
-	if (!FShapesSupported)
+	if (!FShapesSupported || !ALLOW_SHAPE_HINTS(fw))
 	{
 		return;
 	}

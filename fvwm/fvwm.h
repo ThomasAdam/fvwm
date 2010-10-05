@@ -268,6 +268,7 @@ typedef struct
 #define WINDOWSHADE_LAZY_MASK   0x3
 		unsigned windowshade_laziness : 2;
 		unsigned use_title_decor_rotation : 1;
+		unsigned allow_shape_hints : 1;
 		focus_policy_t focus_policy;
 	} s;
 } common_flags_t;

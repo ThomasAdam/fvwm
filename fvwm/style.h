@@ -321,6 +321,10 @@
 	((c).s.use_icon_position_hint)
 #define S_SET_USE_ICON_POSITION_HINT(c,x) \
 	((c).s.use_icon_position_hint = !!(x))
+#define S_ALLOW_SHAPE_HINTS(c) \
+	((c).s.allow_shape_hints)
+#define S_SET_ALLOW_SHAPE_HINTS(c,x) \
+	((c).s.allow_shape_hints = !!(x))
 #define S_USE_INDEXED_WINDOW_NAME(c) \
 	((c).s.use_indexed_window_name)
 #define S_SET_USE_INDEXED_WINDOW_NAME(c,x) \
