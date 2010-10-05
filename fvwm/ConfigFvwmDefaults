@@ -46,6 +46,7 @@ Style * LowerTransient, RaiseTransient, StackTransientParent
 Style * TileCascadePlacement, Title, MouseFocus
 Style * UseIconPosition, RightTitleRotatedCW, UseTitleDecorRotation
 Style * EWMHPlacementUseDynamicWorkingArea, EWMHMaximizeUseDynamicWorkingArea
+Style * AllowShapeHints
 # Default styles for tear off menus
 Style fvwm_menu NoPPosition, NeverFocus, NoLenience, \
 	WindowListSkip, CirculateSkip

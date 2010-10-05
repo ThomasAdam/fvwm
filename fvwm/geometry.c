@@ -523,7 +523,8 @@ void set_window_border_size(
 	else
 	{
 		fw->unshaped_boundary_width = used_width;
-		fw->boundary_width = (fw->wShaped) ? 0 : used_width;
+		fw->boundary_width = (fw->wShaped && !ALLOW_SHAPE_HINTS(fw))
+			? 0 : used_width;
 	}
 
 	return;

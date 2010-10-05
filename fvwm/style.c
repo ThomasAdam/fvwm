@@ -2091,6 +2091,12 @@ static Bool style_parse_one_style_option(
 			S_SET_DO_IGNORE_RESTACK(SCM(*ps), 1);
 			S_SET_DO_IGNORE_RESTACK(SCC(*ps), 1);
 		}
+		else if (StrEquals(token, "AllowShapeHints"))
+		{
+			S_SET_ALLOW_SHAPE_HINTS(SCF(*ps), on);
+			S_SET_ALLOW_SHAPE_HINTS(SCM(*ps), 1);
+			S_SET_ALLOW_SHAPE_HINTS(SCC(*ps), 1);
+		}
 		else if (StrEquals(token, "AllowMaximizeFixedSize"))
 		{
 			S_SET_MAXIMIZE_FIXED_SIZE_DISALLOWED(SCF(*ps), !on);

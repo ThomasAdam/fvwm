@@ -123,6 +123,12 @@
 	(fw)->flags.common.s.use_icon_position_hint = !!(x)
 #define SETM_USE_ICON_POSITION_HINT(fw,x) \
 	(fw)->flag_mask.common.s.use_icon_position_hint = !!(x)
+#define ALLOW_SHAPE_HINTS(fw) \
+	((fw)->flags.common.s.allow_shape_hints)
+#define SET_ALLOW_SHAPE_HINTS(fw,x) \
+	(fw)->flags.common.s.allow_shape_hints = !!(x)
+#define SETM_ALLOW_SHAPE_HINTS(fw,x) \
+	(fw)->flag_mask.common.s.allow_shape_hints = !!(x)
 #define USE_INDEXED_WINDOW_NAME(fw) \
 	((fw)->flags.common.s.use_indexed_window_name)
 #define SET_USE_INDEXED_WINDOW_NAME(fw,x) \

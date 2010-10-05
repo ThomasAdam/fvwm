@@ -1382,6 +1382,7 @@ static void SetRCDefaults(void)
 		{ "DefaultColors black grey", "", "" },
 		{ DEFAULT_MENU_STYLE, "", "" },
 		{ "TitleStyle Centered -- Raised", "", "" },
+		{ "Style * AllowShapeHints", "", "" },
 		{ "Style * Color lightgrey/dimgrey", "", "" },
 		{ "Style * HilightFore black, HilightBack grey", "", "" },
 		{
