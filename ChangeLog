@@ -79,6 +79,35 @@
 
 	* fvwm/ConfigFvwmSetup: Better colors in menus and active frames.
 
+2010-11-18  Thomas Adam  <thomas@fvwm.org>
+	* fvwm/style.c (__validate_titleformat_string):
+	New helper function for validating TitleFormat and IconTitleFormat
+	commands.
+
+	* fvwm/style.c:
+	* fvwm/style.h:
+	Introduce TitleFormat and IconTitleFormat style commands.  These
+	effectively deprecate:
+
+	IndexedWindowName
+	IndexedIconName
+	ExactWindowName
+	ExactIconName
+
+	* fvwm/add_window.c (interpolate_titleformat_name):
+	Helper function to interpolate and parse the TitleFormat and
+	IconTitleFormat string.
+
+	* fvwm/add_window.c (setup_visible_name):
+	Make use of: interpolate_titleformat_name() for setting the
+	visible name of an icon or window title.
+
+	* fvwm/move_resize.c (__resize_step):
+	Call setup_visible_name() to dynamically update the window
+	title when the window is resized -- useful if the window's
+	height and width is ever used as display options for the
+	window's visible name.
+
 2010-11-12  Dominik Vogt  <dominik(dot)vogt(at)gmx(dot)de>
 	* fvwm/placement.c (__place_get_placement_flags):
 	fix reporting of placement reason with nousposition style.
