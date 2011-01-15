@@ -691,6 +691,14 @@ valid:</para>
         <listitem><para>Insert the window height.</para></listitem>
 </varlistentry>
 <varlistentry>
+        <term><emphasis remap='B'>%x</emphasis></term>
+        <listitem><para>Insert the window's x position for its width.</para></listitem>
+</varlistentry>
+<varlistentry>
+        <term><emphasis remap='B'>%y</emphasis></term>
+        <listitem><para>Insert the window's y position for its height.</para></listitem>
+</varlistentry>
+<varlistentry>
         <term><emphasis remap='B'>%I</emphasis></term>
         <listitem><para>Insert the window ID.</para></listitem>
 </varlistentry>

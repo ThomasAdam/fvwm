@@ -3139,6 +3139,12 @@ void HandleMapRequestKeepRaised(
 					NULL, ea->exc,
 					(char *)initial_map_command, 0, fw);
 			}
+
+			/* TA:  20110114:  And also restore the window's title
+			 * over a recapture in case there were any
+			 * interpolation needed to reflect height/width, etc.
+			 */
+			setup_visible_name(fw, IS_ICONIFIED(fw));
 			MyXUngrabServer(dpy);
 			break;
 

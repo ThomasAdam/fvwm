@@ -3409,7 +3409,6 @@ static void __resize_step(
 		}
 	}
 	DisplaySize(exc->w.fw, exc->x.elast, drag->width, drag->height, False, False);
-	setup_visible_name((FvwmWindow *)exc->w.fw, FALSE);
 
 	return;
 }
@@ -3630,7 +3629,6 @@ static Bool __resize_window(F_CMD_ARGS)
 		XMapRaised(dpy, Scr.SizeWindow);
 	}
 	DisplaySize(fw, exc->x.elast, orig->width, orig->height, True, True);
-	setup_visible_name((FvwmWindow *)exc->w.fw, FALSE);
 
 	if (dir != DIR_NONE)
 	{

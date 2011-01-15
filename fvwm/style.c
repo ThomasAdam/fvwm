@@ -89,6 +89,8 @@ static Bool __validate_titleformat_string(const char *formatstr)
 			case 't':
 			case 'h':
 			case 'w':
+			case 'x':
+			case 'y':
 			case 'I':
 				ret_condition = True;
 				break;

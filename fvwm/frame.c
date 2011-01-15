@@ -36,6 +36,7 @@
 #include "module_interface.h"
 #include "focus.h"
 #include "borders.h"
+#include "add_window.h"
 #include "frame.h"
 #include "gnome.h"
 #include "ewmh.h"
@@ -435,6 +436,8 @@ static void __frame_setup_window(
 	XFlush(dpy);
 	/* inform the modules of the change */
 	BroadcastConfig(M_CONFIGURE_WINDOW,fw);
+
+	setup_visible_name(fw, False);
 
 	return;
 }
@@ -2009,6 +2012,8 @@ void frame_move_resize(
 	{
 		UngrabEm(GRAB_FREEZE_CURSOR);
 	}
+
+	setup_visible_name(fw, False);
 
 	return;
 }

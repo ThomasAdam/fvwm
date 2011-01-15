@@ -587,7 +587,7 @@ static char *interpolate_titleformat_name(FvwmWindow *fw, window_style *style,
 	 * characters maximum.
 	 */
 	char win_name_len[MAX_WINDOW_NAME_NUMBER_DIGITS];
-	char width[10], height[10], w_id[12];
+	char width[10], height[10], x[10], y[10], w_id[12];
 	rectangle g;
 
 	if (is_icon)
@@ -670,14 +670,28 @@ static char *interpolate_titleformat_name(FvwmWindow *fw, window_style *style,
 				strcat(stringbuf, win_name_len);
 				break;
 			case 'w':
-				get_unshaded_geometry(fw, &g);
+				if (IS_SHADED(fw))
+					get_unshaded_geometry(fw, &g);
+				else
+					g = fw->g.frame;
 				sprintf(width, "%d", g.width);
 				strcat(stringbuf, width);
 				break;
 			case 'h':
-				get_unshaded_geometry(fw, &g);
+				if (IS_SHADED(fw))
+					get_unshaded_geometry(fw, &g);
+				else
+					g = fw->g.frame;
 				sprintf(height, "%d", g.height);
 				strcat(stringbuf, height);
+				break;
+			case 'x':
+				sprintf(x, "%d", fw->g.frame.x);
+				strcat(stringbuf, x);
+				break;
+			case 'y':
+				sprintf(y, "%d", fw->g.frame.y);
+				strcat(stringbuf, y);
 				break;
 			case 'I':
 				sprintf(w_id, "0x%x", (int)FW_W(fw));
@@ -690,9 +704,7 @@ static char *interpolate_titleformat_name(FvwmWindow *fw, window_style *style,
 			format++;
 	}
 	/* Now allocate our string. */
-	char *visname = safemalloc(strlen(stringbuf) + 1);
-	strcpy(visname, stringbuf);
-	return visname;
+	return strdup(stringbuf);
 }
 
 static void setup_class_and_resource(FvwmWindow *fw)
