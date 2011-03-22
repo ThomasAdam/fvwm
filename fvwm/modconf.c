@@ -51,6 +51,9 @@
 #include "colorset.h"
 #include "libs/FScreen.h"
 
+#include "ewmh.h"
+#include "ewmh_intern.h"
+
 extern int nColorsets;  /* in libs/Colorset.c */
 
 /* do not send ColorLimit, it is not used anymore but maybe by non
@@ -354,6 +357,22 @@ void send_ignore_modifiers(fmodule *module)
 	return;
 }
 
+static void send_ewmh_base_struts(fmodule *module)
+{
+	char msg[64];
+
+	sprintf(msg, "EwmhBaseStruts %d %d %d %d\n",
+		ewmhc.BaseStrut.left,
+		ewmhc.BaseStrut.right,
+		ewmhc.BaseStrut.top,
+		ewmhc.BaseStrut.bottom
+	);
+
+	SendName(module, M_CONFIG_INFO, 0, 0, 0, msg);
+
+	return;
+}
+
 void CMD_Send_ConfigInfo(F_CMD_ARGS)
 {
 	struct moduleInfoList *t;
@@ -382,6 +401,7 @@ void CMD_Send_ConfigInfo(F_CMD_ARGS)
 	}
 	send_desktop_names(mod);
 	send_ignore_modifiers(mod);
+	send_ewmh_base_struts(mod);
 	SendPacket(
 		mod, M_END_CONFIG_INFO, (long)0, (long)0, (long)0, (long)0,
 		(long)0, (long)0, (long)0, (long)0);
