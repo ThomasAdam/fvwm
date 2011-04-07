@@ -190,7 +190,6 @@ static int                 randr_error_base  = -1;
 static Window blank_w, vert_w, blank2_w, blank3_w;
 
 static int FScreenParseScreenBit(char *arg, char default_screen);
-static int FindScreenOfXY(int x, int y);
 
 static XineramaScreenInfo *
 solaris_XineramaQueryScreens(Display *d, int *nscreens)
@@ -770,7 +769,7 @@ void FScreenSetDefaultModuleScreen(char *scr_spec)
 }
 
 
-static int FindScreenOfXY(int x, int y)
+int FindScreenOfXY(int x, int y)
 {
 	int i;
 
