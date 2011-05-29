@@ -3587,6 +3587,8 @@ static Bool __resize_window(F_CMD_ARGS)
 	Bool do_resize_opaque;
 	Bool do_warp_to_border;
 	Bool is_direction_fixed;
+	Bool automatic_border_direction;
+	Bool detect_automatic_direction;
 	Bool fButtonAbort = False;
 	Bool fForceRedraw = False;
 	Bool called_from_title = False;
@@ -3620,6 +3622,8 @@ static Bool __resize_window(F_CMD_ARGS)
 	int x_off;
 	int y_off;
 	direction_t dir;
+	int warp_x = 0;
+	int warp_y = 0;
 
 	bad_window = False;
 	ResizeWindow = FW_W_FRAME(fw);
@@ -3795,6 +3799,12 @@ static Bool __resize_window(F_CMD_ARGS)
 	}
 	DisplaySize(fw, exc->x.elast, orig->width, orig->height, True, True);
 
+	if (dir == DIR_NONE && detect_automatic_direction == True)
+	{
+		dir = __resize_get_dir_from_resize_quadrant(
+				orig->width, orig->height, px, py);
+	}
+
 	if (dir != DIR_NONE)
 	{
 		int grav;
@@ -3833,8 +3843,9 @@ static Bool __resize_window(F_CMD_ARGS)
 	    !called_from_title)
 	{
 		__resize_get_dir_proximity(
-			&xmotion, &ymotion, fw, orig->width - px,
-			orig->height - py, px, py);
+			&xmotion, &ymotion, fw, orig->width,
+			orig->height, px, py, &warp_x, &warp_y,
+			automatic_border_direction);
 		if (xmotion != 0 || ymotion != 0)
 		{
 			do_warp_to_border = True;
@@ -3903,6 +3914,16 @@ static Bool __resize_window(F_CMD_ARGS)
 
 		dx = (xmotion == 0) ? px : ref_x;
 		dy = (ymotion == 0) ? py : ref_y;
+
+		/* Warp the pointer to the closest border automatically? */
+		if (automatic_border_direction == True &&
+			(warp_x >=0 && warp_y >=0) &&
+			!IS_SHADED(fw))
+		{
+			dx = warp_x;
+			dy = warp_y;
+		}
+
 		/* warp the pointer to the border */
 		FWarpPointer(
 			dpy, None, ResizeWindow, 0, 0, 1, 1, dx, dy);
