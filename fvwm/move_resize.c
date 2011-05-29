@@ -655,11 +655,13 @@ static int GetResizeArguments(
 	char **paction, int x, int y, int w_base, int h_base, int w_inc,
 	int h_inc, size_borders *sb, int *pFinalW, int *pFinalH,
 	direction_t *ret_dir, Bool *is_direction_fixed,
-	Bool *do_warp_to_border)
+	Bool *do_warp_to_border, Bool *automatic_border_direction,
+	Bool *detect_automatic_direction)
 {
 	int n;
 	char *naction;
 	char *token;
+	char *tmp_token;
 	char *s1;
 	char *s2;
 	int w_add;
@@ -669,6 +671,9 @@ static int GetResizeArguments(
 	*ret_dir = DIR_NONE;
 	*is_direction_fixed = False;
 	*do_warp_to_border = False;
+	*automatic_border_direction = False;
+	*detect_automatic_direction = False;
+
 	if (!paction)
 	{
 		return 0;
@@ -708,11 +713,23 @@ static int GetResizeArguments(
 			{
 				return 0;
 			}
+
 			*ret_dir = gravity_parse_dir_argument(
-				naction, &naction, DIR_NONE);
+					naction, &naction, DIR_NONE);
 			if (*ret_dir != DIR_NONE)
 			{
 				*is_direction_fixed = True;
+			}
+			else if (*ret_dir == DIR_NONE)
+			{
+
+				tmp_token = PeekToken(naction, &naction);
+				if (tmp_token != NULL &&
+						StrEquals(tmp_token, "automatic"))
+				{
+					*detect_automatic_direction = True;
+					*is_direction_fixed = True;
+				}
 			}
 		}
 		else if (StrEquals(token, "fixeddirection"))
@@ -721,6 +738,13 @@ static int GetResizeArguments(
 		}
 		else if (StrEquals(token, "warptoborder"))
 		{
+			tmp_token = PeekToken(naction, &naction);
+
+			if (tmp_token != NULL &&
+				StrEquals(tmp_token, "automatic"))
+			{
+				*automatic_border_direction = True;
+			}
 			*do_warp_to_border = True;
 		}
 		else
@@ -790,7 +814,8 @@ static int GetResizeMoveArguments(
 	}
 	if (GetResizeArguments(
 		    &action, *pFinalX, *pFinalY, w_base, h_base, w_inc, h_inc,
-		    sb, pFinalW, pFinalH, &dir, &dummy, &dummy) < 2)
+		    sb, pFinalW, pFinalH, &dir, &dummy, &dummy, &dummy,
+		    &dummy) < 2)
 	{
 		return 0;
 	}
@@ -3586,7 +3611,8 @@ static Bool __resize_window(F_CMD_ARGS)
 		fw->hints.base_width, fw->hints.base_height,
 		fw->hints.width_inc, fw->hints.height_inc,
 		&b, &(drag->width), &(drag->height),
-		&dir, &is_direction_fixed, &do_warp_to_border);
+		&dir, &is_direction_fixed, &do_warp_to_border,
+		&automatic_border_direction, &detect_automatic_direction);
 
 	if (n == 2)
 	{
