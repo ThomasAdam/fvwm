@@ -3138,6 +3138,88 @@ void CMD_XorPixmap(F_CMD_ARGS)
 
 /* ----------------------------- resizing code ----------------------------- */
 
+/* Given a mouse location within a window context, return the direction the
+ * window could be resized in, based on the window quadrant.  This is the same
+ * as the quadrants drawn by the rubber-band, if "ResizeOpaque" has not been
+ * set.
+ */
+static direction_t __resize_get_dir_from_resize_quadrant(
+		int x_off, int y_off, int px, int py)
+{
+	direction_t dir = DIR_NONE;
+	int tx;
+	int ty;
+	int dx;
+	int dy;
+
+
+	if (px < 0 || x_off < 0 || py < 0 || y_off < 0)
+	{
+		return dir;
+	}
+
+	/* Rough quadrants per window.  3x3. */
+	tx = (x_off / 3) - 1;
+	ty = (y_off / 3) - 1;
+
+	dx = x_off - px;
+	dy = y_off - py;
+
+	if (px < tx)
+	{
+		/* Far left of window.  Quadrants of NW, W, SW. */
+		if (py < ty)
+		{
+			/* North-West direction. */
+			dir = DIR_NW;
+		}
+		else if (dy < ty)
+		{
+			/* South-West direction. */
+			dir = DIR_SW;
+		}
+		else
+		{
+			/* West direction. */
+			dir = DIR_W;
+		}
+	}
+	else if (dx < tx)
+	{
+		/* Far right of window.  Quadrants NE, E, SE. */
+		if (py < ty)
+		{
+			/* North-East direction. */
+			dir = DIR_NE;
+		}
+		else if (dy < ty)
+		{
+			/* South-East direction */
+			dir = DIR_SE;
+		}
+		else
+		{
+			/* East direction. */
+			dir = DIR_E;
+		}
+	}
+	else
+	{
+		if (py < ty)
+		{
+			/* North direction. */
+			dir = DIR_N;
+		}
+		else if (dy < ty)
+		{
+			/* South direction. */
+			dir = DIR_S;
+		}
+	}
+
+	return dir;
+}
+
 static void __resize_get_dir_from_window(
 	int *ret_xmotion, int *ret_ymotion, FvwmWindow *fw, Window context_w)
 {
