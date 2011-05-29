@@ -3293,41 +3293,99 @@ static void __resize_get_dir_from_window(
 
 static void __resize_get_dir_proximity(
 	int *ret_xmotion, int *ret_ymotion, FvwmWindow *fw, int x_off,
-	int y_off, int px, int py)
+	int y_off, int px, int py, int *warp_x, int *warp_y, Bool find_nearest_border)
 {
 	int tx;
 	int ty;
+	direction_t dir;
+
+	*warp_x = *warp_y = -1;
 
 	if (px < 0 || x_off < 0 || py < 0 || y_off < 0)
 	{
 		return;
 	}
-	/* Now find the place to warp to. We simply use the sectors
-	 * drawn when we start resizing the window. */
-#if 0
-	tx = orig->width / 10 - 1;
-	ty = orig->height / 10 - 1;
-#else
-	tx = 0;
-	ty = 0;
-#endif
-	tx = max(fw->boundary_width, tx);
-	ty = max(fw->boundary_width, ty);
-	if (px < tx)
+
+	if (find_nearest_border == False)
 	{
+		tx = 0;
+		ty = 0;
+
+		tx = max(fw->boundary_width, tx);
+		ty = max(fw->boundary_width, ty);
+
+		if (px < tx)
+		{
+			*ret_xmotion = 1;
+		}
+		else if (x_off < tx)
+		{
+			*ret_xmotion = -1;
+		}
+		if (py < ty)
+		{
+			*ret_ymotion = 1;
+		}
+		else if (y_off < ty)
+		{
+			*ret_ymotion = -1;
+		}
+
+		return;
+	}
+
+	/* Get the direction from the quadrant the pointer is in. */
+	dir = __resize_get_dir_from_resize_quadrant(
+		x_off, y_off, px, py);
+
+	switch (dir)
+	{
+	case DIR_NW:
 		*ret_xmotion = 1;
-	}
-	else if (x_off < tx)
-	{
-		*ret_xmotion = -1;
-	}
-	if (py < ty)
-	{
 		*ret_ymotion = 1;
-	}
-	else if (y_off < ty)
-	{
+		*warp_x = 0;
+		*warp_y = 0;
+		break;
+	case DIR_SW:
+		*ret_xmotion = 1;
 		*ret_ymotion = -1;
+		*warp_x = 0;
+		*warp_y = (y_off - 1);
+		break;
+	case DIR_W:
+		*ret_xmotion = 1;
+		*warp_x = 0;
+		*warp_y = (y_off / 2);
+		break;
+	case DIR_NE:
+		*ret_xmotion = -1;
+		*ret_ymotion = 1;
+		*warp_x = (x_off - 1);
+		*warp_y = 0;
+		break;
+	case DIR_SE:
+		*ret_xmotion = -1;
+		*ret_ymotion = -1;
+		*warp_x = (x_off - 1);
+		*warp_y = (y_off - 1);
+		break;
+	case DIR_E:
+		*ret_xmotion = -1;
+		*warp_x = (x_off - 1);
+		*warp_y = (y_off / 2);
+		break;
+	case DIR_N:
+		*ret_ymotion = 1;
+		*warp_x = (x_off / 2);
+		*warp_y = 0;
+		break;
+	case DIR_S:
+		*ret_ymotion = -1;
+		*warp_x = (x_off / 2);
+		*warp_y = (y_off - 1);
+		break;
+	default:
+		break;
 	}
 
 	return;
