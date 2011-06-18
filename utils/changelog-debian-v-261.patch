@@ -1,0 +1,26 @@
+diff --git a/debian/changelog b/debian/changelog
+index 1f4941c..cfd0339 100644
+--- a/debian/changelog
++++ b/debian/changelog
+@@ -1,4 +1,20 @@
+-fvwm (1:2.5.30.ds-1) unstable; urgency=low
++fvwm (1:2.6.1.ds-1) unstable; urgency=low
++  * New upstream release.
++  * New features:
++
++    None.
++
++  * Bug fixes:
++
++    - Make the version and check of Fribidi >= 0.19.2
++    - fvwm-menu-desktop:
++        - Make XML::Parser check runtime as it's a non-standard
++          module.
++        - Fix perl version check.
++
++ -- Thomas Adam <thomas@fvwm.org>  Sat, 18 Jun 2011 13:30:17 -0100
++
++fvwm (1:2.6.0.ds-1) unstable; urgency=low
+ 
+   * New upstream release
+   * New features:

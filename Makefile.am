@@ -14,7 +14,6 @@ SUBDIRS = \
 	doc \
 	docs \
 	rpm \
-	debian \
 	sample.fvwmrc \
 	$(POSUB) \
 	tests
@@ -84,12 +83,8 @@ rpm-this: rpm-regenerate
 #    make deb-inplace release=1.mg fullname=migo # works on sources directly
 
 deb-regenerate:
-	(cd debian && $(MAKE) $(AM_MAKEFLAGS) Makefile control) || exit 1
-
-deb-dist: dist deb-this
-
-deb-this: deb-regenerate
-	$(MAKE) -f debian/Makefile $(AM_MAKEFLAGS) this || exit 1
+	@([ -d debian/.git ] || utils/get-debian.sh && \
+		cd debian && git submodule update ; git pull)
 
 deb-inplace: deb-regenerate
-	$(MAKE) -f debian/Makefile $(AM_MAKEFLAGS) inplace || exit 1
+	@(dpkg-buildpackage -rfakeroot || exit 0)
