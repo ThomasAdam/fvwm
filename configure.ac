@@ -536,6 +536,31 @@ if test ! x"$with_shm" = xno; then
                [$X_LIBS $X_PRE_LIBS -lX11 $X_EXTRA_LIBS])
 fi
 
+# ********* XRANDR extensions
+problem_xrandr=""
+AC_ARG_ENABLE(xrandr,
+  AS_HELP_STRING([--disable-xrandr],[disable XRANDR Extension]),
+  [ if test x"$enableval" = xyes; then
+    with_xrandr="yes, check"
+  else
+    with_xrandr="no"
+    problem_xrandr=": Explicitly disabled"
+  fi ],
+  [ with_xrandr="not specified, check" ]
+)
+
+AH_TEMPLATE([HAVE_XRANDR],[Define if the XRANDR extension is used.])
+if test ! x"$with_xrandr" = xno; then
+  $UNSET ac_cv_lib_XRRSelectInput
+  AC_CHECK_LIB(Xrandr, XRRSelectInput,
+               with_xrandr=yes; xrandr_LIBS=-lXrandr; AC_DEFINE(HAVE_XRANDR),
+               with_xrandr=no;
+               problem_xrandr=": Can't detect XRANDR extension.",
+               [$X_LIBS $X_PRE_LIBS -lX11 $X_EXTRA_LIBS])
+fi
+
+AC_SUBST(xrandr_LIBS)
+
 # ********* xinerama
 problem_xinerama=""
 
@@ -1676,6 +1701,7 @@ AC_SUBST(with_sm)
 AC_SUBST(with_stroke)
 AC_SUBST(with_xcursor)
 AC_SUBST(with_xft)
+AC_SUBST(with_xrandr)
 AC_SUBST(with_xinerama)
 AC_SUBST(with_xrender)
 AC_SUBST(with_xpm)
@@ -1892,6 +1918,7 @@ Fvwm Configuration:
   With Session Management support?    $with_sm$problem_sm
   With SVG image support?             $with_rsvg$problem_rsvg
   With Xcursor support?               $with_xcursor$problem_xcursor
+  With XRANDR support?                $with_xrandr$problem_xrandr
   With Xinerama multi-head support?   $with_xinerama$problem_xinerama
   With Xft anti-alias font support?   $with_xft$problem_xft
   With XPM image support?             $with_xpm$problem_xpm
