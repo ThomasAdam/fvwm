@@ -116,20 +116,21 @@ order!
 Preparations:
 
   - Make sure you have all optional libraries installed.
-  - Change the dates in configure.ac and fill in the release date
-    in NEWS.  Note: For releases prior to 2.5.3, the date has to be
-    updated in docs/fvwm.lsm.in and fvwm/fvwm.1 instead of
-    configure.ac.
+
+  - Switch to the "devel" branch:
+      $ git checkout devel
+  - Set a temporary tag:
+      $ git tag -a prerelease
+  - Checkout the release branch:
+      $ git checkout release
+  - Rebase on to the prerelese tag
+      $ git rebase prerelease
+  - Delete the tag:
+      $ git tag -d prerelease
+
   - Update the value of DEF_VER in utils/fvwm-gen-version.sh to
     point to the version of the fvwm release.
   - In configure.ac set ISRELEASED to "yes".
-  - Update docs/ANNOUNCE file.  For the first version of a major
-    release (e.g. 2.6.0) all user visible changes have to be
-    mentioned.  For the following maintenance releases *all* code
-    changes have to be listed.  This is usually done by copying
-    all entries from the NEWS file.  Don't forget to proof read
-    the file as it will be sent to the fvwm-announce mailing list.
-  - Update the ChangeLog for all the changes above.
   - Commit these changes.
 
 Configuration tests:
