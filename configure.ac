@@ -1,6 +1,9 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl
 AC_PREREQ(2.60)
+# The shell script echos the version we're running, and the result is
+# captured by the e4_esyscmd macro.
+m4_esyscmd(utils/fvwm-gen-version.sh)
 AC_INIT(fvwm/fvwm.c)
 
 dnl should be "yes" only within the released distribution
@@ -68,7 +71,7 @@ AC_SUBST(FVWMWORKERSLIST)
 AC_SUBST(FVWMWORKERSLISTLONG)
 AC_SUBST(MANPAGE_PREAMBLE)
 
-AM_INIT_AUTOMAKE(fvwm, ${version})
+AM_INIT_AUTOMAKE(fvwm, FVWM_VERSION)
 AM_CONFIG_HEADER(config.h)
 
 # check for programs needed to build html docs
