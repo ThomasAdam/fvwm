@@ -1,0 +1,306 @@
+GIT INFORMATION
+===============
+
+Fvwm development uses git [0] as its revision control system.
+
+This document assumes familiarity with git and only details the
+necessary steps with using it in Fvwm's development process.  It
+is not meant to replace the wealth of other git documentation
+available on the internet.
+
+This document assumes use of git 1.7.X onwards.
+
+INITIAL SETUP
+=============
+
+Git keeps track of meta data about the repository in question, and
+also about who each developer is.  Such information is used when
+forming commits in git.
+
+    $ git config [--global] user.name "Your name"
+    $ git config [--global] user.email "you@example.com"
+
+Note that, if you already have this in the global ~/.gitconfig
+option, then this will be used.  Setting this per-repository would
+involve not using the "--global" flag above.   If you wish to use
+the same credentials always, pass the "--global" option, as shown.
+
+Other suggestions include a setting to enable colour output:
+
+    $ git config [--global] color.ui auto
+
+This is a one-off operation once the repository has been cloned,
+assuming this information has never been set before.
+
+OBTAINING THE SOURCE CODE
+=========================
+
+The source code is available to anyone, without requiring any
+credentials:
+
+    $ git clone git://git.fvwm.org/[project]
+
+If you've developer access then you should clone using SSH [2]
+instead:
+
+    $ git clone ssh://[login_name@]git.fvwm.org/[project]
+
+
+INSTALLING GIT HOOKS
+====================
+
+Git has the ability to run events before certain commands happen,
+or have happened.  These are called hooks.  One useful hook
+shipped with Git by default, and installed as part of any git
+repository (but not enabled by default; doing so would be a
+security risk if arbitrary commands were run) is a sample
+pre-commit hook which checks commits before they're formed for
+whitespace errors.
+
+The central Fvwm repository will itself perform the same check but
+having this check locally will save you a lot of time, as you'll
+be able to fix up the errors more quickly.  To enable this hook:
+
+    $ cd fvwm-repo/.git/hooks
+    $ mv ./pre-commit.sample ./pre-commit
+
+As with the INITIAL SETUP section, this is also intended to be a
+one-off operation, and only needs to happen once for each cloned
+instance of the Fvwm repository.
+
+UPDATING THE SOURCE TREE
+========================
+
+The Fvwm tree likes a clean history, which means repeated merges
+are frowned upon.  Thankfully, git has a way of avoiding this,
+using the "rebase" command [1].  Hence, updating the git tree is
+possible with:
+
+    $ git pull --rebase
+
+which will, for any tracked branches in your checkout, always
+ensure that the most recent changes you might be working on are
+put at the tip of the branch when the new changes are applied from
+"git pull".
+
+Note that forgetting this might be more trouble than it's worth,
+in which case git has a config option to always rebase with "git
+pull":
+
+    $ git config branch.autosetuprebase always
+
+And again note that this is *not* set to use "--global" as this
+really should not affect any other repositories besides Fvwm's.
+
+HACKING ON THE CODE
+===================
+
+The Fvwm tree maintains two branches:
+
+* master
+* devel
+
+*No* work should ever be done directly on top of either of those
+branches.
+
+The master branch holds released code.  It always reflects stable
+releases of Fvwm.  At various points on the branch's history,
+there are tags, which reflect the specific version of Fvwm.
+
+The devel branch is a rolling branch.  It is used to collect
+patches/topic branches intended for the next release of Fvwm,
+hence its history is always subject to change.  But the branch is
+still useful for developers/testers to test pre-releases of Fvwm.
+
+RULES OF TOPIC BRANCH USE
+=========================
+
+* Small patches that reflect logical steps in development.
+* Only one topic in one patch; patches that reformat other
+  code or contain unrelated changes have to be split into multiple
+  patches.
+* Example:  If a change set introduces a new library function,
+  implements a new command using this function and documents the
+  man page, the change set should consist of at least three
+  independent commits, each implementing one of the aforementioned
+  changes.
+* No patch series' that first add something and remove it
+  later.
+* The git command
+
+    $ git add -i -p
+
+can be a big help to split a big change set into multiple
+commits even if there are several unrelated changes in the same
+file.
+
+* Before publishing any patch series, the git command:
+
+    $ git rebase -p -i devel
+
+Should be used to clean up the series so that it is easy to read
+and free of unnecessary changes.
+
+The fvwm master repository is configured to reject
+patches with that introduce whitespace errors (trailing
+whitespace, spaces followed by tabs etc).  Although it is possible
+to check for whitespace errors manually with:
+
+    $ git diff --check
+
+The GIT HOOKS section will already ensure this whenever you form a
+commit, providing you've installed the hook.  If that isn't the
+case, and you've had a commit rejected by the master repository,
+you must use:
+
+    $ git rebase -p -i devel
+
+And then mark the commit in question as "edit", and fix up the
+commit by removing the whitespace, and following the instructions.
+The git rebase command will help you with this.
+
+TOPIC BRANCHES AS DEVELOPMENT
+=============================
+
+There may well be other topic branches in the official Fvwm
+repository besides the two listed above.  Such branches are
+always in the from:
+
+    initials-of-author/short-description-of-branch
+
+These are always rebased on top of devel (or master) as their
+development progresses, and hence if one is tracking such a
+branch, "git pull --rebase" will take care of that, as already
+discussed.
+
+To take a worked example, let's say that someone wishes to create
+a feature to rewrite menus.  They would do this:
+
+    $ git checkout master
+    $ git pull --rebase                                     (1)
+    $ git checkout -b ta/menu-rewrite                       (2)
+
+At this point, I've just checked out master, and pulled in all of
+the changes if there were any upstream (1).  Then I've created a
+local topic branch (2) and switched to it.
+
+Then I make some changes, ensuring that my commits are logically
+related, and small, and well described [2].  If this is a branch
+which is old, and not had work done on it for a while (and there's
+been work done on Fvwm since the time it was created) then it
+should be rebased on top of master first of all:
+
+    $ git checkout ta/menu-rewrite
+    $ git rebase master
+
+Ensuring that any conflicts are resolved in this process, should
+there be any.
+
+PUBLISHING TOPIC BRANCHES IN FVWM'S REPOSITORY
+==============================================
+
+It is intended that any given topic branch belongs to one
+developer (hence the requirement to have their initials as part of
+the branch name) and it is their responsibility for keeping it
+updated.
+
+Publishing a remote branch for review is fine, but communicating
+that to the rest of the Fvwm team (fvwm-workers@) is important.
+To publish a remote branch, one must do:
+
+    $ git checkout initials-of-author/their-branch
+    $ git push -u origin initials-of-author/their-branch
+
+Then, when any developer updates their repository, they'll be able
+to check that branch out:
+
+    $ git pull --rebase
+    $ git checkout --track origin/initials-of-author/their-branch
+
+This might be fine for close collaboration on a topic before it
+graduates to the devel branch, for example.
+
+DELETING TOPIC BRANCHES IN FVWM'S REPOSITORY
+============================================
+
+To remove a topic branch that has been published (either because
+it has been released, or the idea shelved) then the following
+command will do that:
+
+    $ git push origin :initials-of-author/their-branch
+
+Note that once this has happened, it will no longer be possible to
+recover the state of that branch, but there is usually a grace
+period (one month) before this happens.  Again, communication with
+fvwm-workers@ is helpful here.
+
+BUG-FIXING AND CONTRIBUTING PATCHES
+===================================
+
+[ This section might be more useful for people without direct
+commit access to the Fvwm repository, but who wish to make
+contributions anyway. ]
+
+First of all, a branch is created from master (assuming the state
+of the repository has already been updated):
+
+    $ git checkout -b bug/fix-compiler-warnings master
+
+Which creates a new branch in your repository called
+"bug/fix-compiler-warnings" from the tip of master.
+
+    [ ... hack, hack, commit ... ]
+
+When the branch is complete, and you're happy with the work done,
+you may submit the patches in one of two ways:
+
+* As a patch series using "git format-patch", or as a
+* "pull-request" from an externally-hosted repository.
+
+In the case of patch submission via email, then:
+
+    $ git checkout bug/fix-compiler-warnings
+    $ git format-patch -M -n --cover-letter -o patches master
+
+The patches will then reside in the directory "patches" which you
+can then send to fvwm-workers@fvwm.org using the "git send-email"
+command.  But please check that your MUA isn't going to mangle the
+patch beforehand!
+
+If you've got an account on a git hosting site [3] then you can
+instead issue a "git request-pull" command referencing the branch
+in question.
+
+These can then be dealt with with using either "git am" (in the
+case of patches mailed out) or "git remote" in the case of a
+"request-pull".
+
+OBTAINING COMMIT ACCESS
+=======================
+
+Using the procedures described above, and being on the workers
+list are a prerequisite to gaining update access. We expect to
+have heard from you more than once on the fvwm-workers@ list so
+that we have some idea who you are.
+
+Doing some testing, submitting some patches, and getting involved
+in the discussions will help us know about you.
+
+After you have been involved for a while, if we don't suggest it,
+then ask.  The Fvwm development team is not a closed environment,
+we welcome new members. There are no required duties, all work is
+strictly voluntary.
+
+    [ INSERT HERE GITOSIS INSTRUCTIONS, PUBKEY, ETC. ]
+
+REFERENCES / FOOTNOTES
+======================
+
+[0] http://www.git-scm.com
+[1] http://gitready.com/intermediate/2009/01/31/intro-to-rebase.html
+[2] There's several reasons why this is the case:  One is so that
+    the commit shows logical changes, which makes reviewing the
+    commit easier, and well as reverting changes introduced by a
+    commit if necessary.  The other, is the use of "git bisect"
+    to track down bugs.
+[3] github (http://github.com) for example.
