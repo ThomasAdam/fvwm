@@ -1,8 +1,6 @@
 			Notes for Developers                         -*-text-*-
 			--------------------
 
-Last updated on 08-Jan-2006
-
 You will need to install several GNU tools to be able to use the
 cvs sources.  If you do not have these tools available, build from
 the tar file distribution instead, available from ftp.fvwm.org.
@@ -13,10 +11,9 @@ To build from the CVS sources, you will need:
   * autoconf (version >= 2.53)
   * automake (version >= 1.4)
 
-
-After the *initial* checkout of the sources, (see DEVELOPER-CVS or
-cvs.html) you will need to execute the following commands from the
-top of the source tree.
+After the *initial* checkout of the sources,
+(see docs/DEVELOPER-GIT) you will need to execute the following
+commands from the top of the source tree.
 
     aclocal
     autoheader
@@ -30,65 +27,43 @@ those problems.
 Now, configure and build as per INSTALL.fvwm and INSTALL.  If
 configure fails, please look through `config.log' for clues.
 
-
 Development Rules of the Road
 -----------------------------
 
- 1) _Every_ change must be properly ChangeLogged, listing the name
-    of the changed function.  If you use Emacs, you can do this
-    oh-so-trivially with the "C-x 4 a" command; it will add a
-    header (if it's a new day), the name of the file, and even the
-    name of the function you're currently in.  There is a
-    vim-script utils/changelog.vim that does the same when yoi
-    type ":ChangeLog".
-
-    If you start adding them as you change functions, it'll soon
-    become second-nature and we'll get proper ChangeLogs.
-
-    If you don't use Emacs, please mimic the format of all the
-    other log entries when adding your own.
-
- 2) If you make a user-visible change please add a blurb about it
-    to the NEWS file.  A couple sentences is fine; don't repeat
-    the documentation but give folks enough of an idea so they can
-    decide if they want to learn more.  Bug fixes (unless they're
-    _really_ user visible) shouldn't be noted in the NEWS file.
-
- 3) If you add a new user-visible feature, don't forget to update
+ 1) If you add a new user-visible feature, don't forget to update
     the appropriate man pages at the same time!
 
- 4) Bug fixes may be committed at any time (unless we're in code
+ 2) Bug fixes may be committed at any time (unless we're in code
     freeze for a release), usually without much review (unless you
     want someone else to look at it).  All our code freezes,
     etc. are merely procedural, not enforced, so it's important
     you read fvwm-workers and keep up-to-date with the current
     state of the tree.
 
- 5) New features should be discussed on the list to ensure
+ 3) New features should be discussed on the list to ensure
     everyone thinks they're "appropriate" (one of the goals of
     fvwm is to be relatively efficient, remember, which means we
     don't necessarily want the kitchen sink).
 
- 6) If the new feature is large enough, unstable enough, or not
+ 4) If the new feature is large enough, unstable enough, or not
     targeted at the next release, it should go on a private
     branch.  Otherwise, consensus will probably have it installed
     on the main branch.
 
- 7) Before adding a new feature think twice if it could perhaps be
+ 5) Before adding a new feature think twice if it could perhaps be
     implemented as a module (perhaps after some extension of the
     fvwm<->module communication protocol). Moving features in
     modules helps to keep fvwm itself clean and efficient.
 
- 8) See CONVENTIONS for more details.
+ 6) See CONVENTIONS for more details.
 
         ** Of course, compile and test before committing! **
 
-
-Dealing with CVS
+Dealing with GIT
 ----------------
 
-All details about dealing with CVS should be found in cvs.html or
-DEVELOPER-CVS.  Go look there!
+All details about dealing with GIT for Fvwm can be found in the
+docs/DEVELOPER-GIT file.
 
 Changing a Makefile
 -------------------
@@ -141,10 +116,6 @@ order!
 Preparations:
 
   - Make sure you have all optional libraries installed.
-  - When building a release, update the CVS sources first. For a
-    stable release it is best to throw away the whole source tree
-    and check it out from scratch to ensure all source files have
-    been added to CVS.
   - Change the dates in configure.ac and fill in the release date
     in NEWS.  Note: For releases prior to 2.5.3, the date has to be
     updated in docs/fvwm.lsm.in and fvwm/fvwm.1 instead of
