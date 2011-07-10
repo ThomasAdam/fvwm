@@ -149,10 +149,9 @@ Preparations:
     in NEWS.  Note: For releases prior to 2.5.3, the date has to be
     updated in docs/fvwm.lsm.in and fvwm/fvwm.1 instead of
     configure.ac.
-  - Verify that the version variable at the very beginning of
-    configure.ac has the value of the going to be released version
-    and set ISRELEASED to "yes".  It should be "yes" in the
-    released tarballs.
+  - Update the value of DEF_VER in utils/fvwm-gen-version.sh to
+    point to the version of the fvwm release.
+  - In configure.ac set ISRELEASED to "yes".
   - Update docs/ANNOUNCE file.  For the first version of a major
     release (e.g. 2.6.0) all user visible changes have to be
     mentioned.  For the following maintenance releases *all* code
@@ -201,23 +200,6 @@ Compile tests:
   - Fix all warnings and problems, commit the changes and repeat
     the previous step until no more warnings occur.
 
-Build and test the release tarballs:
-
-  The next step will create the tar file, then unpack it and
-  attempt to build fvwm from it and install to a scratch
-  directory.  This makes sure that you really *did* include all
-  the files necessary to build the package into the tar file.  It
-  may be hard to appreciate how useful this is, until it has
-  reminded you that you forgot file "foo.h" in some _SOURCES line.
-  But trust me, it will save your bacon in this way some day!
-
-  - Run
-     $ make distcheck2
-  - Ensure that you see the messages
-      "fvwm-x.y.z.tar.gz is ready for distribution"
-    and
-      "fvwm-x.y.z.tar.bz2 - ready for distribution"
-
 Tag the release:
 
 * Important note: Before you proceed, please ask yourself if the
@@ -242,8 +224,25 @@ Tag the release:
   It's important that the files included in the release tarballs
   and the tagged files are identical.
 
-  - Tag the CVS tree (replace x, y and z):
-     $ cvs tag version-x_y_z
+  - Tag the git tree (replace x, y and z):
+     $ git tag -a version-x_y_z
+
+Build and test the release tarballs:
+
+  The next step will create the tar file, then unpack it and
+  attempt to build fvwm from it and install to a scratch
+  directory.  This makes sure that you really *did* include all
+  the files necessary to build the package into the tar file.  It
+  may be hard to appreciate how useful this is, until it has
+  reminded you that you forgot file "foo.h" in some _SOURCES line.
+  But trust me, it will save your bacon in this way some day!
+
+  - Run
+     $ make distcheck2
+  - Ensure that you see the messages
+      "fvwm-x.y.z.tar.gz is ready for distribution"
+    and
+      "fvwm-x.y.z.tar.bz2 - ready for distribution"
 
 Upload the release:
 
@@ -254,17 +253,6 @@ Upload the release:
   - Upload the files fvwm-x.y.z.tar.gz and fvwm-x.y.z.tar.bz2 to
     ftp://ftp.fvwm.org/pub/incoming/fvwm
   - Notify fvwm-owner@fvwm.org of the upload.
-
-Increase the version number:
-
-  - Increase the version number in the very beginning of
-    configure.ac (see above) and set ISRELEASED to "no".
-  - Create a new section for future changes in the NEWS file.
-  - Add a ChangeLog entry indicating that a new version started.
-  - Commit these three changes.
-  - For a stable release, copy the NEWS from the stable branch to
-    the development branch and update the link in the same
-    document.
 
 Update fvwm-web:
 
