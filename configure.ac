@@ -31,7 +31,7 @@ FVWMWORKERSLISTLONG="fvwm workers list <fvwm-workers@fvwm.org>"
 MANPAGE_PREAMBLE='.\" WARNING: This file was automatically generated.  Edit the .in file instead.'
 
 if test ! x"$ISRELEASED" = xyes; then
-	VERSIONINFO=" (from cvs)"
+	VERSIONINFO=" (from Git)"
 	RELDATELONG="(not released yet)"
 	RELDATESHORT="(not released yet)"
 	RELDATENUM="(not released yet)"
