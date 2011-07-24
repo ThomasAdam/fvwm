@@ -994,7 +994,6 @@ static void send_command_to_fvwm(char *command, Window w)
 static int GetProperty(Window w,char* propertyname)
 {
 	Atom atom,actual_type;
-	char *atom_name;
 	int actual_format;
 	unsigned long nitems;
 	unsigned long bytes_after;
@@ -1005,7 +1004,6 @@ static int GetProperty(Window w,char* propertyname)
 	int bytes;
 
 	atom = XInternAtom(dpy, propertyname, True);
-	atom_name = XGetAtomName (dpy,atom);
 
 	status = XGetWindowProperty(dpy, w, atom, 0L, 1024,
 		False, AnyPropertyType,
@@ -1057,7 +1055,6 @@ static int GetLeader(Window w)
 static int GetParentProcessId(int pid)
 {
 	int ppid=0;
-	int bytes;
 	FILE* statusfile;
 
 	sprintf(commandBuffer,"/proc/%d/stat",pid);
@@ -1066,7 +1063,7 @@ static int GetParentProcessId(int pid)
 	{
 		return 0;
 	}
-	bytes=fread(resultBuffer,32,1,statusfile);
+	(void)fread(resultBuffer,32,1,statusfile);
 	sscanf(resultBuffer,"%*d %*[^)]) %*s %d",&ppid);
 	fclose(statusfile);
 	return ppid;
