@@ -1,0 +1,6 @@
+'NoWindow' command::
+
+Performs command, but removes the window context if any. This is not
+really a conditional command, but a prefix that may be useful in menu
+items that should operate without a window even if such menu is bound to
+window decorations.

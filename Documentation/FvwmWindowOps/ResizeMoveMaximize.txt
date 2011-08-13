@@ -1,0 +1,19 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+ResizeMoveMaximize
+
+   --------------------------------------------------------------------------
+
+   ResizeMoveMaximize resize-arguments move-arguments
+
+   Combines the effects of ResizeMove and Maximize in a single command. When
+   used on a maximized window, the window is resized and moved and is still
+   in the maximized state afterwards. When used on an unmaximized window, the
+   window is resized and put into the maximized state afterwards. This is
+   useful if the user wants to resize the window temporarily and then return
+   to the original geometry. The resize-arguments and move-arguments are the
+   same as for the ResizeMove command.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

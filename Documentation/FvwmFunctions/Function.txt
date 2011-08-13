@@ -1,0 +1,26 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+Function
+
+   --------------------------------------------------------------------------
+
+   Function FunctionName
+
+   Used to bind a previously defined function to a key or mouse button. The
+   following example binds mouse button 1 to a function called
+   "Move-or-Raise", whose definition was provided as an example earlier in
+   this man page. After performing this binding fvwm executes the
+   "move-or-raise" function whenever button 1 is pressed in a window's
+   title-bar.
+
+ Mouse 1 T A Function Move-or-Raise
+
+   The keyword Function may be omitted if FunctionName does not coincide with
+   an fvwm command.
+
+   Warning: Please read the comments on executing complex functions in the
+   section Scripting and Complex Functions.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

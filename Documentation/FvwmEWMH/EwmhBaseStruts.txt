@@ -1,0 +1,22 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+EwmhBaseStruts
+
+   --------------------------------------------------------------------------
+
+   EwmhBaseStruts left right top bottom
+
+   Where left, right, top and bottom are positive or null integers which
+   define bands at the edge of the screen. left defines a band on the left of
+   your screen of width left, right defines a band on the right of your
+   screen of width right, top defines a band on the top of your screen of
+   height top and bottom defines a band on the bottom of your screen of
+   height bottom. The unit is the pixel and the default is 0 0 0 0. These
+   areas define additional reserved space to the reserved space defined by
+   some ewmh compliant applications. This is used to compute the Working
+   Area. See the Extended Window Manager Hints section for a definition of
+   the Working Area.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

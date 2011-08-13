@@ -1,0 +1,17 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+WindowFont
+
+   --------------------------------------------------------------------------
+
+   WindowFont [fontname]
+
+   This command is obsoleted by the Style option Font. Please use
+
+ Style * Font fontname
+
+   instead.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

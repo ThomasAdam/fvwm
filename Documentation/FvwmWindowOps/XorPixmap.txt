@@ -1,0 +1,18 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+XorPixmap
+
+   --------------------------------------------------------------------------
+
+   XorPixmap [pixmap]
+
+   Selects the pixmap with which bits are xor'ed when doing rubber-band
+   window moving or resizing. This has a better chance of making the
+   rubber-band visible if XorValue does not give good results. An example
+   pixmap resize.rainbow.xpm is provided with the icon distribution. To turn
+   the XorPixmap off again use the XorValue command or omit the pixmap
+   argument.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

@@ -1,0 +1,8 @@
+'Current' [(conditions)] command::
+
+Performs command on the currently focused window if it satisfies all
+conditions. See the Conditions section for a list of conditions.
+
+This command implies the conditions CirculateHit, CirculateHitIcon and
+CirculateHitShaded. They can be turned off by specifying !CirculateHit
+etc. explicitly.

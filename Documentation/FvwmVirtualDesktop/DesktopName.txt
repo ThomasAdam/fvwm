@@ -1,0 +1,17 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+DesktopName
+
+   --------------------------------------------------------------------------
+
+   DesktopName desk name
+
+   Defines the name of the desktop number desk to name. This name is used in
+   the WindowList command and in the FvwmPager where it override the Label
+   configuration option. Moreover, if consecutive names starting from desktop
+   0 are defined, then these names can be used by any EWMH compliant
+   application (as a pager).
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

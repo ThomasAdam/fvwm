@@ -1,0 +1,20 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+XineramaSls
+
+   --------------------------------------------------------------------------
+
+   XineramaSls [bool]
+
+   For multi-screen implementations other than Xinerama, such as Single
+   Logical Screen, it is possible to simulate a Xinerama configuration if the
+   total screen seen by fvwm is made up of equal sized monitors in a
+   rectangular grid. The XineramaSls command turns SLS support on or off or
+   toggles it to the opposite state, depending on if the boolean argument is
+   "True", "False" or "toggle". If no argument is given, this is treated like
+   "toggle". The default layout uses one by one screens. To configure the
+   layout, use the XineramaSlsSize or XineramaSlsScreens command.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

@@ -1,0 +1,15 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+EchoFuncDefinition
+
+   --------------------------------------------------------------------------
+
+   EchoFuncDefinition function
+
+   The EchoFuncDefinition is similar to the Echo command but prints the
+   definition for the given function to stderr. It is useful to find out how
+   fvwm handles quoting and for debugging functions .
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

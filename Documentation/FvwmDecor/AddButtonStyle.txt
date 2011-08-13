@@ -1,0 +1,45 @@
+'AddButtonStyle' button [state] [style] [-- [!]flag... ]::
+
+Adds a button style to button. button can be a button number, or one of
+"All", "Left" or "Right". state can be "ActiveUp", "ActiveDown",
+"InactiveUp" or "InactiveDown", or "Active" (the same as both "ActiveUp"
+and "ActiveDown") or "Inactive" (the same as both "InactiveUp" and
+"InactiveDown") or any of these 6 with "Toggled" prepended. The "Active"
+states apply to the focused window, the "Inactive" ones apply to all other
+windows. The "Up" states apply to the non pressed buttons, the "Down" ones
+apply to pressed buttons. The "Toggled" prefix refers to maximized, shaded
+or sticky windows that have the corresponding MwmDecor... button style
+set. Additionally, the following shortcuts may be used: "AllNormal",
+"AllToggled", "AllActive", "AllInactive", "AllUp", "AllDown". They are
+actually different masks for 4 individual states from 8 total. These are
+supported too: "AllActiveUp", "AllActiveDown", "AllInactiveUp",
+"AllInactiveDown".
+
+If state is omitted, then the style is added to every state. If the style
+and flags are enclosed in parentheses, then multiple state definitions can
+be placed on a single line. Flags for additional button styles cannot be
+changed after definition.
+
+Buttons are drawn in the order of definition, beginning with the most
+recent button style, followed by those added with AddButtonStyle. To clear
+the button style stack, change style flags, or for descriptions of
+available styles and flags, see the ButtonStyle command. Examples:
+
+-----
+ButtonStyle 1 Pixmap led.xpm -- Top Left
+ButtonStyle 1 ActiveDown HGradient 8 grey black
+ButtonStyle All --  UseTitleStyle
+AddButtonStyle 1 \
+         ActiveUp (Pixmap a.xpm) \
+         ActiveDown (Pixmap b.xpm -- Top)
+AddButtonStyle 1 Vector 4 50x30@1 70x70@0 30x70@0 50x30@1
+------
+
+Initially for this example all button states are set to a pixmap. The
+second line replaces the "ActiveDown" state with a gradient (it overrides
+the pixmap assigned to it in the line before, which assigned the same
+style to every state). Then, the UseTitleStyle flag is set for all
+buttons, which causes fvwm to draw any styles set with TitleStyle before
+drawing the buttons. Finally, AddButtonStyle is used to place additional
+pixmaps for both "ActiveUp" and "ActiveDown" states and a vector button
+style is drawn on top of all states.

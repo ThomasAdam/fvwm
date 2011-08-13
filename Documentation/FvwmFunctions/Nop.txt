@@ -1,0 +1,23 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+Nop
+
+   --------------------------------------------------------------------------
+
+   Nop
+
+   Does nothing. This is used to insert a blank line or separator in a menu.
+   If the menu item specification is
+
+ AddToMenu MyMenu " " Nop
+
+   then a blank line is inserted. If it looks like
+
+ + "" Nop
+
+   then a separator line is inserted. Can also be used as the double-click
+   action for Menu or Popup.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

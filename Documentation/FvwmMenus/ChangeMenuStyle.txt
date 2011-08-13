@@ -1,0 +1,14 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+ChangeMenuStyle
+
+   --------------------------------------------------------------------------
+
+   ChangeMenuStyle menustyle menu...
+
+   Changes the menu style of menu to menustyle. You may specify more than one
+   menu in each call of ChangeMenuStyle.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

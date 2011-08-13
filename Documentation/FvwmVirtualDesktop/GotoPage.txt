@@ -1,0 +1,39 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+GotoPage
+
+   --------------------------------------------------------------------------
+
+   GotoPage prev | [options] x[p] y[p]
+
+   Moves the desktop viewport to page (x,y). The upper left page is (0,0),
+   the upper right is (M,0), where M is one less than the current number of
+   horizontal pages specified in the DesktopSize command. The lower left page
+   is (0,N), and the lower right page is (M,N), where N is the desktop's
+   vertical size as specified in the DesktopSize command. To switch to a page
+   relative to the current one add a trailing 'p' after any or both numerical
+   arguments.
+
+   Possible options are wrapx and wrapy to wrap around the x or y coordinate
+   when the viewport is moved beyond the border of the desktop.
+
+   To go to the last visited page use prev as the first argument. The
+   GotoPage function should not be used in a pop-up menu.
+
+   Examples:
+
+ # Go to page (2,3)
+ GotoPage 2 3
+
+ # Go to lowest and rightmost page
+ GotoPage -1 -1
+
+ # Go to last page visited
+ GotoPage prev
+
+ # Go two pages to the right and one page up
+ GotoPage +2p -1p
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

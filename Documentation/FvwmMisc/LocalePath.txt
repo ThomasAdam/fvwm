@@ -1,0 +1,65 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+LocalePath
+
+   --------------------------------------------------------------------------
+
+   LocalePath path
+
+   Specifies a colon separated list of "locale path" in which to search for
+   string translations. A locale path is constituted by a directory path and
+   a text domain separated by a semicolon (';'). As an example the default
+   locale path is:
+
+ /install_prefix/share/locale;fvwm
+
+   where install_prefix is the fvwm installation directory. With such a
+   locale path translations are searched for in
+
+ /install_prefix/share/locale/lang/LC_MESSAGES/fvwm.mo
+
+   where lang depends on the locale. If no directory is given the default
+   directory path is assumed. If no text domain is given, fvwm is assumed.
+   Without argument the default locale path is restored.
+
+   As for the ImagePath command, path may contain environment variables and a
+   '+' to append or prepend the locale path easily.
+
+   For example, the fvwm-themes package uses
+
+ LocalePath ";fvwm-themes:+"
+
+   to add locale catalogs.
+
+   The default fvwm catalog contains a few strings used by the fvwm
+   executable itself (Desk and Geometry) and strings used in some default
+   configuration files and FvwmForm configuration. You can take a look at the
+   po/ subdirectory of the fvwm source to get the list of the strings with a
+   possible translation in various languages. At present, very few languages
+   are supported.
+
+   The main use of locale catalogs is via the "$[gt.string]" parameter:
+
+ DestroyMenu MenuFvwmWindowOps
+ AddToMenu   MenuFvwmWindowOps "$[gt.Window Ops]" Title
+ + "$[gt.&Move]"              Move
+ + "$[gt.&Resize]"            Resize
+ + "$[gt.R&aise]"             Raise
+ + "$[gt.&Lower]"             Lower
+ + "$[gt.(De)&Iconify]"       Iconify
+ + "$[gt.(Un)&Stick]"         Stick
+ + "$[gt.(Un)Ma&ximize]"      Maximize
+ + "" Nop
+ + "$[gt.&Close]"             Close
+ + "$[gt.&Destroy]"           Destroy
+
+   gives a menu in the locale languages if translations are available.
+
+   Note that the FvwmTaskBar module has its own catalog and that the
+   FvwmScript module has a set of special instructions for string
+   translation. It is out of the scope of this discussion to explain how to
+   build locale catalogs. Please refer to the GNU gettext documentation.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

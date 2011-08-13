@@ -1,0 +1,16 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+Stick
+
+   --------------------------------------------------------------------------
+
+   Stick [bool]
+
+   If the bool argument is empty or "toggle", the Stick command makes a
+   window sticky if it is not already sticky, or non-sticky if it is already
+   sticky. To make a window sticky regardless of its current state the bool
+   argument must be "True". To make it non-sticky use "False".
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

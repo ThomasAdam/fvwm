@@ -1,0 +1,13 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+Quit
+
+   --------------------------------------------------------------------------
+
+   Quit
+
+   Exits fvwm, generally causing X to exit too.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

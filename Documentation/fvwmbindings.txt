@@ -1,0 +1,32 @@
+fvwmbindings(1)
+================
+:doctype: manpage
+
+NAME
+----
+
+fvwmbindings - commands related to key and mouse bindings.
+
+
+SYNOPSIS
+--------
+
+fvwm *
+
+DESCRIPTION
+-----------
+
+fvwmconditionals - describes how key and mouse bindings work within fvwm.
+
+include::FvwmBindings/EdgeCommand.txt[]
+include::FvwmBindings/EdgeLeaveCommand.txt[]
+include::FvwmBindings/EscapeFunc.txt[]
+include::FvwmBindings/FakeClick.txt[]
+include::FvwmBindings/FakeKeypress.txt[]
+include::FvwmBindings/GnomeButton.txt[]
+include::FvwmBindings/IgnoreModifiers.txt[]
+include::FvwmBindings/Key.txt[]
+include::FvwmBindings/Mouse.txt[]
+include::FvwmBindings/PointerKey.txt[]
+include::FvwmBindings/Stroke.txt[]
+include::FvwmBindings/StrokeFunc.txt[]

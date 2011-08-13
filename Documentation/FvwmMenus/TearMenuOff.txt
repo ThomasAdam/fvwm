@@ -1,0 +1,22 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+TearMenuOff
+
+   --------------------------------------------------------------------------
+
+   TearMenuOff
+
+   When assigned to a menu item, it inserts a tear off bar into the menu (a
+   horizontal broken line). Activating that item tears off the menu. If the
+   menu item has a label, it is shown instead of the broken line. If used
+   outside menus, this command does nothing. Examples:
+
+ AddToMenu WindowMenu
+ + I "" TearMenuOff
+
+ AddToMenu RootMenu
+ + I "click here to tear me off" TearMenuOff
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

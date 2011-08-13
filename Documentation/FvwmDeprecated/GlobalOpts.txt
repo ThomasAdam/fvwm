@@ -1,0 +1,95 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+GlobalOpts
+
+   --------------------------------------------------------------------------
+
+   GlobalOpts [options]
+
+   This command is obsolete. Please replace the global options in your
+   configuration file according to the following table:
+
+ GlobalOpts WindowShadeShrinks
+   -->
+ Style * WindowShadeShrinks
+
+ GlobalOpts WindowShadeScrolls
+   -->
+ Style * WindowShadeScrolls
+
+ GlobalOpts SmartPlacementIsReallySmart
+   -->
+ Style * MinOverlapPlacement
+
+ GlobalOpts SmartPlacementIsNormal
+   -->
+ Style * TileCascadePlacement
+
+ GlobalOpts ClickToFocusDoesntPassClick
+   -->
+ Style * ClickToFocusPassesClickOff
+
+ GlobalOpts ClickToFocusPassesClick
+   -->
+ Style * ClickToFocusPassesClick
+
+ GlobalOpts ClickToFocusDoesntRaise
+   -->
+ Style * ClickToFocusRaisesOff
+
+ GlobalOpts ClickToFocusRaises
+   -->
+ Style * ClickToFocusRaises
+
+ GlobalOpts MouseFocusClickDoesntRaise
+   -->
+ Style * MouseFocusClickRaisesOff
+
+ GlobalOpts MouseFocusClickRaises
+   -->
+ Style * MouseFocusClickRaises
+
+ GlobalOpts NoStipledTitles
+   -->
+ Style * !StippledTitle
+
+ GlobalOpts StipledTitles
+   -->
+ Style * StippledTitle
+
+ GlobalOpts CaptureHonorsStartsOnPage
+   -->
+ Style * CaptureHonorsStartsOnPage
+
+ GlobalOpts CaptureIgnoresStartsOnPage
+   -->
+ Style * CaptureIgnoresStartsOnPage
+
+ GlobalOpts RecaptureHonorsStartsOnPage
+   -->
+ Style * RecaptureHonorsStartsOnPage
+
+ GlobalOpts RecaptureIgnoresStartsOnPage
+   -->
+ Style * RecaptureIgnoresStartsOnPage
+
+ GlobalOpts ActivePlacementHonorsStartsOnPage
+   -->
+ Style * ManualPlacementHonorsStartsOnPage
+
+ GlobalOpts ActivePlacementIgnoresStartsOnPage
+   -->
+ Style * ManualPlacementIgnoresStartsOnPage
+
+ GlobalOpts RaiseOverNativeWindows
+   -->
+ BugOpts RaiseOverNativeWindows on
+
+ GlobalOpts IgnoreNativeWindows
+   -->
+ BugOpts RaiseOverNativeWindows off
+
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

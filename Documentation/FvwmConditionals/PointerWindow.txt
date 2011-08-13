@@ -1,0 +1,9 @@
+'PointerWindow' [(conditions)] command::
+
+Performs command if the window under the pointer satisfies all conditions.
+Returns -1 if there is no window under the pointer. See Conditions section
+for a list of conditions.
+
+This command implies the conditions CirculateHit, CirculateHitIcon and
+CirculateHitShaded. They can be turned off by specifying !CirculateHit
+etc. explicitly.

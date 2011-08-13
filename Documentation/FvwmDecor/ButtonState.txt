@@ -1,0 +1,21 @@
+'ButtonState' [ActiveDown bool] [Inactive bool] [InactiveDown bool]::
+
+The ButtonState command controls which states of the window titles and
+title buttons are used. The default is to use all four states:
+"ActiveUp>", "ActiveDown>", "InactiveUp>" and "InactiveDown>" (see
+ButtonStyle and TitleStyle commands). The bool argument after the key word
+controls if the designated state is used ("True") or not ("False"). The
+"ActiveUp" state cannot be deactivated. If no arguments are provided or
+the given arguments are illegal, the default is restored.
+
+If ActiveDown argument is "False", no different button style for the
+pressed down buttons used, instead "ActiveUp" state is used even when
+button is pressed.
+
+If Inactive argument is "False", focused and unfocused windows look
+similarly, the corresponding "Active" states are always used.
+
+If InactiveDown argument is "False" (only applied when Inactive is
+"True"), the pressed titles and title buttons in non-focused windows are
+drawn using "InactiveUp" or "ActiveUp" states depending on the values of
+the other key words.

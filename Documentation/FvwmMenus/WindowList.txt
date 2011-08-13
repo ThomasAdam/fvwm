@@ -1,0 +1,145 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+WindowList
+
+   --------------------------------------------------------------------------
+
+   WindowList [(conditions)] [position] [options] [double-click-action]
+
+   Generates a pop-up menu (and pops it up) in which the title and geometry
+   of each of the windows currently on the desktop are shown.
+
+   The format of the geometry part is: desk(layer): x-geometry sticky, where
+   desk and layer are the corresponding numbers and sticky is empty or a
+   capital S. The geometry of iconified windows is shown in parentheses.
+   Selecting an item from the window list pop-up menu causes the interpreted
+   function "WindowListFunc" to be run with the window id of that window
+   passed in as $0. The default "WindowListFunc" looks like this:
+
+ AddToFunc WindowListFunc
+ + I Iconify off
+ + I FlipFocus
+ + I Raise
+ + I WarpToWindow 5p 5p
+
+   You can destroy the built-in "WindowListFunc" and create your own if these
+   defaults do not suit you.
+
+   The window list menu uses the "WindowList" menu style if it is defined
+   (see MenuStyle command). Otherwise the default menu style is used. To
+   switch back to the default menu style, issue the command
+
+ DestroyMenuStyle WindowList
+
+   Example:
+
+ MenuStyle WindowList SelectOnRelease Meta_L
+
+   The conditions can be used to exclude certain windows from the window
+   list. Please refer to the Current command for details. Only windows that
+   match the given conditions are displayed in the window list. The options
+   below work vice versa: windows that would otherwise not be included in the
+   window list can be selected with them. The conditions always override the
+   options.
+
+   The position arguments are the same as for Menu. The command
+   double-click-action is invoked if the user double-clicks (or hits the key
+   rapidly twice if the menu is bound to a key) when bringing the window
+   list. The double-click-action must be quoted if it consists of more than
+   one word.
+
+   The double-click-action is useful to define a default window if you have
+   bound the window list to a key (or button) like this:
+
+ # Here we call an existing function, but
+ # it may be different.  See the default
+ # WindowListFunc definition earlier in this
+ # man page.
+ AddToFunc SwitchToWindow
+ + I WindowListFunc
+
+ Key Tab A M WindowList "Prev SwitchToWindow"
+
+   Hitting Alt-Tab once it brings up the window list, if you hit it twice the
+   focus is flipped between the current and the last focused window. With the
+   proper SelectOnRelease menu style (see example above) a window is selected
+   as soon as you release the Alt key.
+
+   The options passed to WindowList are separated by commas and can be
+   Geometry / NoGeometry / NoGeometryWithInfo, NoDeskNum, NoLayer,
+   NoNumInDeskTitle, NoCurrentDeskTitle, MaxLabelWidth width,
+   TitleForAllDesks, Function funcname, Desk desknum, CurrentDesk, NoIcons /
+   Icons / OnlyIcons, NoNormal / Normal / OnlyNormal, NoSticky / Sticky /
+   OnlySticky, NoStickyAcrossPages / StickyAcrossPages /
+   OnlyStickyAcrossPages, NoStickyAcrossDesks / StickyAcrossDesks /
+   OnlyStickyAcrossDesks, NoOnTop / OnTop / OnlyOnTop, NoOnBottom / OnBottom
+   / OnlyOnBottom, Layer m [n], UseSkipList / OnlySkipList, NoDeskSort,
+   ReverseOrder, CurrentAtEnd, IconifiedAtEnd, UseIconName, Alphabetic /
+   NotAlphabetic, SortByResource, SortByClass, NoHotkeys, SelectOnRelease.
+
+   (Note - normal means not iconic, sticky, or on top)
+
+   With the SortByResource option windows are alphabetically sorted first by
+   resource class, then by resource name and then by window name (or icon
+   name if UseIconName is specified). ReverseOrder also works in the expected
+   manner.
+
+   With the SortByClass option windows are sorted just like with
+   SortByResource, but the resource name is not taken into account, only the
+   resource class.
+
+   The SelectOnRelease option works exactly like the MenuStyle option with
+   the same name, but overrides the option given in a menu style. By default,
+   this option is set to the left Alt key. To switch it off, use
+   SelectOnRelease without a key name.
+
+   If you pass in a function via Function funcname, it is called within a
+   window context of the selected window:
+
+ AddToFunc IFunc I Iconify toggle
+ WindowList Function IFunc, NoSticky, CurrentDesk, NoIcons
+
+   If you use the Layer m [n] option, only windows in layers between m and n
+   are displayed. n defaults to m. With the ReverseOrder option the order of
+   the windows in the list is reversed.
+
+   With the CurrentAtEnd option the currently focused window (if any) is
+   shown at the bottom of the list. This is mostly intended for simulating
+   the Alt-Tab behavior in another GUI.
+
+   IconifiedAtEnd makes iconified windows be moved to the end of the list.
+   This is also from another GUI.
+
+   The NoGeometry option causes fvwm to not display the geometries as well as
+   the separators which indicate the different desktops. NoGeometryWithInfo
+   removes the geometries, but keep the desktop information and indicates
+   iconic windows. NoDeskNum causes fvwm to not display the desktop number in
+   the geometry or before the window title with the NoGeometryWithInfo
+   option. NoNumInDeskTitle is only useful if a desktop name is defined with
+   the DesktopName command. It causes fvwm to not display the desktop number
+   before the desktop name. By default, the WindowList menu have a title
+   which indicates the current desk or the selected desktop if the Desk
+   condition is used. The NoCurrentDeskTitle option removes this title.
+   TitleForAllDesks causes fvwm to add a menu title with the desk name and/or
+   number before each group of windows on the same desk. With NoLayer, the
+   layer of the window is not diplayed. The options ShowPage, ShowPageX and
+   ShowPageY enable displaying the page of the window rounded multiples of
+   the display size. With ShowScreen, the window's Xinerama screen number is
+   displayed.
+
+   The MaxLabelWidth option takes the number of characters to print as its
+   argument. No more than that many characters of the window name are
+   visible.
+
+   If you wanted to use the WindowList as an icon manager, you could invoke
+   the following:
+
+ WindowList OnlyIcons, Sticky, OnTop, Geometry
+
+   (Note - the Only options essentially wipe out all other ones... but the
+   OnlyListSkip option which just causes WindowList to only consider the
+   windows with WindowListSkip style.)
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

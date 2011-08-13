@@ -1,0 +1,20 @@
+'ScanForWindow' [FromPointer] dir1 dir2 [(conditions)] command::
+
+Performs command (typically Focus) on a window in the given direction
+which satisfies all conditions. Normally, the center of the currently
+focused window or the context window in which the command was invoked is
+taken as the starting point. Lacking such a window, or when the
+FromPointer option is given, the current position of the pointer is taken
+as the starting point. The direction dir1 may be one of "North",
+"NorthEast", "East", "SouthEast", "South", "SouthWest", "West", and
+"NorthWest". Which window ScanForWindow selects depends first on the
+position along the primary axis given by dir1. If any windows have the
+exact same coordinate along the primary axis, the secondary direction is
+used to order the windows. The direction dir2 may be one of the same set
+of values as dir1. If dir2 is not perfectly perpendicular to dir1,
+ScanForWindow returns a failure. When using ScanForWindow repeatedly with
+the same arguments, it is guaranteed that all windows matching the
+conditions will eventually be found. If the focus reaches a limit along
+the primary axis, it will wrap around to the opposite side. Returns -1 if
+an invalid direction was given. See Conditions section for a list of
+conditions.

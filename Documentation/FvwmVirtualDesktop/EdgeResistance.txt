@@ -1,0 +1,33 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+EdgeResistance
+
+   --------------------------------------------------------------------------
+
+   EdgeResistance delay
+   EdgeResistance scrolling moving [xinerama-scrolling]
+
+   Tells how hard it should be to change the desktop viewport by moving the
+   mouse over the edge of the screen. The parameter tells how many
+   milliseconds the pointer must spend on the screen edge before fvwm moves
+   the viewport. This is intended for people who use
+
+ EdgeScroll 100 100
+
+   but find themselves accidentally flipping pages when they do not want to.
+   If -1 is given as the delay, scrolling is disabled completely.
+
+   The second form of invocation with two or three arguments is obsolete and
+   should be replaced with the following three commands as needed:
+
+ EdgeResistance scrolling
+ Style * EdgeMoveDelay scrolling
+ Style * EdgeMoveResistance moving
+ or
+ Style * EdgeMoveResistance moving xinerama-scrolling
+
+   Fvwm does this substitution automatically and prints a warning.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

@@ -1,0 +1,62 @@
+'Test' [(test-conditions)] command::
+
+Performs command if all test-conditions are satisfied. The test-conditions
+are keywords with possible arguments from the list below and are separated
+by commas or whitespace. They include: Version operator x.y.z, EnvIsSet
+varname, EnvMatch varname pattern, EdgeHasPointer direction, EdgeIsActive
+direction, Start, Init, Restart, Exit, Quit, ToRestart, True, False, F, R,
+W, X and I. A test-condition prefixed with "!" is negated.
+
+The Version operator x.y.z test-condition is fulfilled if the logical
+condition of the expression is true. Valid operator values are: >=, >, <=,
+<, == and !=.
+
+Example:
+
+-----
+Test (Version >= 2.5.11) Echo 2.5.11 or later.
+-----
+
+The EnvIsSet varname test-condition is true if the given environment
+variable is set. The EnvMatch varname pattern test-condition is true if
+pattern matches the given environment variable value. The pattern may
+contain special "*" and "?" chars.
+
+The EdgeHasPointer [direction] test-condition is true if the edge in the
+given direction currently contains the pointer. The EdgeIsActive
+[direction] test-condition is true if the edge in the given direction
+currently is active. An edge is active, and can contain a pointer if
+either a command is bound to it or edge scroll is available in that
+direction. The direction may be one of Any, North, Top, Up, West, Left,
+South, Bottom, Down, Right and East. If no direction is specified Any is
+assumed.
+
+The Start test-condition is the same as either Init or Restart. It is only
+true on startup or restart prior and during StartFunction execution. The
+Exit test-condition is the same as either Quit or ToRestart. It is only
+valid on shutdown during ExitFunction function execution.
+
+The True and False test-conditions are unconditionally true and false.
+
+Additionally, if a test-condition name is not recognized, the Error return
+code is set and the command is not executed.
+
+The F file, R file, W file, X file and I file test-conditions test for
+existence of the given [F]ile (possibly with [R]ead/[W]rite permissions),
+e[X]ecutable (in $PATH), or the [I]mage (in ImagePath).
+
+Example:
+
+-------
+AddToFunc StartFunction I Test (Init) Exec exec xterm
+
+AddToFunc VerifyVersion
++ I Test (Version 2.5.*) Echo 2.5.x detected
++ I TestRc (NoMatch) \
+        Test (!Version 2.6.*) Echo Future version
++ I TestRc (NoMatch) \
+        Echo 2.6.x is detected
+
+Test (F $[FVWM_USERDIR]/local-config) Read local-config
+Test (X xterm-utf16) Exec exec xterm-utf16
+--------

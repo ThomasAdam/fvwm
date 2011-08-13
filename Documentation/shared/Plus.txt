@@ -1,0 +1,14 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+Plus
+
+   --------------------------------------------------------------------------
+
+   +
+
+   Used to continue adding to the last specified decor, function or menu. See
+   the discussion for AddToDecor, AddToFunc, and AddToMenu.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

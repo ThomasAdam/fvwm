@@ -1,0 +1,176 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+Menu
+
+   --------------------------------------------------------------------------
+
+   Menu menu-name [position] [double-click-action]
+
+   Causes a previously defined menu to be popped up in a sticky manner. That
+   is, if the user invokes the menu with a click action instead of a drag
+   action, the menu stays up. The command double-click-action is invoked if
+   the user double-clicks a button (or hits the key rapidly twice if the menu
+   is bound to a key) when bringing up the menu. If the double click action
+   is not specified, double clicking on the menu does nothing. However, if
+   the menu begins with a menu item (i.e. not with a title or a separator)
+   and the double click action is not given, double clicking invokes the
+   first item of the menu (but only if the pointer really was over the item).
+
+   The pointer is warped to where it was when the menu was invoked if it was
+   both invoked and closed with a keystroke.
+
+   The position arguments allow placement of the menu somewhere on the
+   screen, for example centered on the visible screen or above a title bar.
+   Basically it works like this: you specify a context-rectangle and an
+   offset to this rectangle by which the upper left corner of the menu is
+   moved from the upper left corner of the rectangle. The position arguments
+   consist of several parts:
+
+   [context-rectangle] x y [special-options]
+
+   The context-rectangle can be one of:
+
+   Root
+
+           the root window of the current screen.
+
+   XineramaRoot
+
+           the root window of the whole Xinerama screen. Equivalent to "root"
+           when Xinerama is not used.
+
+   Mouse
+
+           a 1x1 rectangle at the mouse position.
+
+   Window
+
+           the frame of the context window.
+
+   Interior
+
+           the inside of the context window.
+
+   Title
+
+           the title of the context window or icon.
+
+   Button<n>
+
+           button #n of the context window.
+
+   Icon
+
+           the icon of the context window.
+
+   Menu
+
+           the current menu.
+
+   Item
+
+           the current menu item.
+
+   Context
+
+           the current window, menu or icon.
+
+   This
+
+           whatever widget the pointer is on (e.g. a corner of a window or
+           the root window).
+
+   Rectangle <geometry>
+
+           the rectangle defined by <geometry> in X geometry format. Width
+           and height default to 1 if omitted.
+
+   If the context-rectangle is omitted or illegal (e.g. "item" on a window),
+   "Mouse" is the default. Note that not all of these make sense under all
+   circumstances (e.g. "Icon" if the pointer is on a menu).
+
+   The offset values x and y specify how far the menu is moved from its
+   default position. By default, the numeric value given is interpreted as a
+   percentage of the context rectangle's width (height), but with a trailing
+   'm' the menu's width (height) is used instead. Furthermore a trailing 'p'
+   changes the interpretation to mean pixels.
+
+   Instead of a single value you can use a list of values. All additional
+   numbers after the first one are separated from their predecessor by their
+   sign. Do not use any other separators.
+
+   If x or y are prefixed with "'o<number>" where <number> is an integer, the
+   menu and the rectangle are moved to overlap at the specified position
+   before any other offsets are applied. The menu and the rectangle are
+   placed so that the pixel at <number> percent of the rectangle's
+   width/height is right over the pixel at <number> percent of the menu's
+   width/height. So "o0" means that the top/left borders of the menu and the
+   rectangle overlap, with "o100" it's the bottom/right borders and if you
+   use "o50" they are centered upon each other (try it and you will see it is
+   much simpler than this description). The default is "o0". The prefix
+   "o<number>" is an abbreviation for "+<number>-<number>m".
+
+   A prefix of 'c' is equivalent to "o50". Examples:
+
+ # window list in the middle of the screen
+ WindowList Root c c
+
+ # menu to the left of a window
+ Menu name window -100m c+0
+
+ # popup menu 8 pixels above the mouse pointer
+ Popup name mouse c -100m-8p
+
+ # somewhere on the screen
+ Menu name rectangle 512x384+1+1 +0 +0
+
+ # centered vertically around a menu item
+ AddToMenu foobar-menu
+  + "first item" Nop
+  + "special item" Popup "another menu" item +100 c
+  + "last item" Nop
+
+ # above the first menu item
+ AddToMenu foobar-menu
+  + "first item" Popup "another menu" item +0 -100m
+
+   Note that you can put a sub menu far off the current menu so you could not
+   reach it with the mouse without leaving the menu. If the pointer leaves
+   the current menu in the general direction of the sub menu the menu stays
+   up.
+
+   The special-options:
+
+   To create a tear off menu without opening the normal menu, add the option
+   TearOffImmediately. Normally the menu opens in normal state for a split
+   second before being torn off. As tearing off places the menu like any
+   other window, a position should be specified explicitly:
+
+ # Forbid fvwm to place the menu window
+ Style <name of menu> UsePPosition
+ # Menu at top left corner of screen
+ Menu Root 0p 0p TearOffImmediately
+
+   The Animated and Mwm or Win menu styles may move a menu somewhere else on
+   the screen. If you do not want this you can add Fixed as an option. This
+   might happen for example if you want the menu always in the top right
+   corner of the screen.
+
+   Where do you want a menu to appear when you click on its menu item? The
+   default is to place the title under the cursor, but if you want it where
+   the position arguments say, use the SelectInPlace option. If you want the
+   pointer on the title of the menu, use SelectWarp too. Note that these
+   options apply only if the PopupAsRootMenu MenuStyle option is used.
+
+   The pointer is warped to the title of a sub menu whenever the pointer
+   would be on an item when the sub menu is popped up (fvwm menu style) or
+   never warped to the title at all (Mwm or Win menu styles). You can force
+   (forbid) warping whenever the sub menu is opened with the WarpTitle
+   (NoWarp) option.
+
+   Note that the special-options do work with a normal menu that has no other
+   position arguments.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

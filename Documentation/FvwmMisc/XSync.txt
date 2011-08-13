@@ -1,0 +1,15 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+XSync
+
+   --------------------------------------------------------------------------
+
+   XSync
+
+   When XSync is called, the X function with the same name is used to send
+   all pending X requests to the server. This command is intended for
+   debugging only.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

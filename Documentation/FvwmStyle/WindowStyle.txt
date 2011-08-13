@@ -1,0 +1,14 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+WindowStyle
+
+   --------------------------------------------------------------------------
+
+   WindowStyle options
+
+   sets attributes (styles) on the selected window. The options are exactly
+   the same as for the Style command.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

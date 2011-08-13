@@ -1,0 +1,34 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+EdgeScroll
+
+   --------------------------------------------------------------------------
+
+   EdgeScroll horizontal[p] vertical[p] [ wrap | wrapx | wrapy ]
+
+   Specifies the percentage of a page to scroll when the cursor hits the edge
+   of a page. A trailing 'p' changes the interpretation to mean pixels. If
+   you do not want any paging or scrolling when you hit the edge of a page
+   include
+
+ EdgeScroll 0 0
+
+   in your config file, or possibly better, set the EdgeThickness to zero.
+   See the EdgeThickness command. If you want whole pages, use
+
+ EdgeScroll 100 100
+
+   Both horizontal and vertical should be positive numbers.
+
+   If the horizontal and vertical percentages are multiplied by 1000 or one
+   of the keywords wrap, wrapx and wrapy is given then scrolling wraps around
+   at the edge of the desktop. If
+
+ EdgeScroll 100000 100000
+
+   is used fvwm scrolls by whole pages, wrapping around at the edge of the
+   desktop.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

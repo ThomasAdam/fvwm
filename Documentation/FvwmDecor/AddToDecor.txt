@@ -1,0 +1,55 @@
+'AddToDecor' decor::
+
+This command is deprecated and will be removed in the future. There are
+plans to replace it with a more flexible solution in fvwm-3.0.
+
+Add or divert commands to the decor named decor. A decor is a name given
+to the set of commands which affect button styles, title-bar styles and
+border styles. If decor does not exist it is created; otherwise the
+existing decor is modified. Note: Earlier versions allowed to use the
+HilightColor, HilightColorset and WindowFont commands in decors. This is
+no longer possible. Please use the Style command with the Hilight... and
+Font options.
+
+New decors start out exactly like the "default" decor without any style
+definitions. A given decor may be applied to a set of windows with the
+UseDecor option of the Style command. Modifying an existing decor affects
+all windows which are currently assigned to it.
+
+AddToDecor is similar in usage to the AddToMenu and AddToFunc commands,
+except that menus and functions are replaced by ButtonStyle,
+AddButtonStyle, TitleStyle, AddTitleStyle and BorderStyle commands. Decors
+created with AddToDecor can be manipulated with ChangeDecor, DestroyDecor,
+UpdateDecor and the Style option.
+
+The following example creates a decor "FlatDecor" and style "FlatStyle".
+They are distinct entities:
+
+-----
+ AddToDecor FlatDecor
+ + ButtonStyle All Active (-- flat) Inactive (-- flat)
+ + TitleStyle  -- flat
+ + BorderStyle -- HiddenHandles NoInset
+
+ Style FlatStyle \
+         UseDecor FlatDecor, HandleWidth 4, ForeColor white, \
+         BackColor grey40, HilightFore black, HilightBack grey70
+
+ Style xterm UseStyle FlatStyle
+-----
+
+An existing window's decor may be reassigned with ChangeDecor. A decor can
+be destroyed with DestroyDecor.
+
+-----
+ DestroyDecor FlatDecor
+ AddToDecor FlatDecor ...
+
+ Style FlatStyle UseDecor FlatDecor
+-----
+
+and now apply the style again:
+
+-----
+ Style xterm UseStyle FlatStyle
+-----

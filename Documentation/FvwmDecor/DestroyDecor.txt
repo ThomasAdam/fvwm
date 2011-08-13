@@ -1,0 +1,16 @@
+'DestroyDecor' [recreate] decor::
+
+This command is deprecated and will be removed in the future. There are
+plans to replace it with a more flexible solution in fvwm-3.0.
+
+Deletes the decor defined with AddToDecor, so that subsequent references
+to it are no longer valid. Windows using this decor revert to the
+"Default" decor. The optional parameter recreate tells fvwm not to throw
+away the decor completely but to throw away only its contents. If the
+decor is created again later, windows do not use it before the UseDecor
+style is applied again unless the decor was destroyed with the recreate
+option. The decor named "Default" cannot be destroyed.
+
+-----
+DestroyDecor CustomDecor1
+-----

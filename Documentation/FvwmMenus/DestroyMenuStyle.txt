@@ -1,0 +1,16 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+DestroyMenuStyle
+
+   --------------------------------------------------------------------------
+
+   DestroyMenuStyle menustyle
+
+   Deletes the menu style named menustyle and changes all menus using this
+   style to the default style, you cannot destroy the default menu style.
+
+ DestroyMenuStyle pixmap1
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

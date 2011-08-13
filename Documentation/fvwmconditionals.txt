@@ -1,0 +1,38 @@
+fvwmconditionals(1)
+===================
+:doctype: manpage
+
+NAME
+----
+
+fvwmconditionals - conditional commands for the fvwm window
+manager.
+
+SYNOPSIS
+--------
+
+fvwm *
+
+DESCRIPTION
+-----------
+
+fvwmconditionals - describes all of the conditional commands fvwm uses.
+
+include::FvwmConditionals/All.txt[]
+include::FvwmConditionals/Any.txt[]
+include::FvwmConditionals/Break.txt[]
+include::FvwmConditionals/Current.txt[]
+include::FvwmConditionals/Direction.txt[]
+include::FvwmConditionals/KeepRc.txt[]
+include::FvwmConditionals/Next.txt[]
+include::FvwmConditionals/NoWindow.txt[]
+include::FvwmConditionals/None.txt[]
+include::FvwmConditionals/Pick.txt[]
+include::FvwmConditionals/PointerWindow.txt[]
+include::FvwmConditionals/Prev.txt[]
+include::FvwmConditionals/ScanForWindow.txt[]
+include::FvwmConditionals/State.txt[]
+include::FvwmConditionals/Test.txt[]
+include::FvwmConditionals/TestRc.txt[]
+include::FvwmConditionals/ThisWindow.txt[]
+include::FvwmConditionals/WindowId.txt[]

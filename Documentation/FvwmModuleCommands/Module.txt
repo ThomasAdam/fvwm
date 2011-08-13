@@ -1,0 +1,50 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+Module
+
+   --------------------------------------------------------------------------
+
+   Module modulename [moduleparams]
+
+   Specifies a module with its optional parameters which should be spawned.
+   Currently several modules, including FvwmButtons, FvwmEvent, FvwmForm,
+   FvwmGtk, FvwmPager, FvwmScript support aliases. Aliases are useful if more
+   than one instance of the module should be spawned. Aliases may be
+   configured separately using * syntax. To start a module FvwmForm using an
+   alias MyForm, the following syntax may be used:
+
+ Module FvwmForm MyForm
+
+   At the current time the available modules (included with fvwm) are
+   FvwmAnimate (produces animation effects when a window is iconified or
+   de-iconified), FvwmAuto (an auto raise module), FvwmBacker (to change the
+   background when you change desktops), FvwmBanner (to display a spiffy XBM,
+   XPM, PNG or SVG), FvwmButtons (brings up a customizable tool bar),
+   FvwmCommandS (a command server to use with shell's FvwmCommand client),
+   FvwmConsole (to execute fvwm commands directly), FvwmCpp (to preprocess
+   your config with cpp), FvwmDebug (to help debug fvwm), FvwmDragWell (the
+   place to drag&drop to), FvwmEvent (trigger various actions by events),
+   FvwmForm (to bring up dialogs), FvwmGtk (to bring up GTK menus and
+   dialogs), FvwmIconBox (like the mwm IconBox), FvwmIconMan (a flexible icon
+   manager), FvwmIdent (to get window info), FvwmM4 (to preprocess your
+   config with m4), FvwmPager (a mini version of the desktop), FvwmPerl (a
+   Perl manipulator and preprocessor), FvwmProxy (to locate and control
+   obscured windows by using small proxy windows), FvwmRearrange (to
+   rearrange windows), FvwmSave (saves the desktop state in .xinitrc style),
+   FvwmSaveDesk (saves the desktop state in fvwm commands), FvwmScript
+   (another powerful dialog toolkit), FvwmScroll (puts scrollbars on any
+   window), FvwmTabs (a generic tabbing module), FvwmTaskBar (a Windows like
+   task bar), FvwmTheme (managed colorsets, obsolete), FvwmWharf (an
+   AfterStep like button bar), FvwmWindowMenu (a configurable fvwm menu
+   listing current windows), FvwmWinList (a window list). These modules have
+   their own man pages. There may be other modules out on there as well.
+
+   Modules can be short lived transient programs or, like FvwmButtons , can
+   remain for the duration of the X session. Modules are terminated by the
+   window manager prior to restarts and quits, if possible. See the
+   introductory section on modules. The keyword Module may be omitted if
+   modulename is distinct from all fvwm commands.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

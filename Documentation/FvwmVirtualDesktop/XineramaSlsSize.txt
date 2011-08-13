@@ -1,0 +1,22 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+XineramaSlsSize
+
+   --------------------------------------------------------------------------
+
+   XineramaSlsSize Horizontal x Vertical
+
+   This command configures the layout of the Single Logical screen feature.
+   It takes two arguments, Horizontal and Vertical which must be an integer
+   value dividing evenly into the total desktop width, and height. For an
+   example with two monitors side by side which appear as one screen through
+   the X-Server with the right screen as the primary screen, use:
+
+ XineramaSlsSize 2x1
+ XineramaSls On
+ XineramaPrimaryScreen 1
+ Xinerama On
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

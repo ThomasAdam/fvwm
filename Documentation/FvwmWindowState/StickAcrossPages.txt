@@ -1,0 +1,13 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+StickAcrossPages
+
+   --------------------------------------------------------------------------
+
+   StickAcrossPages [bool]
+
+   Works like Stick but only sticks a window across pages, not across desks.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

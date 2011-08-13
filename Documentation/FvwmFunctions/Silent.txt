@@ -1,0 +1,35 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+Silent
+
+   --------------------------------------------------------------------------
+
+   Silent command
+
+   A number of commands require a window to operate on. If no window was
+   selected when such a function is invoked the user is asked to select a
+   window. Sometimes this behavior is unwanted, for example if the function
+   was called by a module and the window that was selected at first does not
+   exist anymore. You can prevent this by putting Silent in front of the fvwm
+   command. If a function that needs a window is called with Silent without a
+   window selected, it simply returns without doing anything. If Silent is
+   used on a user defined function it affects all function and sub function
+   calls until the original function exits.
+
+   Another usage of Silent is with binding commands Key, PointerKey and
+   Mouse, this disables error messages.
+
+   Silent also disables the error message for non-existent commands. Note:
+   This command is treated as a prefix to its command. Expansion of the
+   command line is done as if Silent was not there.
+
+   Examples:
+
+ Silent Move 0 0
+ Silent User_defined_function
+ # do not complain on keyboards without "Help" key
+ Silent Key Help R A Popup HelpMenu
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

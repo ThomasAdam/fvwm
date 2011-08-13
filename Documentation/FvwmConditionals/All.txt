@@ -1,0 +1,13 @@
+'All' [options] [(conditions)] command::
+
+Execute command on all windows meeting the conditions. It returns 1 if any
+window matches the condition and 0 otherwise. The execution starts at the
+top of the window ring and continues towards the bottom. The options can
+be any combination of Reverse and UseStack. If the option Reverse is given
+the execution order is reversed. The option UseStack makes All use the
+stacking order instead of the window ring when walking through windows.
+See the Conditions section for a list of conditions.
+
+This command implies the conditions CirculateHit, CirculateHitIcon and
+CirculateHitShaded. They can be turned off by specifying !CirculateHit
+etc. explicitly.

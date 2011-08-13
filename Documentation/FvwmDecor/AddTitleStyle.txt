@@ -1,0 +1,15 @@
+'AddTitleStyle' [state] [style] [-- [!]flag... ]::
+
+Adds a title style to the title-bar. state can be "ActiveUp",
+"ActiveDown", "InactiveUp" or "InactiveDown", or "Active" (the same as
+both "ActiveUp" and "ActiveDown") or "Inactive" (the same as both
+"InactiveUp" and "InactiveDown") or any of these 6 with "Toggled"
+prepended. If state is omitted, then the style is added to every state. If
+the style and flags are enclosed in parentheses, then multiple state
+definitions can be placed on a single line. This command is quite similar
+to the AddButtonStyle command.
+
+Title-bars are drawn in the order of definition, beginning with the most
+recent TitleStyle, followed by those added with AddTitleStyle. To clear
+the title style stack, change style flags, or for the descriptions of
+available styles and flags, see the TitleStyle and ButtonStyle commands.

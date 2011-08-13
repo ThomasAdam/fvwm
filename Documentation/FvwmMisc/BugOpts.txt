@@ -1,0 +1,94 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+BugOpts
+
+   --------------------------------------------------------------------------
+
+   BugOpts [option [bool]],...
+
+   This command controls several workarounds for bugs in third party
+   programs. The individual options are separated by commas. The optional
+   argument bool is a boolean argument and controls if the bug workaround is
+   enabled or not. It can either be "True" or "False" to turn the option on
+   or off, or "toggle" to switch is back and forth. If bool is omitted, the
+   default setting is restored.
+
+   FlickeringMoveWorkaround disables ConfigureNotify events that are usually
+   sent to an application while it is moved. If some windows flicker
+   annoyingly while being moved, this option may help you. Note that if this
+   problem occurs it is not an fvwm bug, it is a problem of the application.
+
+   MixedVisualWorkaround makes fvwm install the root colormap before it does
+   some operations using the root window visuals. This is only useful when
+   the -visual option is used to start fvwm and then only with some
+   configurations of some servers (e.g. Exceed 6.0 with an 8 bit PseudoColor
+   root and fvwm using a 24 bit TrueColor visual).
+
+   The ModalityIsEvil option controls whether Motif applications have the
+   ability to have modal dialogs (dialogs that force you to close them first
+   before you can do anything else). The default is to not allow applications
+   to have modal dialogs. Use this option with care. Once this option is
+   turned on, you have to restart fvwm to turn it off.
+
+   RaiseOverNativeWindows makes fvwm try to raise the windows it manages over
+   native windows of the X server's host system. This is needed for some X
+   servers running under Windows, Windows NT or Mac OS X. Fvwm tries to
+   detect if it is running under such an X server and initializes the flag
+   accordingly.
+
+   RaiseOverUnmanaged makes fvwm try to raise the windows it manages over
+   override_redirect windows. This is used to cope with ill-mannered
+   applications that use long-lived windows of this sort, contrary to ICCCM
+   conventions. It is useful with the Unmanaged style option too.
+
+   FlickeringQtDialogsWorkaround suppresses flickering of the focused window
+   in some modules when using KDE or QT applications with application modal
+   dialog windows. By default this option is turned on. This option may be
+   visually disturbing for other applications using windows not managed by
+   fvwm. Since these applications are rare it is most likely safe to leave
+   this option at its default.
+
+   QtDragnDropWorkaround surpresses the forwarding of unknown ClientEvent
+   messages to windows -- usually this is harmless, but Qt has problems
+   handling unrecognised ClientEvent messages. Enabling this option might
+   therefore help for Qt applications using DragnDrop. This option is off by
+   default.
+
+   EWMHIconicStateWorkaround is needed by EWMH compliant pagers or taskbars
+   which represent windows which are on a different desktops as iconified.
+   These pagers and taskbars use a version of the EWMH specification before
+   version 1.2 (the current KDE 2 & 3 versions). These pagers and taskbars
+   use the IconicState WM_STATE state to determine if an application is
+   iconified. This state, according to the ICCCM, does not imply that a
+   window is iconified (in the usual sense). Turning on this option forces
+   fvwm to establish an equivalence between the IconicState WM_STATE state
+   and the iconified window. This violates ICCCM compliance but should not
+   cause big problems. By default this option is off.
+
+   With the DisplayNewWindowNames enabled, fvwm prints the name, icon name
+   (if available), resource and class of new windows to the console. This can
+   help in finding the correct strings to use in the Style command.
+
+   When the ExplainWindowPlacement option is enabled, fvwm prints a message
+   to the console whenever a new window is placed or one of the commands
+   PlaceAgain, Recapture or RecaptureWindow is used. The message explains on
+   which desk, page, Xinerama screen and position it was placed and why. This
+   option can be used to figure out why a specific window does not appear
+   where you think it should.
+
+   The DebugCRMotionMethod option enables some debugging code in the
+   ConfigureRequest handling routines of fvwm. It is not helpful for the
+   user, but if you report a bug to the fvwm team we may ask you to enable
+   this option.
+
+   The TransliterateUtf8 option enables transliteration during conversions
+   from utf-8 strings. By default fvwm will not transliterate during
+   conversion, but will fall back to alternate strings provided by the
+   clients if conversion from utf-8 fails due to characters which have no
+   direct correspondance in the target charecter set. Some clients however
+   neglect to set non utf-8 properties correctly in which case this option
+   may help.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

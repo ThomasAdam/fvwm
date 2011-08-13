@@ -1,0 +1,15 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+RefreshWindow
+
+   --------------------------------------------------------------------------
+
+   RefreshWindow
+
+   Causes the chosen window to redraw itself. All pending updates of the
+   window's style and look are applied immediately. E.g. if Style or
+   TitleStyle commands were issued inside a fvwm function.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

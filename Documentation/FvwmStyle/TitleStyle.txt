@@ -1,0 +1,149 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+TitleStyle
+
+   --------------------------------------------------------------------------
+
+   TitleStyle [justification] [Height [num]] [MinHeight [num]]
+
+   Sets attributes for the title-bar. Justifications can be Centered,
+   RightJustified or LeftJustified. Height sets the title bar's height to an
+   amount in pixels. MinHeight sets the minimal height in pixels of the title
+   bar. Defaults are Centered, the window's font height and no minimal
+   height. To reset the font height to the default value, omit the num
+   argument after the Height keyword. The MinHeight height is reseted by
+   Height or if given with no argument. Example:
+
+ TitleStyle LeftJustified Height 24
+
+   TitleStyle [state] [style] [-- [!]flag... ]
+
+   Sets the style for the title-bar. See also AddTitleStyle and ButtonStyle
+   state can be one of "ActiveUp", "ActiveDown", "InactiveUp", or
+   "InactiveDown". Shortcuts like "Active" and "Inactive" are allowed. The
+   states with the "Toggled" prefix are allowed too, the title itself does
+   not use "Toggled" states, but these states are used for the buttons with
+   ButtonStyle UseTitleStyle. If state is omitted, then the style is added to
+   every state. If parentheses are placed around the style and flags, then
+   multiple state definitions can be given per line. style can be omitted so
+   that flags can be set while not destroying the current style.
+
+   If a '!' is prefixed to any flag, its behavior is negated. Valid flags for
+   each state include Raised, Flat and Sunk (these are mutually exclusive).
+   The default is Raised. See the note in ButtonStyle regarding the
+   "ActiveDown" state. Examples:
+
+ TitleStyle ActiveUp HGradient 16 navy black
+ TitleStyle \
+         ActiveDown (Solid red -- flat) \
+         Inactive (TiledPixmap wood.xpm)
+ TitleStyle \
+         ActiveUp (-- Flat) \
+         ActiveDown (-- Raised) \
+         InactiveUp (-- Flat) \
+         InactiveDown (-- Sunk)
+
+   This sets the "ActiveUp" state to a horizontal gradient, the "ActiveDown"
+   state to solid red, and the "Inactive" states to a tiled wood pixmap.
+   Finally, "ActiveUp" and "InactiveUp" are set to look flat, while
+   "ActiveDown" set to be sunk (the Raised flag for the "ActiveDown" state
+   causes it to appear sunk due to relief inversion), and "InactiveDown" is
+   set to look raised. An example which sets flags for all states:
+
+ TitleStyle -- flat
+
+   For a flattened look:
+
+ TitleStyle -- flat
+ ButtonStyle All Active (-- flat) Inactive (-- flat)
+
+   TitleStyle accepts all the ButtonStyle styles and arguments:
+
+   Simple, Default, Solid, Colorset, Vector, ?Gradient, Pixmap,
+   AdjustedPixmap, ShrunkPixmap, StretchedPixmap, TiledPixmap, MiniIcon.
+
+   See the ButtonStyle command for a description of all these styles and
+   their arguments.
+
+   In addition to these styles TitleStyle accepts a powerful MultiPixmap
+   option. This allows you to specify different pixmaps, colorsets or colors
+   for different parts of the titlebar. Some of them are tiled or stretched
+   to fit a particular space; others are discrete "transition" images. The
+   definable sections are:
+
+   Main
+
+           The full titlebar
+
+   LeftMain
+
+           Left of title text
+
+   RightMain
+
+           Right of title text
+
+   UnderText
+
+           Underneath title text
+
+   LeftOfText
+
+           just to the left of the title text
+
+   RightOfText
+
+           just to the right of the title text
+
+   LeftEnd
+
+           at the far left end of the titlebar (just after left buttons if
+           any)
+
+   RightEnd
+
+           at the far right end of the titlebar (just before right buttons if
+           any)
+
+   Buttons
+
+           under buttons in case of UseTitleStyle
+
+   LeftButtons
+
+           under left buttons in case of UseTitleStyle
+
+   RightButtons
+
+           under right buttons in case of UseTitleStyle
+
+   None of these are mandatory except for Main (or, if you do not define Main
+   you must define both LeftMain and RightMain). If no Buttons pixmaps are
+   defined and UseTitleStyle is specified for one or more buttons, Main,
+   LeftMain or RightMain are used as appropriate.
+
+   The syntax for this style type is:
+
+ MultiPixmap section style arg, ...
+
+   continuing for whatever you want to define. The style can be either
+   TiledPixmap, AdjustedPixmap, Colorset or Solid. See the ButtonStyle
+   command for the description of these styles. In the case of a transition
+   section, LeftEnd, LeftOfText, RightOfText or RightEnd, AdjustedPixmap only
+   resize the pixmap in the "y" direction. For the Colorset and Solid styles
+   a width of the half of the title bar height is assumed for the transition
+   sections.
+
+   An example:
+
+ MultiPixmap Main AdjustedPixmap foo.xpm, \
+             UnderText TiledPixmap bar.xpm, \
+             Buttons Colorset 2
+
+   Note that the old syntax is still supported: if the style is omitted,
+   TiledPixmap is assumed and adding "(stretched)" between the section and
+   the file name implies AdjustedPixmap.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

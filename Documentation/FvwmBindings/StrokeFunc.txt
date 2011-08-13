@@ -1,0 +1,62 @@
+'StrokeFunc' [Options]::
+
+Causes fvwm to record a mouse stroke sequence and to execute the
+corresponding action as defined in a Stroke command. The cursor is
+modified to the STROKE context of the CursorStyle command during
+recording. When the stroke is finished StrokeFunc looks for a stroke
+binding of the form
+
+-----
+Stroke sequence 0 Context Modifiers action
+-----
+
+and executes the corresponding action (Note the 0). Normal use of this
+function is via a Mouse or Key command. Examples:
+
+-----
+Mouse 3 A M StrokeFunc
+Key x R N StrokeFunc
+-----
+
+If you press mouse button 3 and Alt anywhere (respectively, press the key
+x when the cursor is on the root window), then fvwm records the mouse
+motions until the mouse button 3 (respectively, the x key) is released and
+then check if the recorded sequence corresponds to a stroke binding of the
+form
+
+-----
+"Stroke sequence 0 A M action"
+"Stroke sequence 0 R N action"
+-----
+
+Note that the Context and Modifiers are taken at the beginning of the
+execution of the StrokeFunc command (so you can release the modifiers
+before the end of the stroke recording in the case of a mouse binding and
+if you used, say, a title-bar context the mouse motion can go through an
+application window). The keys Escape and Delete allow you to abort the
+command.
+
+The StrokeFunc command has five options: NotStayPressed, EchoSequence,
+DrawMotion, FeedBack and StrokeWidth. These options are disabled by
+default. EchoSequence causes fvwm to Echo the recorded stroke sequence.
+DrawMotion causes fvwm to draw the mouse motion on the screen. FeedBack
+causes fvwm to display during a fraction of second the cursor of the WAIT
+context of the CursorStyle command if the recorded stroke sequence
+corresponds to a stroke binding. StrokeWidth takes an integer argument,
+which must be >= 0 and <= 100 and which defines the width of the line for
+the DrawMotion option.
+
+NotStayPressed works only if StrokeFunc is used via a Mouse or a Key
+command. This option removes the need to have a button or the key pressed
+during the stroke, but you have to do a mouse click or press the Return or
+Space key to finish the mouse motion recording (these keys also work
+without the NotStayPressed option).
+
+You can use the StrokeFunc "alone". In this case it works as above with
+the NotStayPressed option enabled. However, Modifiers, in general, may not
+work as expected (i.e., in this case use 'A' or 'N' as Modifiers in the
+stroke bindings).
+
+Note that some computers do not support key release events. If that is the
+case the StrokeFunc used via a Key command works as if the NotStayPressed
+option is enabled.

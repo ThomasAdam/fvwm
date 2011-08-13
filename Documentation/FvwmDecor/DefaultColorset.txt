@@ -1,0 +1,10 @@
+'DefaultColorset' [num]::
+
+DefaultColorset sets the colorset used by the windows controlled by the
+DefaultColors command. To revert back to the DefaultColors colors use
+
+----
+DefaultColorset -1
+----
+
+or any variant of the DefaultColors command.

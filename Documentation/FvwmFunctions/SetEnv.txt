@@ -1,0 +1,23 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+SetEnv
+
+   --------------------------------------------------------------------------
+
+   SetEnv variable value
+
+   Set an environment variable to a new value, similar to the shell's export
+   or setenv command. The variable and its value are inherited by processes
+   started directly by fvwm. This can be especially useful in conjunction
+   with the FvwmM4 module. For example:
+
+ SetEnv height HEIGHT
+
+   makes the FvwmM4 set variable HEIGHT usable by processes started by fvwm
+   as the environment variable $height. If value includes whitespace, you
+   should enclose it in quotes. If no value is given, the variable is
+   deleted.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

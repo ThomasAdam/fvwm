@@ -1,0 +1,17 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+IconFont
+
+   --------------------------------------------------------------------------
+
+   IconFont [fontname]
+
+   This command is obsoleted by the Style option IconFont. Please use
+
+ Style * IconFont fontname
+
+   instead.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

@@ -1,0 +1,34 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+EdgeThickness
+
+   --------------------------------------------------------------------------
+
+   EdgeThickness 0 | 1 | 2
+
+   This is the width or height of the invisible window that fvwm creates on
+   the edges of the screen that are used for the edge scrolling feature.
+
+   In order to enable page scrolling via the mouse, four windows called the
+   "pan frames" are placed at the very edge of the screen. This is how fvwm
+   detects the mouse's presence at the window edge. Because of the way this
+   works, they need to be at the top of the stack and eat mouse events, so if
+   you have any kind of error along the lines of: "mouse clicks at the edge
+   of the screen do the wrong thing" you're having trouble with the pan
+   frames and (assuming you do not use the mouse to flip between pages)
+   should set the EdgeThickness to 0.
+
+   A value of 0 completely disables mouse edge scrolling, even while dragging
+   a window. 1 gives the smallest pan frames, which seem to work best except
+   on some servers.
+
+   2 is the default.
+
+   Pan frames of 1 or 2 pixels can sometimes be confusing, for example, if
+   you drag a window over the edge of the screen, so that it straddles a pan
+   frame, clicks on the window, near the edge of the screen are treated as
+   clicks on the root window.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

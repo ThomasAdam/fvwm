@@ -1,0 +1,30 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+ResizeMove
+
+   --------------------------------------------------------------------------
+
+   ResizeMove resize-arguments move-arguments
+
+   This command does the same as the Resize and Move commands, but in a
+   single call which is less visually disturbing. The resize-arguments are
+   exactly the same arguments as for the Resize command and the
+   move-arguments are exactly the same arguments as for the Move command
+   except the pointer option which is not supported by the ResizeMove
+   command.
+
+   Examples:
+
+ # Move window to top left corner and cover
+ # most of the screen
+ ResizeMove -10p -20p 0 0
+
+ # Grow the focused window towards the top of screen
+ Current Resize keep w+$[w.y]p keep 0
+
+   Note: Fvwm may not be able to parse the command properly if the option
+   bottomright of the Resize command is used.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

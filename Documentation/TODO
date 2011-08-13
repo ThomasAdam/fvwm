@@ -1,0 +1,13 @@
+ASCIIDOC TODO LIST
+==================
+
+(In no particular order):
+
+* Convert remaining documents over -- only the directories with toplevel
+  .txt files have been converted.
+* Produce a TOC for top-level includes (c.f. perldoc?)
+* Look at a stylesheet for formats other than Groff
+* Hook this in to the build system.
+* Rip out the old Docbook stuff
+* Work out how this affects fvwm-web
+* Shed-paint with others (whom?) whether the group commands are sufficient.

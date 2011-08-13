@@ -1,0 +1,18 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+HilightColor
+
+   --------------------------------------------------------------------------
+
+   HilightColor textcolor backgroundcolor
+
+   This command is obsoleted by the Style options HilightFore and
+   HilightBack. Please use
+
+ Style * HilightFore textcolor, HilightBack backgroundcolor
+
+   instead.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

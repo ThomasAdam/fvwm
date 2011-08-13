@@ -1,0 +1,15 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+RaiseLower
+
+   --------------------------------------------------------------------------
+
+   RaiseLower
+
+   Alternately raises and lowers a window. The window is raised if it is
+   obscured by any window (except for its own transients when RaiseTransient
+   style is used; see the Style command) otherwise it is lowered.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

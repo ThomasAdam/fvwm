@@ -1,0 +1,14 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+SnapGrid
+
+   --------------------------------------------------------------------------
+
+   SnapGrid [x-grid-size y-grid-size]
+
+   The SnapGrid command is obsolete. It has been replaced by the Style
+   command option SnapGrid.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

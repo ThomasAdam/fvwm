@@ -1,0 +1,28 @@
+'FakeClick' [ command value ]...::
+
+This command is mainly intended for debugging fvwm and no guarantees are
+made that it works for you. FakeClick can simulate mouse button press and
+release events and pass them to fvwm or the applications. The parameters
+are a list of commands which consist of pairs of command tokens and
+integer values, The press and release commands are followed by the
+appropriate mouse button number and generate a button press or release
+event on the window below the pointer. The wait commands pauses fvwm for
+the given number of milliseconds. The modifiers command simulates pressing
+or releasing modifier keys. The values 1 to 5 are mapped to Mod1 to Mod5
+while 6, 7 and 8 are mapped to Shift, Lock and Control. The modifier is
+set for any further button events. To release a modifier key, use the
+corresponding negative number. The depth command determines to which
+window the button events are sent. With a depth of 1, all events go to the
+root window, regardless of the pointer's position. With 2, the event is
+passed to the top level window under the pointer which is usually the
+frame window. With 3, events go to the client window. Higher numbers go to
+successive sub windows. Zero (0) goes to the smallest window that contains
+the pointer. Note that events propagate upward.
+
+------
+FakeClick depth 2 press 1 wait 250 release 1
+------
+
+This simulates a click with button 1 in the parent window (depth 2) with a
+delay of 250 milliseconds between the press and the release. Note: all
+command names can be abbreviated with their first letter.

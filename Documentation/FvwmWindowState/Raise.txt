@@ -1,0 +1,20 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+Raise
+
+   --------------------------------------------------------------------------
+
+   Raise
+
+   Allows the user to raise a window. Note that this raises a window only in
+   its layer. To bring a window to the absolute top, use
+
+ AddToFunc raise-to-top
+  + I Layer 0 ontop
+  + I Raise
+
+   where ontop is the highest layer used in your setup.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

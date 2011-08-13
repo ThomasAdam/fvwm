@@ -1,0 +1,29 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+XineramaSlsScreens
+
+   --------------------------------------------------------------------------
+
+   XineramaSlsScreens number-of-screens [screen-spec...]
+
+   This command configures the layout of the Single Logical screen feature.
+   Its first argument is the number of screens to use. It must be followed by
+   exactly this number of screen-spec arguments. Each of these can be written
+   either in standard X geometry format: "<width>x<height>+<x>+<y>" or as a
+   space separated list of numbers: "x y width height". Both ways of
+   describing screens can be mixed in a single command. All four numbers must
+   be supplied. The x and y values specify the origin of the screen in
+   relation to the global screen's origin while width and height specify the
+   size of the screen in pixels. No checks are done if the geometries make
+   sense, so it is possible to define overlapping screens (with random
+   results) or screens that are not visible at all.
+
+ XineramaSlsScreens 3 \
+   512x768+0+0 512x300+512+0 512 300 512 468
+ XineramaSls On
+ XineramaPrimaryScreen 1
+ Xinerama On
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

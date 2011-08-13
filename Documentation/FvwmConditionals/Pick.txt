@@ -1,0 +1,12 @@
+'Pick' [(conditions)] command::
+
+Pick works like Function if invoked in the context of a window. If invoked
+in the root window, it first asks the user to pick a window and then
+executes the command in the context of that window. This avoids annoying
+multiple selections with complex functions. The command is executed only
+if the given conditions are met. Returns -1 if no window was selected. See
+Conditions section for a list of conditions.
+
+This command implies the conditions CirculateHit, CirculateHitIcon and
+CirculateHitShaded. They can be turned off by specifying !CirculateHit
+etc. explicitly.

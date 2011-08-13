@@ -1,0 +1,16 @@
+'UpdateDecor' [decor]::
+
+This command is deprecated and will be removed in the future. There are
+plans to replace it with a more flexible solution in fvwm-3.0.
+
+This command is kept mainly for backward compatibility. Since all elements
+of a decor are updated immediately when they are changed, this command is
+mostly useless.
+
+Updates window decorations. decor is an optional argument which specifies
+the decor to update. If given, only windows which are assigned to that
+particular decor are updated. This command is useful, for instance, after
+a ButtonStyle, TitleStyle or BorderStyle (possibly used in conjunction
+with AddToDecor). Specifying an invalid decor results in all windows being
+updated. This command is less disturbing than Recapture, but does not
+affect window style options as Recapture does.

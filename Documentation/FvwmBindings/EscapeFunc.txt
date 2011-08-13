@@ -1,0 +1,15 @@
+'EscapeFunc'::
+
+By default the key sequence Ctrl-Alt-Escape allows for escaping from a
+Wait pause and from a locked ModuleSynchronous command. The EscapeFunc
+command used with the Key command allows for configuring this key
+sequence. An example:
+
+-----
+Key Escape A MC -
+Key Escape A  S EscapeFunc
+-----
+
+replaces the Ctrl-Alt-Escape key sequence with Shift-Escape for aborting a
+Wait pause and ModuleSynchronous command. EscapeFunc used outside the Key
+command does nothing.

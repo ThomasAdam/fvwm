@@ -1,0 +1,31 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+OpaqueMoveSize
+
+   --------------------------------------------------------------------------
+
+   OpaqueMoveSize [percentage]
+
+   Tells fvwm the maximum size window with which opaque window movement
+   should be used. The percentage is percent of the total screen area (may be
+   greater than 100). With
+
+ OpaqueMoveSize 0
+
+   all windows are moved using the traditional rubber-band outline. With
+
+ OpaqueMoveSize unlimited
+
+   or if a negative percentage is given all windows are moved as solid
+   windows. The default is
+
+ OpaqueMoveSize 5
+
+   which allows small windows to be moved in an opaque manner but large
+   windows are moved as rubber-bands. If percentage is omitted or invalid the
+   default value is set. To resize windows in an opaque manner you can use
+   the ResizeOpaque style. See the Style command.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

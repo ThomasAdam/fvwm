@@ -1,0 +1,15 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+DefaultIcon
+
+   --------------------------------------------------------------------------
+
+   DefaultIcon filename
+
+   Sets the default icon which is used if a window has neither an
+   client-supplied icon nor an icon supplied via the Icon option of the Style
+   command.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

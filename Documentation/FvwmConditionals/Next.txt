@@ -1,0 +1,6 @@
+'Next' [(conditions)] command::
+
+Performs command (typically Focus) on the next window which satisfies all
+conditions. If the command is running in a window context, it starts
+looking for a matching window from there. Otherwise it starts at the
+focused window. See Conditions section for a list of conditions.

@@ -1,0 +1,15 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+CopyMenuStyle
+
+   --------------------------------------------------------------------------
+
+   CopyMenuStyle orig-menustyle dest-menustyle
+
+   Copy orig-menustyle to dest-menustyle, where orig-menustyle is an existing
+   menu style. If the menu style dest_menustyle does not exist, then it is
+   created.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

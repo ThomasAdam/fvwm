@@ -1,0 +1,18 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+XorValue
+
+   --------------------------------------------------------------------------
+
+   XorValue [number]
+
+   Changes the value with which bits are xor'ed when doing rubber-band window
+   moving or resizing. Valid values range from zero to the maximum value of
+   an unsigned long integer on your system. Setting this value is a
+   trial-and-error process. The default value 0 tries to find a value that
+   gives a good contrast to black and white. The default value is used if the
+   given number is omitted or invalid.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

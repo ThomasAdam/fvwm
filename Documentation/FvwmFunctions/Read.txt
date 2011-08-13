@@ -1,0 +1,20 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+Read
+
+   --------------------------------------------------------------------------
+
+   Read filename [quiet]
+
+   Causes fvwm to read commands from the file named filename. If the keyword
+   Quiet follows the command no message is produced if the file is not found.
+   If the file name does not begin with a slash ('/'), fvwm looks in the
+   user's data directory, then the system data directory. The user's data
+   directory is by default $HOME/.fvwm. It can be overridden by exporting
+   FVWM_USERDIR set to any other directory. The Read command returns 1 if the
+   given file could be read or -1 if not (see the section Conditional
+   Commands for the meaning of return codes).
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

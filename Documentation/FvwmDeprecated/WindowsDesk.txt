@@ -1,0 +1,27 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+WindowsDesk
+
+   --------------------------------------------------------------------------
+
+   WindowsDesk arg1 [arg2]
+
+   Moves the selected window to another desktop.
+
+   This command has been removed and must be replaced by MoveToDesk, the
+   arguments for which are the same as for the GotoDesk command.
+
+  Important
+
+   You cannot simply change the name of the command: the syntax has changed.
+   If you used:
+
+ WindowsDesk n
+
+   to move a window to desk n, you have to change it to:
+
+ MoveToDesk 0 n
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

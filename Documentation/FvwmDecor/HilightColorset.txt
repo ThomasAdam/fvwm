@@ -1,0 +1,9 @@
+'HilightColorset' [num]::
+
+This command is obsoleted by the Style option HilightColorset. Please use:
+
+-----
+Style * HilightColorset num
+-----
+
+instead.

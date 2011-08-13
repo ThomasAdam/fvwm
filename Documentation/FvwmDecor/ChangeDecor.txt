@@ -1,0 +1,15 @@
+'ChangeDecor' decor::
+
+This command is deprecated and will be removed in the future. There are
+plans to replace it with a more flexible solution in fvwm-3.0.
+
+Changes the decor of a window to decor. decor is "Default" or the name of
+a decor defined with AddToDecor. If decor is invalid, nothing occurs. If
+called from somewhere in a window or its border, then that window is
+affected. If called from the root window the user is allowed to select the
+target window. ChangeDecor only affects attributes which can be set using
+the AddToDecor command.
+
+----
+ChangeDecor CustomDecor1
+----

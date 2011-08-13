@@ -1,0 +1,14 @@
+'Direction' [FromPointer] direction [(conditions)] command
+
+Performs command (typically Focus) on a window in the given direction
+which satisfies all conditions. Normally, the center of the currently
+focused window or the context window in which the command was invoked is
+taken as the starting point. Lacking such a window, or when the
+FromPointer option is given, the current position of the pointer is taken
+as the starting point. The direction may be one of "North", "Northeast",
+"East", "Southeast", "South", "Southwest", "West", "Northwest" and
+"Center". Which window Direction selects depends on angle and distance
+between the center points of the windows. Closer windows are considered a
+better match than those farther away. The Center direction simply selects
+the window closest to the starting point. Returns -1 if an invalid
+direction was given. See the Conditions section for a list of conditions.

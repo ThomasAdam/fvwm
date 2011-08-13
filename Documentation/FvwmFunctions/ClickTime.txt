@@ -1,0 +1,16 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+ClickTime
+
+   --------------------------------------------------------------------------
+
+   ClickTime [delay]
+
+   Specifies the maximum delay in milliseconds between a button press and a
+   button release for the Function command to consider the action a mouse
+   click. The default delay is 150 milliseconds. Omitting the delay value
+   resets the ClickTime to the default.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

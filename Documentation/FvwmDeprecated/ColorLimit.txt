@@ -1,0 +1,13 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+ColorLimit
+
+   --------------------------------------------------------------------------
+
+   ColorLimit limit
+
+   This command is obsolete. See the --color-limit option to fvwm.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

@@ -1,0 +1,38 @@
+'FakeKeypress' [ command value ]...::
+
+This command is mainly intended for debugging fvwm and no guarantees are
+made that it works for you. FakeKeypress can simulate key press and
+release events and pass them to fvwm or applications. The parameters are a
+list of commands which consist of pairs of command tokens and values. The
+press and release commands are followed by a key name. The key name is a
+standard X11 key name as defined in /usr/include/X11/keysymdef.h, (without
+the XK_ prefix), or the keysym database /usr/X11R6/lib/X11/XKeysymDB. The
+wait, modifiers and depth commands are the same as those used by
+FakeClick.
+
+Save all GVim sessions with: "Esc:w\n"
+
+-----
+All (gvim) FakeKeypress press Escape \
+                         press colon \
+                         press w \
+                         press Return
+------
+
+Save & exit all GVim sessions with: "Esc:wq\n"
+
+------
+All (gvim) FakeKeypress press Escape \
+                         press colon \
+                         press w \
+                         press q \
+                         press Return
+------
+
+Send A to a specific window:
+
+------
+WindowId 0x3800002 FakeKeypress press A
+------
+
+Note: all command names can be abbreviated with their first letter.

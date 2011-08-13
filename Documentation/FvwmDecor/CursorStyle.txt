@@ -1,0 +1,140 @@
+'CursorStyle' context [ num | name | None | Tiny | file [ x y ] [ fg bg ]]::
+
+Defines a new cursor for the specified context. Note that this command can
+not control the shapes an applications uses, for example, to indicate that
+it is busy. The various contexts are:
+
+   POSITION (top_left_corner)
+
+           used when initially placing windows
+
+   TITLE (top_left_arrow)
+
+           used in a window title-bar
+
+   DEFAULT (top_left_arrow)
+
+           used in windows that do not set their cursor
+
+   SYS (hand2)
+
+           used in one of the title-bar buttons
+
+   MOVE (fleur)
+
+           used when moving or resizing windows
+
+   RESIZE (sizing)
+
+           used when moving or resizing windows
+
+   WAIT (watch)
+
+           used during certain fvwm commands (see BusyCursor for details)
+
+   MENU (top_left_arrow)
+
+           used in menus
+
+   SELECT (crosshair)
+
+           used when the user is required to select a window
+
+   DESTROY (pirate)
+
+           used for Destroy, Close, and Delete commands
+
+   TOP (top_side)
+
+           used in the top side-bar of a window
+
+   RIGHT (right_side)
+
+           used in the right side-bar of a window
+
+   BOTTOM (bottom_side)
+
+           used in the bottom side-bar of a window
+
+   LEFT (left_side)
+
+           used in the left side-bar of a window
+
+   TOP_LEFT (top_left_corner)
+
+           used in the top left corner of a window
+
+   TOP_RIGHT (top_right_corner)
+
+           used in the top right corner of a window
+
+   BOTTOM_LEFT (bottom_left_corner)
+
+           used in the bottom left corner of a window
+
+   BOTTOM_RIGHT (bottom_right_corner)
+
+           used in the bottom right corner of a window
+
+   TOP_EDGE (top_side)
+
+           used at the top edge of the screen
+
+   RIGHT_EDGE (right_side)
+
+           used at the right edge of the screen
+
+   BOTTOM_EDGE (bottom_side)
+
+           used at the bottom edge of the screen
+
+   LEFT_EDGE (left_side)
+
+           used at the left edge of the screen
+
+   ROOT (left_ptr)
+
+           used as the root cursor
+
+   STROKE (plus)
+
+           used during a StrokeFunc command.
+
+The defaults are shown in parentheses above. If you ever want to restore
+the default cursor for a specific context you can omit the second
+argument.
+
+The second argument is either the numeric value of the cursor as defined
+in the include file X11/cursorfont.h or its name (without the XC_ prefix).
+Alternatively, the xpm file name may be specified. The name can also be
+None (no cursor) or Tiny (a single pixel as the cursor).
+
+-------
+# make the kill cursor be XC_gumby (both forms work):
+CursorStyle DESTROY 56
+CursorStyle DESTROY gumby
+-------
+
+Alternatively, the cursor can be loaded from an (XPM, PNG or SVG) image
+file. If fvwm is compiled with Xcursor support, full ARGB is used, and
+(possibly animated) cursor files made with the xcursorgen program can be
+loaded. Otherwise the cursor is converted to monochrome.
+
+The optional x and y arguments (following a file argument) specifies the
+hot-spot coordinate with 0 0 as the top left corner of the image.
+Coordinates within the image boundary are valid and overrides any hot-spot
+defined in the (XPM/Xcursor) image file. An invalid or undefined hot-spot
+is placed in the center of the image.
+
+------
+CursorStyle ROOT cursor_image.png 0 0
+------
+
+The optional fg and bg arguments specify the foreground and background
+colors for the cursor, defaulting to black and white (reverse video
+compared to the actual bitmap). These colors are only used with monochrome
+cursors. Otherwise they are silently ignored.
+
+-----
+CursorStyle ROOT nice_arrow.xpm yellow black
+-----

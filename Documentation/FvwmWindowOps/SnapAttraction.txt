@@ -1,0 +1,14 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+SnapAttraction
+
+   --------------------------------------------------------------------------
+
+   SnapAttraction [proximity [behaviour] [Screen]]
+
+   The SnapAttraction command is obsolete. It has been replaced by the Style
+   command option SnapAttraction.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

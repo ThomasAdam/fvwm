@@ -1,0 +1,14 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+Destroy
+
+   --------------------------------------------------------------------------
+
+   Destroy
+
+   Destroys an application window, which usually causes the application to
+   crash and burn.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

@@ -1,0 +1,16 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+AnimatedMove
+
+   --------------------------------------------------------------------------
+
+   AnimatedMove x y [Warp]
+
+   Move a window in an animated fashion. Similar to Move command. The options
+   are the same, except they are required, since it doesn't make sense to
+   have a user move the window interactively and animatedly. If the optional
+   argument Warp is specified the pointer is warped with the window.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

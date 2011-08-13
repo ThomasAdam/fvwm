@@ -1,0 +1,22 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+FocusStyle
+
+   --------------------------------------------------------------------------
+
+   FocusStyle stylename options
+
+   works exactly like the Style command, but accepts only the focus policy
+   related styles beginning with "FP". The prefix can be removed, but at the
+   cost of a little bit of time. FocusStyle is meant to make the
+   configuration file more readable. Example:
+
+ FocusStyle * EnterToFocus, !LeaveToUnfocus
+
+   is equivalent to
+
+ Style * FPEnterToFocus, !FPLeaveToUnfocus
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

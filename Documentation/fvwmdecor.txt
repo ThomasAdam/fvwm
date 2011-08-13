@@ -1,0 +1,35 @@
+fvwmdecor(1)
+============
+:doctype: manpage
+
+NAME
+----
+
+fvwmdecor - commands related to window decorations
+
+SYNOPSIS
+--------
+
+fvwm *
+
+DESCRIPTION
+-----------
+
+fvwmdecor - describes how decorations can be applied to windows.
+
+include::FvwmDecor/AddButtonStyle.txt[]
+include::FvwmDecor/AddTitleStyle.txt[]
+include::FvwmDecor/AddToDecor.txt[]
+include::FvwmDecor/BorderStyle.txt[]
+include::FvwmDecor/ButtonState.txt[]
+include::FvwmDecor/ButtonStyle.txt[]
+include::FvwmDecor/ChangeDecor.txt[]
+include::FvwmDecor/CleanupColorsets.txt[]
+include::FvwmDecor/ColormapFocus.txt[]
+include::FvwmDecor/Colorset.txt[]
+include::FvwmDecor/CursorStyle.txt[]
+include::FvwmDecor/DefaultColors.txt[]
+include::FvwmDecor/DefaultColorset.txt[]
+include::FvwmDecor/DestroyDecor.txt[]
+include::FvwmDecor/HilightColorset.txt[]
+include::FvwmDecor/UpdateDecor.txt[]

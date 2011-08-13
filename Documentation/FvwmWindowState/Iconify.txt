@@ -1,0 +1,24 @@
+   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+
+Iconify
+
+   --------------------------------------------------------------------------
+
+   Iconify [bool]
+
+   Iconifies a window if it is not already iconified or de-iconifies it if it
+   is already iconified. The optional argument bool is a boolean argument.
+   "True" means only iconification is allowed, while "False" forces
+   de-iconification. Using "toggle" switches between iconified and
+   de-iconified states.
+
+   There are a number of Style options which influence the appearance and
+   behavior of icons (e.g. StickyIcon, NoIcon).
+
+   For backward compatibility, the optional argument may also be a positive
+   number instead of "True", or a negative number instead of "False". Note
+   that this syntax is obsolete, and will be removed in the future.
+
+   --------------------------------------------------------------------------
+
+   fvwm 2.6.3 (from cvs)

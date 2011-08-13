@@ -1,0 +1,72 @@
+AddToFunc [name [ I | M | C | H | D action ]]
+---------------------------------------------
+
+Begins or adds to a function definition. Here is an example:
+
+ AddToFunc Move-or-Raise I Raise
+  + M Move
+  + D Lower
+
+The function name is "Move-or-Raise", and it could be invoked from a menu
+or a mouse binding or key binding:
+
+ Mouse 1 TS A Move-or-Raise
+
+The name must not contain embedded whitespace. No guarantees are made
+whether function names with embedded whitespace work or not. This behavior
+may also change in the future without further notice. The letter before
+the action tells what kind of action triggers the command which follows
+it. 'I' stands for "Immediate", and is executed as soon as the function is
+invoked. 'M' stands for "Motion", i.e. if the user starts moving the
+mouse. 'C' stands for "Click", i.e., if the user presses and releases the
+mouse button. 'H' stands for "Hold", i.e. if the user presses a mouse
+button and holds it down for more than ClickTime milliseconds. 'D' stands
+for "Double-click". The action 'I' causes an action to be performed on the
+button-press, if the function is invoked with prior knowledge of which
+window to act on.
+
+There is a number of predefined symbols that are replaced by certain
+values if they appear on the command line. Please refer to the Command
+Expansion section for details.
+
+Warning
+
+Please read the comments on executing complex functions in the section
+Scripting and Complex Functions.
+
+Examples:
+
+If you call
+
+ Key F10 R A Function MailFunction xmh "-font fixed"
+
+and "MailFunction" is
+
+ AddToFunc MailFunction
+  + I Next ($0) Iconify off
+  + I Next (AcceptsFocus, $0) Focus
+  + I None ($0) Exec exec $0 $1
+
+Then the last line of the function becomes
+
+  + I None (xmh) Exec exec xmh -font fixed
+
+The expansion is performed as the function is executed, so you can use the
+same function with all sorts of different arguments. You could use
+
+ Key F11 R A Function MailFunction zmail "-bg pink"
+
+in the same config, if you wanted. An example of using "$[w.id]" is:
+
+ AddToFunc PrintFunction
+  + I Raise
+  + I Exec xdpr -id $[w.id]
+
+Note that "$$" is expanded to '$'.
+
+Another example: bind right mouse button within the window button number 6
+(this is a minimize button for the win95 theme) to iconify all windows of
+the same resource:
+
+ AddToFunc FuncIconifySameResource "I" All ($0) Iconify on
+ Mouse 3 6 A FuncIconifySameResource $[w.resource]
