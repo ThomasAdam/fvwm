@@ -65,3 +65,18 @@ See the following template as an example:
 
 *NB* - AsciiDoc really doesn't like title markers under words to *EXCEED*
 the length of the title!
+
+Generating documentation
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The script:
+
+----
+Documentation/make-sections.sh
+----
+
+Will generate each section.  Then manually you can run:
+
+----
+man ./fvwmfoo.1
+----
