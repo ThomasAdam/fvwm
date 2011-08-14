@@ -1,18 +1,10 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
+'ExecUseShell' [shell]::
++
+Makes the Exec command use the specified shell, or the value of the $SHELL
+environment variable if no shell is specified, instead of the default
+Bourne shell (/bin/sh).
++
+------
 ExecUseShell
-
-   --------------------------------------------------------------------------
-
-   ExecUseShell [shell]
-
-   Makes the Exec command use the specified shell, or the value of the $SHELL
-   environment variable if no shell is specified, instead of the default
-   Bourne shell (/bin/sh).
-
- ExecUseShell
- ExecUseShell /usr/local/bin/tcsh
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+ExecUseShell /usr/local/bin/tcsh
+------

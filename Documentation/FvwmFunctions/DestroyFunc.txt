@@ -1,17 +1,9 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-DestroyFunc
-
-   --------------------------------------------------------------------------
-
-   DestroyFunc function
-
-   Deletes a function, so that subsequent references to it are no longer
-   valid. You can use this to change the contents of a function during a fvwm
-   session. The function can be rebuilt using AddToFunc.
-
- DestroyFunc PrintFunction
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'DestroyFunc' function::
++
+Deletes a function, so that subsequent references to it are no longer
+valid. You can use this to change the contents of a function during a fvwm
+session. The function can be rebuilt using AddToFunc.
++
+-----
+DestroyFunc PrintFunction
+-----

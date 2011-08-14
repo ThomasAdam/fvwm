@@ -1,16 +1,8 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-Echo
-
-   --------------------------------------------------------------------------
-
-   Echo string
-
-   Prints a message to stderr. Potentially useful for debugging things in
-   your config.
-
- Echo Beginning style definitions...
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'Echo' string::
++
+Prints a message to stderr. Potentially useful for debugging things in
+your config.
++
+----
+Echo Beginning style definitions...
+----

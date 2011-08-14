@@ -1,0 +1,57 @@
+fvwmfunctions(1)
+================
+:doctype: manpage
+
+
+NAME
+----
+
+fvwmfunctions - Ways of creating/controlling functions.
+
+
+SYNOPSIS
+--------
+
+fvwm *
+
+DESCRIPTION
+-----------
+
+fvwmfunctions - How fvwm handles functions, how to create them, use them,
+etc.
+
+
+COMMANDS
+--------
+
+include::FvwmFunctions/AddToFunc.txt[]
+
+include::FvwmFunctions/Beep.txt[]
+
+include::FvwmFunctions/ClickTime.txt[]
+
+include::FvwmFunctions/DestroyFunc.txt[]
+
+include::FvwmFunctions/Echo.txt[]
+
+include::FvwmFunctions/EchoFuncDefinition.txt[]
+
+include::FvwmFunctions/Exec.txt[]
+
+include::FvwmFunctions/ExecUseShell.txt[]
+
+include::FvwmFunctions/Function.txt[]
+
+include::FvwmFunctions/Nop.txt[]
+
+include::FvwmFunctions/PipeRead.txt[]
+
+include::FvwmFunctions/Read.txt[]
+
+include::FvwmFunctions/SetEnv.txt[]
+
+include::FvwmFunctions/Silent.txt[]
+
+include::FvwmFunctions/UnsetEnv.txt[]
+
+include::FvwmFunctions/Wait.txt[]

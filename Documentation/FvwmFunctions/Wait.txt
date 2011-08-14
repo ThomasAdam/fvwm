@@ -1,40 +1,32 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-Wait
-
-   --------------------------------------------------------------------------
-
-   Wait window
-
-   This command is intended to be used in fvwm functions only. It causes
-   execution of a function to pause until a new window matching window
-   appears. This can be a window's name, class, or resource string. It may
-   contain the wildcards '*' and '?', which are matched in the usual Unix
-   filename manner. This is particularly useful in the "InitFunction" if you
-   are trying to start windows on specific desktops:
-
- AddToFunc InitFunction
-  + I Exec exec xterm -geometry 80x64+0+0
-  + I Wait xterm
-  + I GotoDesk 0 2
-  + I Exec exec xmh -font fixed -geometry \
-        507x750+0+0
-  + I Wait xmh
-  + I GotoDesk 0 0
-
-   The above function starts an xterm on the current desk, waits for it to
-   map itself, then switches to desk 2 and starts an xmh. After the xmh
-   window appears control moves to desk 0.
-
-   Fvwm remains partially functional during a wait, but any input from the
-   modules is queued up and processed only after the window appears or the
-   command is aborted. For example, windows can not be focused with
-   FvwmTaskBar or FvwmWinList during a wait.
-
-   You can escape from a Wait pause by pressing Ctrl-Alt-Escape (where Alt is
-   the first modifier). To redefine this key sequence see the EscapeFunc
-   command.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'Wait' window::
++
+This command is intended to be used in fvwm functions only. It causes
+execution of a function to pause until a new window matching window
+appears. This can be a window's name, class, or resource string. It may
+contain the wildcards '*' and '?', which are matched in the usual Unix
+filename manner. This is particularly useful in the "InitFunction" if you
+are trying to start windows on specific desktops:
++
+--------
+AddToFunc InitFunction
++ I Exec exec xterm -geometry 80x64+0+0
++ I Wait xterm
++ I GotoDesk 0 2
++ I Exec exec xmh -font fixed -geometry \
+    507x750+0+0
++ I Wait xmh
++ I GotoDesk 0 0
+---------
++
+The above function starts an xterm on the current desk, waits for it to
+map itself, then switches to desk 2 and starts an xmh. After the xmh
+window appears control moves to desk 0.
++
+Fvwm remains partially functional during a wait, but any input from the
+modules is queued up and processed only after the window appears or the
+command is aborted. For example, windows can not be focused with
+FvwmTaskBar or FvwmWinList during a wait.
++
+You can escape from a Wait pause by pressing Ctrl-Alt-Escape (where Alt is
+the first modifier). To redefine this key sequence see the EscapeFunc
+command.

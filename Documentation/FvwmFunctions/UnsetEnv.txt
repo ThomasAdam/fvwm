@@ -1,15 +1,5 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-UnsetEnv
-
-   --------------------------------------------------------------------------
-
-   UnsetEnv [variable]
-
-   Unset an environment variable, similar to shell's export or unsetenv
-   command. The variable then is removed from the environment array inherited
-   by processes started directly by fvwm.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'UnsetEnv' [variable]::
++
+Unset an environment variable, similar to shell's export or unsetenv
+command. The variable then is removed from the environment array inherited
+by processes started directly by fvwm.

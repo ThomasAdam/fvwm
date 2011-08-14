@@ -1,42 +1,38 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-PipeRead
-
-   --------------------------------------------------------------------------
-
-   PipeRead command [quiet]
-
-   Causes fvwm to read commands from the output of the command. This command
-   is executed by /bin/sh as if you typed it on the command line. If the
-   command consists of more than one word it must be quoted. Useful for
-   building up dynamic menu entries based on a directories contents, for
-   example. If the keyword Quiet follows the command no message is produced
-   if the command is not found.
-
-   Example:
-
- AddToMenu HomeDirMenu
- PipeRead 'for i in $HOME/*; \
-   do echo "+ $i Exec xterm -e vi $i"; done'
-
-   Note: The PipeRead changes the pointer to a watch cursor by default during
-   execution. However, some commands, for example xwd, need to take control
-   of the pointer themselves and do not work. To disable the watch cursor,
-   use the command prior to PipeRead
-
- BusyCursor Read off
-
-   The PipeRead command executes synchronously. If you want to Exec
-   something, but need the command to run synchronously, you might do
-   something like:
-
- PipeRead 'command 1>&2'
-
-   The redirection causes any output from the program to go to stderr instead
-   of being read as a sequence of commands by fvwm. PipeRead returns 1 if the
-   given command could be executed or -1 if not (see the section Conditional
-   Commands for the meaning of return codes).
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'PipeRead' command [quiet]::
++
+Causes fvwm to read commands from the output of the command. This command
+is executed by /bin/sh as if you typed it on the command line. If the
+command consists of more than one word it must be quoted. Useful for
+building up dynamic menu entries based on a directories contents, for
+example. If the keyword Quiet follows the command no message is produced
+if the command is not found.
++
+Example:
++
+--------
+AddToMenu HomeDirMenu
+PipeRead 'for i in $HOME/*; \
+    do echo "+ $i Exec xterm -e vi $i"; done'
+--------
++
+Note: The PipeRead changes the pointer to a watch cursor by default during
+execution. However, some commands, for example xwd, need to take control
+of the pointer themselves and do not work. To disable the watch cursor,
+use the command prior to PipeRead
++
+------
+BusyCursor Read off
+------
++
+The PipeRead command executes synchronously. If you want to Exec
+something, but need the command to run synchronously, you might do
+something like:
++
+------
+PipeRead 'command 1>&2'
+------
++
+The redirection causes any output from the program to go to stderr instead
+of being read as a sequence of commands by fvwm. PipeRead returns 1 if the
+given command could be executed or -1 if not (see the section 'Conditional
+Commands' for the meaning of return codes).

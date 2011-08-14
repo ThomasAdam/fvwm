@@ -1,33 +1,27 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-Exec
-
-   --------------------------------------------------------------------------
-
-   Exec command
-
-   Executes command. You should not use an ampersand '&' at the end of the
-   command. You probably want to use an additional "exec" at the beginning of
-   command. Without that, the shell that fvwm invokes to run your command
-   stays until the command exits. In effect, you'll have twice as many
-   processes running as you need. Note that some shells are smart enough to
-   avoid this, but it never hurts to include the "exec" anyway.
-
-   The following example binds function key F1 in the root window, with no
-   modifiers, to the exec function. The program rxvt is started with an
-   assortment of options.
-
- Key F1 R N Exec exec rxvt -fg yellow -bg blue \
-   -e /bin/tcsh
-
-   Note that this function doesn't wait for command to complete, so things
-   like:
-
- Exec "echo AddToMenu ... > /tmp/file"
- Read /tmp/file
-
-   do not work reliably (see the PipeRead command).
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'Exec' command::
++
+Executes command. You should not use an ampersand '&' at the end of the
+command. You probably want to use an additional "exec" at the beginning of
+command. Without that, the shell that fvwm invokes to run your command
+stays until the command exits. In effect, you'll have twice as many
+processes running as you need. Note that some shells are smart enough to
+avoid this, but it never hurts to include the "exec" anyway.
++
+The following example binds function key F1 in the root window, with no
+modifiers, to the exec function. The program rxvt is started with an
+assortment of options.
++
+--------
+Key F1 R N Exec exec rxvt -fg yellow -bg blue \
+    -e /bin/tcsh
+--------
++
+Note that this function doesn't wait for command to complete, so things
+like:
++
+-------
+Exec "echo AddToMenu ... > /tmp/file"
+Read /tmp/file
+--------
++
+do not work reliably (see the PipeRead command).
