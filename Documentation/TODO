@@ -6,6 +6,11 @@ ASCIIDOC TODO LIST
 Immediate Priority
 ==================
 
+* Not all commands listed here reflect what's currently in "man fvwm" -
+* notably:
+    - Nothing about invocation.
+    - Nothing about FVWM variables $[foo]
+    - etc.
 * Produce a TOC for top-level includes (c.f. perldoc?)
 * Each "top-level" .txt file needs a serious overview section for the files
   it's including.  This might mean further splitting out of sections.
