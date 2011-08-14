@@ -1,19 +1,9 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-XSynchronize
-
-   --------------------------------------------------------------------------
-
-   XSynchronize [bool]
-
-   The XSynchronize command controls whether X requests are sent to the X
-   server immediately or not. Normally, requests are sent in larger batches
-   to save unnecessary communication. To send requests immediately, use
-   "True" as the argument, to disable this use "False" or to toggle between
-   both methods use "Toggle" or omit the bool argument. Fvwm defaults to
-   synchronized requests when started with the --debug option. This command
-   is intended for debugging only.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'XSynchronize' [bool]::
++
+The XSynchronize command controls whether X requests are sent to the X
+server immediately or not. Normally, requests are sent in larger batches
+to save unnecessary communication. To send requests immediately, use
+"True" as the argument, to disable this use "False" or to toggle between
+both methods use "Toggle" or omit the bool argument. Fvwm defaults to
+synchronized requests when started with the --debug option. This command
+is intended for debugging only.

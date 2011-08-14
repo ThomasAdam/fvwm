@@ -1,16 +1,6 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-Deschedule
-
-   --------------------------------------------------------------------------
-
-   Deschedule [command_id]
-
-   Removes all commands that were scheduled with the id command_id with the
-   Schedule command from the list of commands to be executed unless they were
-   already executed. If the command_id is omitted, the value of the variable
-   $[schedule.last] is used as the id.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'Deschedule' [command_id]::
++
+Removes all commands that were scheduled with the id command_id with the
+Schedule command from the list of commands to be executed unless they were
+already executed. If the command_id is omitted, the value of the variable
+$[schedule.last] is used as the id.

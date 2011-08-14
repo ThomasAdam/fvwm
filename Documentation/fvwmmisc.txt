@@ -1,0 +1,52 @@
+fvwmmisc(1)
+===========
+:doctype: manpage
+
+NAME
+----
+
+fvwmmisc - miscellaneous commands in fvwm.
+
+
+SYNOPSIS
+--------
+
+fvwm *
+
+DESCRIPTION
+-----------
+
+fvwmmisc - describes the miscellaneous commands used in fvwm which don't
+operate directly on windows or menus, or bindings, etc.
+
+
+COMMANDS
+--------
+
+include::FvwmMisc/BugOpts.txt[]
+
+include::FvwmMisc/BusyCursor.txt[]
+
+include::FvwmMisc/DefaultFont.txt[]
+
+include::FvwmMisc/DefaultIcon.txt[]
+
+include::FvwmMisc/DefaultLayers.txt[]
+
+include::FvwmMisc/Deschedule.txt[]
+
+include::FvwmMisc/Emulate.txt[]
+
+include::FvwmMisc/ImagePath.txt[]
+
+include::FvwmMisc/LocalePath.txt[]
+
+include::FvwmMisc/PrintInfo.txt[]
+
+include::FvwmMisc/Repeat.txt[]
+
+include::FvwmMisc/Schedule.txt[]
+
+include::FvwmMisc/XSync.txt[]
+
+include::FvwmMisc/XSynchronize.txt[]

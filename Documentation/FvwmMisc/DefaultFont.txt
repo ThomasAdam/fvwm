@@ -1,19 +1,9 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-DefaultFont
-
-   --------------------------------------------------------------------------
-
-   DefaultFont [fontname]
-
-   DefaultFont sets the default font to font fontname. The default font is
-   used by fvwm whenever no other font has been specified. To reset the
-   default font to the built-in default, omit the argument. The default font
-   is used for menus, window titles, icon titles as well as the geometry
-   feedback windows during a move or resize operation. To override the
-   default font in a specific context, use the Style * Font, Style *
-   IconFont, or MenuStyle commands.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'DefaultFont' [fontname]::
++
+DefaultFont sets the default font to font fontname. The default font is
+used by fvwm whenever no other font has been specified. To reset the
+default font to the built-in default, omit the argument. The default font
+is used for menus, window titles, icon titles as well as the geometry
+feedback windows during a move or resize operation. To override the
+default font in a specific context, use the Style * Font, Style *
+IconFont, or MenuStyle commands.

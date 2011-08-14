@@ -1,14 +1,4 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-DefaultLayers
-
-   --------------------------------------------------------------------------
-
-   DefaultLayers bottom put top
-
-   Changes the layers that are used for the StaysOnBottom, StaysPut,
-   StaysOnTop Style options. Initially, the layers 2, 4 and 6 are used.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'DefaultLayers' bottom put top::
++
+Changes the layers that are used for the StaysOnBottom, StaysPut,
+StaysOnTop Style options. Initially, the layers 2, 4 and 6 are used.

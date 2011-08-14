@@ -1,36 +1,30 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-Schedule
-
-   --------------------------------------------------------------------------
-
-   Schedule [Periodic] delay_ms [command_id] command
-
-   The command is executed after about delay_ms milliseconds. This may be
-   useful in some tricky setups. The command is executed in the same context
-   window as the Schedule command. An optional integer argument command_id
-   may be given in decimal, hexadecimal or octal format. This id can be used
-   with the Deschedule command to remove the scheduled command before it is
-   executed. If no id is given, fvwm uses negative id numbers, starting with
-   -1 and decreasing by one with each use of the Schedule command. Note that
-   the Schedule command and its arguments undergo the usual command line
-   expansion, and, when command is finally executed, it is expanded again. It
-   may therefore be necessary to quote the parts of the command that must not
-   be expanded twice.
-
-   Note: A window's id as it is returned with $[w.id] can be used as the
-   command_id. Example:
-
- Current Schedule 1000 $[w.id] WindowShade
-
-   The Schedule command also supports the optional keyword Periodic which
-   indicates that the command should be executed every delay_ms. Example:
-
- Schedule Periodic 10000 PipeRead '[ -N "$MAIL" ] && echo \
-      Echo You have mail'
-
-   Use the Deschedule command to stop periodic commands.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'Schedule' [Periodic] delay_ms [command_id] command::
++
+The command is executed after about delay_ms milliseconds. This may be
+useful in some tricky setups. The command is executed in the same context
+window as the Schedule command. An optional integer argument command_id
+may be given in decimal, hexadecimal or octal format. This id can be used
+with the Deschedule command to remove the scheduled command before it is
+executed. If no id is given, fvwm uses negative id numbers, starting with
+-1 and decreasing by one with each use of the Schedule command. Note that
+the Schedule command and its arguments undergo the usual command line
+expansion, and, when command is finally executed, it is expanded again. It
+may therefore be necessary to quote the parts of the command that must not
+be expanded twice.
++
+*Note(: A window's id as it is returned with $[w.id] can be used as the
+command_id. Example:
++
+----
+Current Schedule 1000 $[w.id] WindowShade
+----
++
+The Schedule command also supports the optional keyword Periodic which
+indicates that the command should be executed every delay_ms. Example:
++
+----
+Schedule Periodic 10000 PipeRead '[ -N "$MAIL" ] && echo \
+    Echo You have mail'
+----
++
+Use the 'Deschedule' command to stop periodic commands.

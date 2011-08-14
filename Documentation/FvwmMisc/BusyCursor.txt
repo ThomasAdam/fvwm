@@ -1,43 +1,35 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-BusyCursor
-
-   --------------------------------------------------------------------------
-
-   BusyCursor [Option bool],...
-
-   This command controls the cursor during the execution of certain commands.
-   Option can be DynamicMenu, ModuleSynchronous, Read, Wait or *. An option
-   must be followed by a boolean argument bool. You can use commas to
-   separate individual options. If you set an option to "True", then when the
-   corresponding command is run, fvwm displays the cursor of the WAIT context
-   of the CursorStyle command. "False" forces to not display the cursor. The
-   default is:
-
- BusyCursor DynamicMenu False, ModuleSynchronous False, \
-   Read False, Wait False
-
-   The * option refers to all available options.
-
-   The Read option controls the PipeRead command.
-
-   The DynamicMenu option affects the DynamicPopupAction and
-   MissingSubmenuFunction options of the AddToMenu command. If this option is
-   set to "False", then the busy cursor is not displayed during a dynamic
-   menu command even if this command is a Read or PipeRead command and the
-   Read option is set to "True".
-
-   The ModuleSynchronous option affects the ModuleSynchronous command. If
-   this option is set to "False", then the busy cursor is not displayed while
-   fvwm waits for a module started by ModuleSynchronous to complete its
-   startup.
-
-   The Wait option affects only the root cursor. During a wait pause the root
-   cursor is replaced by the busy cursor and fvwm is still fully functional
-   (you can escape from the pause, see the EscapeFunc command). If you want
-   to use this option and if you do not use the default root cursor, you must
-   set your root cursor with the CursorStyle command.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'BusyCursor' [Option bool],...::
++
+This command controls the cursor during the execution of certain commands.
+Option can be DynamicMenu, ModuleSynchronous, Read, Wait or *. An option
+must be followed by a boolean argument bool. You can use commas to
+separate individual options. If you set an option to "True", then when the
+corresponding command is run, fvwm displays the cursor of the WAIT context
+of the CursorStyle command. "False" forces to not display the cursor. The
+default is:
++
+----
+BusyCursor DynamicMenu False, ModuleSynchronous False, \
+Read False, Wait False
+----
++
+The '*' option refers to all available options.
++
+The 'Read' option controls the 'PipeRead' command.
++
+The DynamicMenu option affects the DynamicPopupAction and
+MissingSubmenuFunction options of the AddToMenu command. If this option is
+set to "False", then the busy cursor is not displayed during a dynamic
+menu command even if this command is a Read or PipeRead command and the
+Read option is set to "True".
++
+The ModuleSynchronous option affects the ModuleSynchronous command. If
+this option is set to "False", then the busy cursor is not displayed while
+fvwm waits for a module started by ModuleSynchronous to complete its
+startup.
++
+The Wait option affects only the root cursor. During a wait pause the root
+cursor is replaced by the busy cursor and fvwm is still fully functional
+(you can escape from the pause, see the EscapeFunc command). If you want
+to use this option and if you do not use the default root cursor, you must
+set your root cursor with the CursorStyle command.
