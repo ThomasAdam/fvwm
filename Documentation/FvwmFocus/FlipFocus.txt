@@ -1,17 +1,7 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+'FlipFocus' [NoWarp]::
 
-FlipFocus
-
-   --------------------------------------------------------------------------
-
-   FlipFocus [NoWarp]
-
-   Executes a Focus command as if the user had used the pointer to select the
-   window. This command alters the order of the WindowList in the same way as
-   clicking in a window to focus, i.e. the target window is removed from the
-   WindowList and placed at the start. This command is recommended for use
-   with the Direction command and in the function invoked from WindowList.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+Executes a Focus command as if the user had used the pointer to select the
+window. This command alters the order of the WindowList in the same way as
+clicking in a window to focus, i.e. the target window is removed from the
+WindowList and placed at the start. This command is recommended for use
+with the Direction command and in the function invoked from WindowList.

@@ -1,30 +1,26 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-CursorMove
-
-   --------------------------------------------------------------------------
-
-   CursorMove horizontal[p] vertical[p]
-
-   Moves the mouse pointer by horizontal pages in the X direction and
-   vertical pages in the Y direction. Either or both entries may be negative.
-   Both horizontal and vertical values are expressed in percent of pages, so
-
- CursorMove 100 100
-
-   means to move down and right by one full page.
-
- CursorMove 50 25
-
-   means to move right half a page and down a quarter of a page.
-   Alternatively, the distance can be specified in pixels by appending a 'p'
-   to the horizontal and/or vertical specification. For example
-
- CursorMove -10p -10p
-
-   means move ten pixels up and ten pixels left. The CursorMove function
-   should not be called from pop-up menus.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'CursorMove' horizontal[p] vertical[p]::
++
+Moves the mouse pointer by horizontal pages in the X direction and
+vertical pages in the Y direction. Either or both entries may be negative.
+Both horizontal and vertical values are expressed in percent of pages, so
++
+----
+CursorMove 100 100
+----
++
+means to move down and right by one full page.
++
+-----
+CursorMove 50 25
+-----
++
+means to move right half a page and down a quarter of a page.
+Alternatively, the distance can be specified in pixels by appending a 'p'
+to the horizontal and/or vertical specification. For example
++
+-------
+CursorMove -10p -10p
+-------
++
+means move ten pixels up and ten pixels left. The CursorMove function
+should not be called from pop-up menus.
