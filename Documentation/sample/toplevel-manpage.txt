@@ -1,0 +1,27 @@
+fvwmexample(1)
+================
+:doctype: manpage
+
+NAME
+----
+
+fvwmexample - what this is for.
+
+
+SYNOPSIS
+--------
+
+fvwm *
+
+DESCRIPTION
+-----------
+
+fvwmexample - describes how fvwmexample is used.
+
+
+COMMANDS
+--------
+
+include::FvwmExample/FooBar.txt[]
+
+include::FvwmExample/FooBar2.txt[]

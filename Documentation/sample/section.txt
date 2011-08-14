@@ -1,0 +1,18 @@
+'FvwmExample' [options] [(other options)] command::
++
+This is a paragraph, which will eventually lead on to another paragraph.
+Note how both paragraphs have literal "+" symbols surrounding them to
+preserve their indentation level within the list block describing this
+fictitious command.
++
+Here is the second paragraph.
++
+---------
+Here's a literal block
+        which will have
+                indention preserved.
+
+Useful for examples.
+---------
+
+For everything else, see the AsciiDoc web site.

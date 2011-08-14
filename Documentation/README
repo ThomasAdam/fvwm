@@ -1,0 +1,64 @@
+FVWM Documentation
+==================
+
+The FVWM man page is broken into several sections:
+
+[ XXX: Describe those sections. ]
+
+Adding a new man page section to an existing top-level include
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Decide which section it belongs in.  If that section already exists,
+simply add the new file containing the appropriate information in to the
+directory.
+
+To help in this, see the following file:
+
+------
+    Documentation/sample/section.txt
+------
+
+This outlines the minimum amount of formatting required for when the new
+file is added to an existing top-level man page section.  All other AsciiDoc
+formatting rules apply.
+
+So for example, let's say we're adding a new "FooBar" command which is a new
+binding command.  We would add such a file to:
+
+------
+    Documentation/FvwmBindings/FooBar.txt
+------
+
+Then, we would add a corresponding include:: line to:
+
+-----
+    Documentation/fvwmbindings.txt
+-----
+
+Such as:
+
+----
+    include::FvwmBindings/FooBar.txt[]
+----
+
+Try and keep the inclusion in alphabetical order if possible, as this makes
+searching easier.
+
+Creating a new man page section
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At a minimum, the AsciiDoc man page driver expects:
+
+----
+NAME
+DESCRIPTION
+SYNOPSIS
+----
+
+See the following template as an example:
+
+-----
+    Documentation/sample/toplevel-manpage.txt
+-----
+
+[ XXX: Also explain about "man fvwmall" or somesuch...
