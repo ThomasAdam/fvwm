@@ -1,11 +1,11 @@
 'EdgeCommand' [direction [Function]]::
-
++
 Binds a specified fvwm command Function to an edge of the screen.
 Direction may be one of "North", "Top", "West", "Left", "South", "Bottom",
 "Right" and "East". If Function is omitted the binding for this edge is
 removed. If EdgeCommand is called without any arguments all edge bindings
 are removed.
-
++
 Function is executed when the mouse pointer enters the invisible pan
 frames that surround the visible screen. The binding works only if
 EdgeThickness is set to a value greater than 0. If a function is bound to
@@ -15,7 +15,7 @@ for scrolling. This command is intended to raise or lower certain windows
 when the mouse pointer enters an edge. FvwmAuto can be used get a delay
 when raising or lowering windows. The following example raises FvwmButtons
 if the mouse pointer enters the top edge of the screen.
-
++
 ------
 # Disable EdgeScrolling but make it possible
 # to move windows over the screen edge
@@ -49,7 +49,7 @@ DestroyFunc AutoRaiseFunction
 AddToFunc AutoRaiseFunction
 + I Current (FvwmButtons) Raise
 ------
-
++
 Normally, the invisible pan frames are only on the screen edges that
 border virtual pages. If a screen edge has a command bound to it, the pan
 frame is always created on that edge.

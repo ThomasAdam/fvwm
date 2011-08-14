@@ -1,11 +1,11 @@
 'ColormapFocus' [FollowsMouse | FollowsFocus]::
-
-   By default, fvwm installs the colormap of the window that the cursor is
-   in. If you use
-
++
+By default, fvwm installs the colormap of the window that the cursor is
+in. If you use
++
 ----
 ColormapFocus FollowsFocus
 ----
-
++
 then the installed colormap is the one for the window that currently has
 the keyboard focus.

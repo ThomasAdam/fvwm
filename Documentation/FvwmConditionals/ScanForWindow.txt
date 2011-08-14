@@ -1,5 +1,5 @@
 'ScanForWindow' [FromPointer] dir1 dir2 [(conditions)] command::
-
++
 Performs command (typically Focus) on a window in the given direction
 which satisfies all conditions. Normally, the center of the currently
 focused window or the context window in which the command was invoked is

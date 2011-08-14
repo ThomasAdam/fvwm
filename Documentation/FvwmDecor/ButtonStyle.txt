@@ -1,11 +1,11 @@
 'ButtonStyle' button [state] [style] [-- [!]flag... ]::
-
++
 Sets the button style for a title-bar button. button is the title-bar
 button number between 0 and 9, or one of "All", "Left", "Right", or
 "Reset". Button numbering is described in the Mouse command section. If
 the style and flags are enclosed in parentheses, then multiple state
 definitions can be specified per line.
-
++
 state refers to which button state should be set. Button states are
 defined as follows: "ActiveUp" and "ActiveDown" refer to the un-pressed
 and pressed states for buttons on active windows; while the "InactiveUp"
@@ -16,7 +16,7 @@ similar state names like just described, but with the "Toggled" prefix are
 used instead for title buttons which have one of the MwmDecorMax,
 MwmDecorShade, MwmDecorStick or MwmDecorLayer hints, if the window is
 maximized, shaded, sticky or placed on specific layer, respectively.
-
++
 ---------
 AddToDecor Default
   + ButtonStyle 6                   \
@@ -31,85 +31,85 @@ AddToDecor Default
 
 Mouse 0 6 N WindowShade
 ----------
-
++
 Additionally, the following shortcuts may be used: "AllNormal",
 "AllToggled", "AllActive", "AllInactive", "AllUp", "AllDown". They are
 actually different masks for 4 individual states from 8 total. These are
 supported too: "AllActiveUp", "AllActiveDown", "AllInactiveUp",
 "AllInactiveDown".
-
++
 If state is specified, that particular button state is set. If state is
 omitted, every state is set. Specifying a style destroys the current style
 (use AddButtonStyle to avoid this).
-
++
 If style is omitted, then state-dependent flags can be set for the primary
 button style without destroying the current style. Examples (each line
 should be considered independent):
-
++
 -------
 ButtonStyle Left -- flat
 ButtonStyle All ActiveUp (-- flat) Inactive (-- flat)
 -------
-
++
 The first line sets every state of the left buttons to flat, while the
 second sets only the "ActiveUp" and "Inactive" states of every button to
 flat (only flags are changed; the buttons' individual styles are not
 changed).
-
++
 If you want to reset all buttons to their defaults:
-
++
 -----
 ButtonStyle Reset
 -----
-
++
 To reset the "ActiveUp" button state of button 1 to the default:
-
++
 -----
 ButtonStyle 1 ActiveUp Default
 -----
-
++
 To reset all button states of button 1 to the default of button number 2:
-
++
 -----
 ButtonStyle 1 Default 2
 -----
-
++
 For any button, multiple state definitions can be given on one line by
 enclosing the style and flags in parentheses. If only one definition per
 line is given the parentheses can be omitted.
-
++
 flags affect the specified state. If a '!' is prefixed to any flag, its
 behavior is negated. The available state-dependent flags for all styles
 are described here (the ButtonStyle entry deals with state-independent
 flags).
-
++
 Raised causes a raised relief pattern to be drawn.
-
++
 Sunk causes a sunken relief pattern to be drawn.
-
++
 Flat inhibits the relief pattern from being drawn.
-
++
 UseTitleStyle causes the given button state to render the current title
 style before rendering the buttons' own styles. The Raised, Flat and Sunk
 TitleStyle flags are ignored since they are redundant in this context.
-
++
 UseBorderStyle causes the button to inherit the decorated BorderStyle
 options.
-
++
 Raised, Sunk and Flat are mutually exclusive, and can be specified for the
 initial ButtonStyle only. UseTitleStyle and UseBorderStyle are also
 mutually exclusive (both can be off however). The default is Raised with
 both UseBorderStyle and UseTitleStyle left unset.
-
++
 Important
-
++
 for the "ActiveDown" and "InactiveDown" states: When a button is pressed,
 the relief is inverted. Because of this, to obtain the raised look in
 "ActiveDown" or "InactiveDown" states you must specify the opposite of the
 desired relief (i.e. Sunk for "ActiveDown" or "InactiveDown"). This
 behavior is consistent, but may seem confusing at first. The same applies
 to the "Toggled" states.
-
++
 Button styles are classified as non-destructive, partially destructive, or
 fully destructive. Non-destructive styles do not affect the image.
 Partially destructive styles can obscure some or all parts of the
@@ -117,62 +117,62 @@ underlying image (i.e. Pixmap). Fully destructive styles obscure the
 entire underlying image (i.e. Solid or one of the gradient styles). Thus,
 if stacking styles with AddButtonStyle (or AddTitleStyle for title-bars),
 use care in sequencing styles to minimize redraw.
-
++
 The available styles are:
-
++
 -----
 Simple, Default, Solid, Colorset, Vector, ?Gradient, Pixmap,
 AdjustedPixmap, ShrunkPixmap, StretchedPixmap, TiledPixmap, MiniIcon
 -----
-
++
 The description of these styles and their arguments follow:
-
++
 The Simple style does nothing. There are no arguments, and this style is
 an example of a non-destructive button style.
-
++
 The Default style conditionally accepts one argument: a number which
 specifies the default button number to load. If the style command given is
 ButtonStyle or AddButtonStyle, the argument is optional (if given, it
 overrides the current button). If a command other than ButtonStyle or
 AddButtonStyle is used, the number must be specified.
-
++
 The Solid style fills the button with a solid color. The relief border
 color is not affected. The color is specified as a single argument. This
 style is fully destructive.
-
++
 The Colorset cs [alpha] style fills the button with the Colorset cs. The
 optional alpha argument is a percentage between 0 and 100. It causes fvwm
 to merge the colorset background onto the button using this percentage. If
 the percentage is 0 the colorset background is hidden and if it is 100 the
 colorset background is fully applied. The default is 100. So, the
 destructiveness depends on the alpha argument.
-
++
 The Vector num X[offsetp]xY[offsetp]@C ... style draws a line pattern.
 Since this is a standard button style, the keyword Vector is optional, num
 is a number of point specifications of the form X[offsetp]xY[offsetp]@C
 ... X and Y are point coordinates inside the button, given in percents
 (from 0 to 100). An optional absolute offset in pixels, can be given as
 "+<offset>p" for a positive or "-<offset>p" for a negative offset.
-
++
 C specifies a line color (0 - the shadow color, 1 - the highlight color, 2
 - the background color, 3 - the foreground color, 4 - only move the point,
 do not draw). The first point color is not used. You can use up to 10000
 points in a line pattern. This style is partially destructive.
-
++
 The specification is a little cumbersome:
-
++
 -----
 ButtonStyle 2 Vector 4 50x30@1 70x70@0 30x70@0 50x30@1
 -----
-
++
 then the button 2 decoration uses a 4-point pattern consisting of a line
 from (x=50,y=30) to (70,70) in the shadow color (@0), and then to (30,70)
 in the shadow color, and finally to (50,30) in the highlight color (@1).
 Is that too confusing? See the fvwm web pages for some examples with
 screenshots.
-
++
 A more complex example of Vector:
-
++
 -----
 ButtonStyle 8 Vector 10 45x65@2 45x75@3 \
    20x75@3 20x50@3 35x50@3 35x65@1 35x25@1 \
@@ -181,17 +181,17 @@ ButtonStyle 0 Vector 10 45x65@2 45x75@0 \
    20x75@0 20x50@1 45x50@1 45x65@0 75x65@3 \
    75x25@3 35x25@3 35x47@3
 -----
-
++
 The ?Gradient styles denote color gradients. Fill in the question mark
 with any one of the defined gradient types. Please refer to the Color
 Gradients section for a description of the gradient syntax. The gradient
 styles are fully destructive.
-
++
 The Pixmap style displays a pixmap. A pixmap should be specified as an
 argument. For example, the following would give button number 2 the same
 pixmap for all 4 states (2 active and 2 inactive), and button number 4 all
 different pixmaps.
-
++
 ------
 ButtonStyle 2 Pixmap my_pixmap.xpm
 ButtonStyle 4 \
@@ -201,31 +201,31 @@ ButtonStyle 4 \
 ButtonStyle 4 \
          InactiveDown Pixmap inactivedown.xpm
 -----
-
++
 The pixmap specification can be given as an absolute or relative pathname
 (see ImagePath). If the pixmap cannot be found, the button style reverts
 to Simple. Flags specific to the Pixmap style are Left, Right, Top, and
 Bottom. These can be used to justify the pixmap (default is centered for
 both directions). Pixmap transparency is used for the color "None." This
 style is partially destructive.
-
++
 The AdjustedPixmap style is similar to the Pixmap style. But the image is
 resized to exactly fit the button.
-
++
 The ShrunkPixmap style is similar to the Pixmap style. But if the image is
 bigger than the button the image is resized to fit into the button.
-
++
 The StretchedPixmap style is similar to the Pixmap style. But if the image
 is smaller than the button the image is resized to cover the button.
-
++
 The TiledPixmap style accepts a pixmap to be tiled as the button
 background. One pixmap is specified as an argument. Pixmap transparency is
 not used. This style is fully destructive.
-
++
 The MiniIcon style draws the window's miniature icon in the button, which
 is specified with the MiniIcon option of the Style command. This button
 style accepts no arguments. Example:
-
++
 -----
 Style *     MiniIcon mini-bx2.xpm
 Style xterm MiniIcon mini-term.xpm
@@ -233,42 +233,42 @@ Style Emacs MiniIcon mini-doc.xpm
 
 ButtonStyle 1 MiniIcon
 -----
-
++
 'ButtonStyle' button - [!]flag...::
-
++
 Sets state-independent flags for the specified button. State-independent
 flags affect button behavior. Each flag is separated by a space. If a '!'
 is prefixed to the flag then the behavior is negated. The special flag
 Clear clears any existing flags.
-
++
 The following flags are usually used to tell fvwm which buttons should be
 affected by mwm function hints (see MwmFunctions option of the Style
 command. This is not done automatically since you might have buttons bound
 to complex functions, for instance.
-
++
 MwmDecorMenu should be assigned to title-bar buttons which display a menu.
 The default assignment is the leftmost button. When a window with the
 MwmFunctions Style option requests not to show this button, it is hidden.
-
++
 MwmDecorMin should be assigned to title-bar buttons which minimize or
 iconify the window. The default assignment is the second button over from
 the rightmost button. When a window with the MwmFunctions Style option
 requests not to show this button, it is hidden.
-
++
 MwmDecorMax should be assigned to title-bar buttons which maximize the
 window. The default assignment is the rightmost button. When a window with
 the MwmFunctions Style option requests not to show this button, it is
 hidden. When the window is maximized, the vector pattern on the button
 looks pressed in.
-
++
 MwmDecorShade should be assigned to title-bar buttons which shade the
 window (see WindowShade command). When the window is shaded, the vector
 pattern on the button looks pressed in.
-
++
 MwmDecorStick should be assigned to title-bar buttons which make the
 window sticky. When the window is sticky, the vector pattern on the button
 looks pressed in.
-
++
 The flag MwmDecorLayer layer should be assigned to title-bar buttons which
 place the window in the layer numbered layer. When the window is on that
 specific layer, the vector pattern on the button looks pressed in.

@@ -1,10 +1,10 @@
 'None' [(conditions)] command::
-
++
 Performs command if no window which satisfies all conditions exists. The
 command is run in the context of the root window. Returns 1 if no window
 matches the conditions and 0 otherwise. See Conditions section for a list
 of conditions.
-
++
 This command implies the conditions CirculateHit, CirculateHitIcon and
 CirculateHitShaded. They can be turned off by specifying !CirculateHit
 etc. explicitly.

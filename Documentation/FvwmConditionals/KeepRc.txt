@@ -1,5 +1,5 @@
 'KeepRc' command::
-
++
 Runs the command but does not alter the return code of the previous
 command. Note: KeepRc is treated as a prefix to its command. Expansion of
 the command line is done as if KeepRc was not there.

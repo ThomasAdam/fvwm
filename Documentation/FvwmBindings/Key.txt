@@ -1,5 +1,5 @@
 'Key' [(window)] Keyname Context Modifiers Function::
-
++
 Binds a keyboard key to a specified fvwm command, or removes the binding
 if Function is '-'. The syntax is the same as for a Mouse binding except
 that the mouse button number is replaced with a Keyname. Normally, the key
@@ -17,17 +17,17 @@ the PointerKey command instead. If you want to bind keys to a window with
 SloppyFocus or ClickToFocus that are supposed to work when the pointer is
 not over the window, fvwm assumes the pointer is over the client window
 (i.e. you have to use the 'W' context).
-
++
 The special context 'M' for menus can be used to (re)define the menu
 controls. It be used alone or together with 'T', 'S', 'I', '[', ']', '-'
 and '_'. See the Menu Bindings section for details.
-
++
 The following example binds the built-in window list to pop up when
 Alt-Ctrl-Shift-F11 is hit, no matter where the mouse pointer is:
-
++
 -----
 Key F11 A SCM WindowList
 -----
-
++
 Binding a key to a title-bar button causes that button to appear. Please
 refer to the Mouse command for details.

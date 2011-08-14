@@ -1,5 +1,5 @@
 'Mouse' [(window)] Button Context Modifiers Function::
-
++
 Defines a mouse binding, or removes the binding if Function is '-'. Button
 is the mouse button number. If Button is zero then any button performs the
 specified function. Note that only mouse buttons 1 to 5 are fully
@@ -7,7 +7,7 @@ supported by X11. Any number above this works only partially. Complex
 functions can not be used with these buttons and neither any operation
 that requires dragging the pointer with the button held. This is due to
 limitations of X11. By default, the highest allowed button number is 9.
-
++
 Context describes where the binding applies. Valid contexts are 'R' for
 the root window, 'W' for an application window, 'D' for a desktop
 application (as kdesktop or Nautilus desktop), 'T' for a window title-bar,
@@ -19,17 +19,17 @@ title-bar buttons, or any combination of these letters. 'A' is for any
 context. For instance, a context of "FST" applies when the mouse is
 anywhere in a window's border except the title-bar buttons. Only 'S' and
 'W' are valid for an undecorated window.
-
++
 The special context 'M' for menus can be used to (re)define the menu
 controls. It can be used alone or together with 'T', 'S', 'I', '[', ']',
 '-' and '_'. See the Menu Bindings section for details.
-
++
 The special context 'P' controls what buttons that can be used to place a
 window. When using this context no modifiers are allowed (Modifiers must
 be N), no window is allowed, and the Function must be one of PlaceWindow,
 PlaceWindowDrag, PlaceWindowInteractive, CancelPlacement,
 CancelPlacementDrag, CancelPlacementInteractive or -.
-
++
 PlaceWindow makes Button usable for window placement, both for interactive
 and drag move. CancelPlacement does the inverse. That is makes Button to
 cancel move for both interactive and drag move. It may however not
@@ -37,50 +37,50 @@ override how new windows are resized after being placed. This is
 controlled by the Emulate command. Also a window being dragged can always
 be placed by releasing the button hold while dragging, regardless of if it
 is set to PlaceWindow or not.
-
++
 PlaceWindowDrag and PlaceWindowInteractive/CancelPlacementDrag and
 CancelPlacementInteractive work as PlaceWindow/CancelPlacement with the
 exception that they only affect either windows dragged / placed
 interactively.
-
++
 '-' is equivalent to CancelPlacement.
-
++
 The following example makes all buttons but button 3 usable for
 interactive placement and makes drag moves started by other buttons than
 one cancel if button 1 is pressed before finishing the move:
-
++
 ------
 Mouse 0 P N PlaceWindow
 Mouse 3 P N CancelPlacement
 Mouse 1 P N CancelPlacementDrag
 ------
-
++
 By default, the binding applies to all windows. You can specify that a
 binding only applies to specific windows by specifying the window name in
 brackets. The window name is a wildcard pattern specifying the class,
 resource or name of the window you want the binding to apply to.
-
++
 The following example shows how the same key-binding can be used to
 perform different functions depending on the window that is focused:
-
++
 --------
 Key (rxvt)  V A C Echo ctrl-V-in-RXVT
 Key (*term) V A C Echo ctrl-V-in-Term
 Key (*vim)  V A C --
 Key         V A C Echo ctrl-V-elsewhere
 --------
-
++
 A '--' action indicates that the event should be propagated to the
 specified window to handle. This is only a valid action for
 window-specific bindings.
-
++
 This example shows how to display the WindowList when Button 3 is pressed
 on an rxvt window:
-
++
 -----
 Mouse (rxvt) 3 A A WindowList
 -----
-
++
 Note that Fvwm actually intercepts all events for a window-specific
 binding and (if the focused window doesn't match any of the bindings)
 sends a synthetic copy of the event to the window. This should be
@@ -88,30 +88,30 @@ transparent to most applications, however (for security reasons) some
 programs ignore these synthetic events by default - xterm is one of them.
 To enable handling of these events, add the following line to your
 ~/.Xdefaults file:
-
++
 ------
 XTerm*allowSendEvents:  true
 ------
-
++
 Modifiers is any combination of 'N' for no modifiers, 'C' for control, 'S'
 for shift, 'M' for Meta, 'L' for Caps-Lock or 'A' for any modifier. For
 example, a modifier of "SM" applies when both the Meta and Shift keys are
 down. X11 modifiers mod1 through mod5 are represented as the digits '1'
 through '5'. The modifier 'L' is ignored by default. To turn it on, use
 the IgnoreModifiers command.
-
++
 'Function' is one of fvwm's commands.
-
++
 The title-bar buttons are numbered with odd numbered buttons on the left
 side of the title-bar and even numbers on the right. Smaller-numbered
 buttons are displayed toward the outside of the window while
 larger-numbered buttons appear toward the middle of the window (0 is short
 for 10). In summary, the buttons are numbered:
-
++
 -----
 1 3 5 7 9    0 8 6 4 2
 -----
-
++
 The highest odd numbered button which has an action bound to it determines
 the number of buttons drawn on the left side of the title bar. The highest
 even number determines the number of right side buttons which are drawn.

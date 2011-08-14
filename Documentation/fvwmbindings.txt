@@ -16,7 +16,7 @@ fvwm *
 DESCRIPTION
 -----------
 
-fvwmconditionals - describes how key and mouse bindings work within fvwm.
+fvwmbindings - describes how key and mouse bindings work within fvwm.
 
 
 COMMANDS

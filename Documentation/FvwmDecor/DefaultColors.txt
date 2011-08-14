@@ -1,5 +1,5 @@
 'DefaultColors' [foreground] [background]::
-
++
 DefaultColors sets the default foreground and background colors used in
 miscellaneous windows created by fvwm, for example in the geometry
 feedback windows during a move or resize operation. If you do not want to

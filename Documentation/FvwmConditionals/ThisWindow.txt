@@ -1,12 +1,12 @@
 'ThisWindow' [(conditions)] command::
-
++
 ThisWindow executes the specified command in the context of the current
 operand window. If there is no operand window (it is invoked in the root
 window), the command is ignored. ThisWindow is never interactive. The
 command is executed only if the given conditions are met. It returns -1 if
 used outside a window context. See Conditions section for a list of
 conditions.
-
++
 This command implies the conditions CirculateHit, CirculateHitIcon and
 CirculateHitShaded. They can be turned off by specifying "!CirculateHit"
 etc. explicitly.

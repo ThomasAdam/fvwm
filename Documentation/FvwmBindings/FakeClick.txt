@@ -1,5 +1,5 @@
 'FakeClick' [ command value ]...::
-
++
 This command is mainly intended for debugging fvwm and no guarantees are
 made that it works for you. FakeClick can simulate mouse button press and
 release events and pass them to fvwm or the applications. The parameters
@@ -18,11 +18,11 @@ passed to the top level window under the pointer which is usually the
 frame window. With 3, events go to the client window. Higher numbers go to
 successive sub windows. Zero (0) goes to the smallest window that contains
 the pointer. Note that events propagate upward.
-
++
 ------
 FakeClick depth 2 press 1 wait 250 release 1
 ------
-
++
 This simulates a click with button 1 in the parent window (depth 2) with a
 delay of 250 milliseconds between the press and the release. Note: all
 command names can be abbreviated with their first letter.

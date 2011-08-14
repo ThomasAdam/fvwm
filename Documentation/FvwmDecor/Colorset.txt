@@ -1,14 +1,14 @@
 'Colorset' num [options]::
-
++
 Creates or modifies colorset num. Colorsets are identified by this number.
 The number can start at zero and can be a very large number.
-
++
 Warning: The highest colorset number used determines memory consumption.
 Thus, if you define 'Colorset 100000', the memory for 100001 colorsets is
 used. Keep your colorset numbers as small as possible.
-
++
 By convention, colorsets are numbered like this:
-
++
 ----
  # 0 = Default colors
  # 1 = Inactive windows
@@ -19,32 +19,32 @@ By convention, colorsets are numbered like this:
  # 6 = module foreground and background
  # 7 = hilight colors
 ----
-
++
 If you need to have more colors and do not want to reinvent the wheel, you
 may use the convention used in fvwm-themes, it defines the meaning of the
 first 40 colorsets for nearly all purposes:
-
++
    http://fvwm-themes.sourceforge.net/doc/colorsets
-
++
 Each colorset has four colors, an optional pixmap and an optional shape
 mask. The four colors are used by modules as the foreground, background,
 highlight and shadow colors. When a colorset is created it defaults to a
 foreground of black and background of gray. The background and foreground
 are marked as "average" and "contrast" (see later) so that just specifying
 a pixmap or gradient gives sensible results.
-
++
 options is a comma separated list containing some of the keywords: fg,
 Fore, Foreground, bg, Back, Background, hi, Hilite, Hilight, sh, Shade,
 Shadow, fgsh, Pixmap, TiledPixmap, AspectPixmap, Transparent,
 RootTransparent, Shape, TiledShape, AspectShape, NoShape, ?Gradient, Tint,
 fgTint, bgTint, Alpha, fgAlpha, Dither, NoDither, IconTint, IconAlpha,
 Plain.
-
++
 fg, Fore and Foreground take a color name as an argument and set the
 foreground color. The special name Contrast may be used to select a color
 that contrasts well with the background color. To reset the foreground
 color to the default value you can simply omit the color name.
-
++
 bg, Back and Background take a color name as an argument and set the
 background color. It also sets the highlight and shadow colors to values
 that give a 3d effect unless these have been explicitly set with the
@@ -54,22 +54,22 @@ option, the tint is not taken in account in the computation of the average
 color. You should use the bgTint option to get the "real" average color.
 The background color is reset to the default value if the color name is
 omitted.
-
++
 hi, Hilite and Hilight take a color name as an argument and set the
 highlight color. If the highlight color is not explicitly set, the default
 is to calculate it from the background color. To switch back to the
 default behavior the color name can be omitted.
-
++
 sh, Shade and Shadow take a color name as an argument and set the shadow
 color. If the shadow color is not explicitly set, the default is to
 calculate it from the background color. To switch back to the default
 behavior the color name can be omitted.
-
++
 fgsh takes a color name as an argument and sets the color used by the
 shadowing font effect. See the Font Shadow Effects section of the fvwm man
 page. By default this color is computed from the foreground and background
 colors. To switch back to the default the color name can be omitted.
-
++
 Pixmap, TiledPixmap and AspectPixmap take a file name as an argument,
 search the ImagePath and use it as the background pixmap. Any transparent
 parts are filled with the background color. Not specifying a file name
@@ -77,7 +77,7 @@ removes any existing image from the colorset. TiledPixmap produces
 repeated copies of the image with no scaling, Pixmap causes the image to
 be stretched to fit whatever object the colorset is applied to and
 AspectPixmap stretches to fit but retains the image aspect ratio.
-
++
 Transparent creates a transparent background pixmap. The pixmap is used as
 a window background to achieve root transparency. For this you should use
 the ParentalRelativity option to the Style command. A subsequent root
@@ -87,33 +87,33 @@ solid or colorset colors or a recent version of Esetroot (>= 9.2) a
 background change is detected. If background changes are not detected
 (e.g., if you use xv or xsetroot) you can force detection by using the -d
 option of fvwm-root:
-
++
 ----
 xv -root -quit mybg.png; fvwm-root -d
 ----
-
++
 Due to the way X implements transparency no guarantees can be made that
 the desired effect can be achieved. The application may even crash. If you
 experience any problems with this option, do not use it.
-
++
 Using outline move and resize (see the OpaqueMoveSize command and the
 ResizeOpaque Style option) as well as setting the WindowShadeShrinks style
 may help. The transparency achieved with Transparent depends on whether
 the colorset is applied to the foreground or the background of a window.
 In the second case the transparency is relative to the parent window of
 the window on which the colorset is defined. For example:
-
++
 -----
 Colorset 12 VGradient 200 grey30 grey60
 Colorset 17 Transparent
 *FvwmIconMan: Colorset 12
 *FvwmIconMan: PlainColorset 17
 ----
-
++
 gives an IconMan with a vertical grey gradient background and the buttons
 use the background (by transparency). To obtain a (root) transparent
 IconMan:
-
++
 ------
 Colorset 12 Transparent
 Colorset 17 Transparent
@@ -125,16 +125,16 @@ Colorset 19 Transparent
 *FvwmIconMan: FocusColorset 18
 *FvwmIconMan: IconColorset  19
 -----
-
++
 The Colorset IconMan option defines the IconMan window background, but the
 PlainColorset and the FocusColorset are drawn on the foreground. So, the
 transparency of the IconMan buttons is achieved by drawing nothing. Now if
 this IconMan is swallowed in an FvwmButtons as:
-
++
 -----
 *FvwmButtons:(Colorset 10, Swallow "FvwmIconMan" 'FvwmIconMan')
 -----
-
++
 then, FvwmIconMan becomes a child of FvwmButtons and it is transparent
 relative to FvwmButtons. So, in this case FvwmIconMan uses Colorset 10 as
 background. If you want root transparency use the RootTransparent option.
@@ -159,7 +159,7 @@ to see if this the case). There is a chance that the backing store support
 of your X server does not work well with the terrible hack used to Tint
 the ParentRelative Pixmap. So, to get tinted root transparency it is more
 safe to use the RootTransparent option.
-
++
 RootTransparent [ buffer ] creates a root transparent background. To make
 this option work, you must use an Esetroot compatible program, fvwm-root
 with the --retain-pixmap option or FvwmBacker with the RetainPixmap option
@@ -171,7 +171,7 @@ without buffer. However, this option may add a lot of memory to your X
 server (depending on the size of the image used to set the background). In
 summary, using outline move and resize for modules which use such a
 colorset may be a good idea.
-
++
 Shape, TiledShape and AspectShape take a file name as an argument, search
 the ImagePath and use it as the shape bitmap. TiledShape produces repeated
 copies of the bitmap with no scaling, Shape causes the bitmap to be
@@ -180,12 +180,12 @@ AspectShape stretches to fit but retains the bitmap aspect ratio. If the
 file is a pixmap in xpm format the shape mask (all opaque pixels) of the
 pixmap is used. For png and svg images, the shape mask is equivalent to
 all not completely transparent pixels (alpha > 0).
-
++
 Warning
-
++
 Due to the way X11 implements shapes you cannot take back making windows
 shaped. You may have to restart fvwm or the shaped application.
-
++
 ?Gradient ... creates a pixmap and stretches it to fit the window.
 ?Gradient may be one of HGradient, VGradient, DGradient, BGradient,
 SGradient, CGradient, RGradient or YGradient. The gradient types are as
@@ -194,37 +194,37 @@ bottom right; B is a backwards diagonal from bottom left to top right; S
 is concentric squares; C is concentric circles; R is a radar like pattern
 and Y is a Yin Yang style (but without the dots). Please refer to the
 Color Gradients section for the syntax of gradients.
-
++
 Tint takes 2 arguments, a color and a percentage between 0 and 100. It
 causes the image defined using ?Pixmap or ?Gradient to be tinted with the
 specified color using the percentage. If the image is transparent Tint
 tints only the image part. Unfortunately, a colorset background specified
 using the Transparent option can give strange results. See the Transparent
 option for details. With no arguments this option removes the tint.
-
++
 fgTint takes 2 arguments, a color and a percentage between 0 and 100. It
 causes the color defined using fg to be tinted with the specified color
 using the percentage. With no arguments this option removes the tint.
-
++
 bgTint takes 2 arguments, a color and a percentage between 0 and 100. It
 causes the color defined using bg to be tinted with the specified color
 using the percentage. If the sh and hi colors are not specified, they are
 recomputed from the tinted bg color. With no arguments this option removes
 the tint.
-
++
 Alpha takes a percentage between 0 and 100 as an argument. It causes fvwm
 to merge the image defined using ?Pixmap or ?Gradient with the bg color
 using the percentage. If the percentage is 0 the image is hidden and if it
 is 100 the image is displayed as usual (no merge). The default is 100 and
 it is restored if no argument is given.
-
++
 fgAlpha takes a percentage between 0 and 100 as an argument. It causes
 fvwm to merge the text and the colorset background using the percentage.
 If the percentage is 0 the text is hidden and if it is 100 the text is
 displayed as usual (no merge). This option has an effect only with fonts
 loaded by Xft, see the Font Names and Font Loading section. The default is
 100 and it is restored if no argument is given.
-
++
 Dither causes fvwm to dither the image defined using ?Pixmap or ?Gradient.
 This is useful only with displays with depth less than or equal to 16
 (i.e., on displays which can only display less than 65537 colors at once).
@@ -235,7 +235,7 @@ with 256 colors or less). In depth 15 (32768 colors) and 16 (65536
 colors), the default is NoDither, however this effect can be useful with
 images which contain a lot of close colors. For example a fine gradient
 looks more smooth.
-
++
 IconTint takes 2 arguments, a color and a percentage between 0 and 100. It
 causes fvwm or a module to tint the "icons" which are rendered into the
 colorset background with the specified color using a percentage. Here
@@ -243,12 +243,12 @@ colorset background with the specified color using a percentage. Here
 applications in various modules, images loaded by modules (e.g., images
 specified by the Icon FvwmButtons button option) ...etc. With no arguments
 this option removes the icon tint.
-
++
 IconAlpha takes a percentage between 0 and 100 as an argument. It causes
 fvwm to merge the "icons" which are rendered into the colorset background
 using this percentage. The default is 100 and it is restored if no
 argument is given.
-
++
 Note: It is equivalent to use "Tint a_color rate" and "Alpha a" if a = 100
 and the bg color is a_color. This equivalence does not hold for IconAlpha
 and IconTint as the background can be an image or a gradient (and not a
@@ -256,48 +256,48 @@ uniform color background). However, in some cases you can achieve (almost)
 the same effect by using IconTint in the place of IconAlpha. This is
 preferable as, in general, IconAlpha generates more redrawing than
 IconTint.
-
++
 NoShape removes the shape mask from the colorset while Plain removes the
 background pixmap or gradient.
-
++
 Examples:
-
++
 -----
 Colorset 3 fg tan, bg navy
 -----
-
++
 If necessary this creates colorsets 0, 1, 2 and 3 and then changes
 colorset 3 to have a foreground of tan, a background of navy.
-
++
 -----
 Colorset 3 bg "navy blue"
 -----
-
++
 changes the background color of colorset 3 to navy blue. The foreground
 and pixmap are unchanged.
-
++
 -----
 Colorset 3 AspectPixmap large_murky_dungeon.xpm
 -----
-
++
 causes depression.
-
++
 ------
 Colorset 3 bg Average
 ------
-
++
 Sets the background color and the relief colors to match the background
 pixmap. This is the default setting but it must be used if a background
 color was specified and is now not required.
-
++
 ------
 Colorset 3 YGradient 200 3 blue 1000 navy 1 blue 1000 navy
 ------
-
++
 Adds a Yin Yang gradient background pixmap to colorset 3. If the
 background is set to average it is recomputed along with the foreground if
 that is set to contrast.
-
++
 ---------
 #!/bin/sh
 FvwmCommand "Colorset 7 fg navy, bg gray"
@@ -309,16 +309,16 @@ do
     sleep 1
 done
 ----------
-
++
 Makes colorset 7 blink.
-
++
 The color names used in colorsets are saved as fvwm variables which can be
 substituted in any fvwm command. For example:
-
++
 ------
 AddToFunc InitFunction
 + I Exec exec xterm -fg $[fg.cs0] -bg $[bg.cs0]
 ------
-
++
 Where $[fg.cs0] is the foreground color of colorset zero. Please refer to
 the Command Expansion section for more information.

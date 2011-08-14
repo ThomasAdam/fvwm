@@ -1,9 +1,9 @@
 'GnomeButton'::
-
++
 Used in conjunction with Mouse to pass mouse button presses on the root
 window to a GNOME program (such as GMC). The following example passes
 presses of mouse buttons 1 and 3 to such a program.
-
++
 ------
 Mouse 1 R A GnomeButton
 Mouse 3 R A GnomeButton

@@ -1,5 +1,5 @@
 'TestRc' [([!]returncode)] command::
-
++
 Performs command if the last conditional command returned the value
 returncode. Instead of the numeric values 0 (no match), 1 (match), -1
 (error), and -2 (break) the symbolic names "NoMatch", "Match", "Error" and
@@ -9,9 +9,9 @@ returncode does not match the value returned by the conditional command.
 The TestRc command can only be used inside functions. If the command is
 another conditional command, the previous return code is replaced by the
 new one.
-
++
 Example:
-
++
 -----
 AddToFunc ToggleXterm
 + I All (my_xtermwindow) Close

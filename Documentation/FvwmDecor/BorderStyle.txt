@@ -1,54 +1,54 @@
 'BorderStyle' state [style] [-- [!]flag... ]::
-
++
 Defines a border style for windows. state can be either "Active" or
 "Inactive". If state is omitted, then the style is set for both states. If
 the style and flags are enclosed in parentheses, then multiple state
 definitions can be specified per line.
-
++
 style is a subset of the available button styles, and can only be
 TiledPixmap (uniform pixmaps which match the bevel colors work best this
 way) or Colorset. If a '!' is prefixed to any flag, the behavior is
 negated. If style is not specified, then one can change flags without
 resetting the style.
-
++
 The HiddenHandles flag hides the corner handle dividing lines on windows
 with handles (this option has no effect for !Handles windows). By default,
 HiddenHandles is disabled.
-
++
 The NoInset flag supplements HiddenHandles. If given, the inner bevel
 around the window frame is not drawn. If HiddenHandles is not specified,
 the frame looks a little strange.
-
++
 Raised causes a raised relief pattern to be drawn (default). Sunk causes a
 sunken relief pattern to be drawn. Flat inhibits the relief pattern from
 being drawn.
-
++
 To decorate the active and inactive window borders with a textured pixmap,
 one might specify:
-
++
 -----
 BorderStyle Active TiledPixmap marble.xpm
 BorderStyle Inactive TiledPixmap granite.xpm
 BorderStyle Active -- HiddenHandles NoInset
 -----
-
++
 To clear the style for both states:
-
++
 ----
 BorderStyle Simple
 ----
-
++
 To clear for a single state:
-
++
 -----
 BorderStyle Active Simple
 -----
-
++
 To unset a flag for a given state:
-
++
 -----
 BorderStyle Inactive -- !NoInset
 -----
-
++
 title-bar buttons can inherit the border style with the UseBorderStyle
 flag (see ButtonStyle).

@@ -1,5 +1,5 @@
 'Any' [(conditions)] command::
-
++
 Performs command if any window which satisfies all conditions exists. The
 command is run in the context of the root window. See the Conditions
 section for a list of conditions.
