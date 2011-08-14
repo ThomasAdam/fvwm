@@ -1,24 +1,14 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-Recapture
-
-   --------------------------------------------------------------------------
-
-   Recapture
-
-   This command is obsolete and should not be used anymore. Should you want
-   to do something specific that you cannot do without it, please report this
-   to the fvwm-workers mailing list <fvwm-workers@fvwm.org>. This command may
-   be removed at some point in the future. Please read the note at the end of
-   the section Delayed Execution of Commands to learn about how to avoid the
-   Recapture command.
-
-   Causes fvwm to recapture all of its windows. This ensures that the latest
-   style parameters are used. The recapture operation is visually disturbing.
-
-   Since fvwm version 2.4 only a very few Style options need a Recapture to
-   take effect (e.g. UseStyle).
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'Recapture'::
++
+This command is obsolete and should not be used anymore. Should you want
+to do something specific that you cannot do without it, please report this
+to the fvwm-workers mailing list <fvwm-workers@fvwm.org>. This command may
+be removed at some point in the future. Please read the note at the end of
+the section Delayed Execution of Commands to learn about how to avoid the
+Recapture command.
++
+Causes fvwm to recapture all of its windows. This ensures that the latest
+style parameters are used. The recapture operation is visually disturbing.
++
+Since fvwm version 2.4 only a very few Style options need a Recapture to
+take effect (e.g. UseStyle).

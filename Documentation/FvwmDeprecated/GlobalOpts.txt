@@ -1,95 +1,49 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+'GlobalOpts' [options]::
++
+This command is obsolete. Please replace the global options in your
+configuration file according to the following table:
++
+----
+GlobalOpts WindowShadeShrinks --> Style * WindowShadeShrinks
 
-GlobalOpts
+GlobalOpts WindowShadeScrolls --> Style * WindowShadeScrolls
 
-   --------------------------------------------------------------------------
+GlobalOpts SmartPlacementIsReallySmart --> Style * MinOverlapPlacement
 
-   GlobalOpts [options]
+GlobalOpts SmartPlacementIsNormal --> Style * TileCascadePlacement
 
-   This command is obsolete. Please replace the global options in your
-   configuration file according to the following table:
+GlobalOpts ClickToFocusDoesntPassClick --> Style * ClickToFocusPassesClickOff
 
- GlobalOpts WindowShadeShrinks
-   -->
- Style * WindowShadeShrinks
+GlobalOpts ClickToFocusPassesClick --> Style * ClickToFocusPassesClick
 
- GlobalOpts WindowShadeScrolls
-   -->
- Style * WindowShadeScrolls
+GlobalOpts ClickToFocusDoesntRaise --> Style * ClickToFocusRaisesOff
 
- GlobalOpts SmartPlacementIsReallySmart
-   -->
- Style * MinOverlapPlacement
+GlobalOpts ClickToFocusRaises --> Style * ClickToFocusRaises
 
- GlobalOpts SmartPlacementIsNormal
-   -->
- Style * TileCascadePlacement
+GlobalOpts MouseFocusClickDoesntRaise --> Style * MouseFocusClickRaisesOff
 
- GlobalOpts ClickToFocusDoesntPassClick
-   -->
- Style * ClickToFocusPassesClickOff
+GlobalOpts MouseFocusClickRaises --> Style * MouseFocusClickRaises
 
- GlobalOpts ClickToFocusPassesClick
-   -->
- Style * ClickToFocusPassesClick
+GlobalOpts NoStipledTitles --> Style * !StippledTitle
 
- GlobalOpts ClickToFocusDoesntRaise
-   -->
- Style * ClickToFocusRaisesOff
+GlobalOpts StipledTitles --> Style * StippledTitle
 
- GlobalOpts ClickToFocusRaises
-   -->
- Style * ClickToFocusRaises
+GlobalOpts CaptureHonorsStartsOnPage --> Style * CaptureHonorsStartsOnPage
 
- GlobalOpts MouseFocusClickDoesntRaise
-   -->
- Style * MouseFocusClickRaisesOff
+GlobalOpts CaptureIgnoresStartsOnPage --> Style * CaptureIgnoresStartsOnPage
 
- GlobalOpts MouseFocusClickRaises
-   -->
- Style * MouseFocusClickRaises
+GlobalOpts RecaptureHonorsStartsOnPage --> Style * RecaptureHonorsStartsOnPage
 
- GlobalOpts NoStipledTitles
-   -->
- Style * !StippledTitle
+GlobalOpts RecaptureIgnoresStartsOnPage -->
+    Style * RecaptureIgnoresStartsOnPage
 
- GlobalOpts StipledTitles
-   -->
- Style * StippledTitle
+GlobalOpts ActivePlacementHonorsStartsOnPage -->
+    Style * ManualPlacementHonorsStartsOnPage
 
- GlobalOpts CaptureHonorsStartsOnPage
-   -->
- Style * CaptureHonorsStartsOnPage
+GlobalOpts ActivePlacementIgnoresStartsOnPage -->
+    Style * ManualPlacementIgnoresStartsOnPage
 
- GlobalOpts CaptureIgnoresStartsOnPage
-   -->
- Style * CaptureIgnoresStartsOnPage
+GlobalOpts RaiseOverNativeWindows --> BugOpts RaiseOverNativeWindows on
 
- GlobalOpts RecaptureHonorsStartsOnPage
-   -->
- Style * RecaptureHonorsStartsOnPage
-
- GlobalOpts RecaptureIgnoresStartsOnPage
-   -->
- Style * RecaptureIgnoresStartsOnPage
-
- GlobalOpts ActivePlacementHonorsStartsOnPage
-   -->
- Style * ManualPlacementHonorsStartsOnPage
-
- GlobalOpts ActivePlacementIgnoresStartsOnPage
-   -->
- Style * ManualPlacementIgnoresStartsOnPage
-
- GlobalOpts RaiseOverNativeWindows
-   -->
- BugOpts RaiseOverNativeWindows on
-
- GlobalOpts IgnoreNativeWindows
-   -->
- BugOpts RaiseOverNativeWindows off
-
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+GlobalOpts IgnoreNativeWindows --> BugOpts RaiseOverNativeWindows off
+----

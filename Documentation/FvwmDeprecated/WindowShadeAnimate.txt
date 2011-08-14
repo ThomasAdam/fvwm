@@ -1,14 +1,4 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-WindowShadeAnimate
-
-   --------------------------------------------------------------------------
-
-   WindowShadeAnimate [steps [p]]
-
-   This command is obsolete. Please use the WindowShadeSteps option of the
-   Style command instead.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'WindowShadeAnimate' [steps [p]]::
++
+This command is obsolete. Please use the WindowShadeSteps option of the
+Style command instead.

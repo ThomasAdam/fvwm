@@ -1,13 +1,3 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-PixmapPath
-
-   --------------------------------------------------------------------------
-
-   PixmapPath path
-
-   This command is obsolete. Please use ImagePath instead.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'PixmapPath' path::
++
+This command is obsolete. Please use ImagePath instead.

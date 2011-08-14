@@ -1,0 +1,46 @@
+fvwmdeprecated(1)
+================
+:doctype: manpage
+
+NAME
+----
+
+fvwmdeprecated - deprecated commands
+
+
+SYNOPSIS
+--------
+
+fvwm *
+
+DESCRIPTION
+-----------
+
+fvwmdeprecated - describes the fvwm commands no longer used, with their
+preferred alternatives.
+
+
+COMMANDS
+--------
+
+include::FvwmDeprecated/ColorLimit.txt[]
+
+include::FvwmDeprecated/GlobalOpts.txt[]
+
+include::FvwmDeprecated/HilightColor.txt[]
+
+include::FvwmDeprecated/IconFont.txt[]
+
+include::FvwmDeprecated/IconPath.txt[]
+
+include::FvwmDeprecated/PixmapPath.txt[]
+
+include::FvwmDeprecated/Recapture.txt[]
+
+include::FvwmDeprecated/RecaptureWindow.txt[]
+
+include::FvwmDeprecated/WindowFont.txt[]
+
+include::FvwmDeprecated/WindowShadeAnimate.txt[]
+
+include::FvwmDeprecated/WindowsDesk.txt[]

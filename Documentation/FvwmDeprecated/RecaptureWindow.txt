@@ -1,16 +1,6 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-RecaptureWindow
-
-   --------------------------------------------------------------------------
-
-   RecaptureWindow
-
-   This command is obsolete and should not be used anymore. See Recapture For
-   details.
-
-   Causes fvwm to recapture the chosen window.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'RecaptureWindow'::
++
+This command is obsolete and should not be used anymore. See Recapture For
+details.
++
+Causes fvwm to recapture the chosen window.
