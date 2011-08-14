@@ -11,4 +11,7 @@ ASCIIDOC TODO LIST
 * Hook this in to the build system.
 * Rip out the old Docbook stuff
 * Work out how this affects fvwm-web
+* FvwmModules/Modules.txt has a list of module shipped with FVWM.  This
+  information is better off in the top-level fvwmmodules.txt file with
+  appropriate formatting.
 * Shed-paint with others (whom?) whether the group commands are sufficient.
