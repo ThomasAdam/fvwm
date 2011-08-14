@@ -1,15 +1,5 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-UpdateStyles
-
-   --------------------------------------------------------------------------
-
-   UpdateStyles
-
-   All pending updates of all windows' styles and looks are applied
-   immediately. E.g. if Style, WindowStyle or TitleStyle commands were issued
-   inside a fvwm function.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'UpdateStyles'::
++
+All pending updates of all windows' styles and looks are applied
+immediately. E.g. if Style, WindowStyle or TitleStyle commands were issued
+inside a fvwm function.

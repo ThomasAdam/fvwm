@@ -1,14 +1,4 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-DestroyWindowStyle
-
-   --------------------------------------------------------------------------
-
-   DestroyWindowStyle
-
-   deletes the styles set by the WindowStyle command on the selected window.
-   The changes take effect immediately.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'DestroyWindowStyle'::
++
+Deletes the styles set by the WindowStyle command on the selected window.
+The changes take effect immediately.

@@ -1,23 +1,15 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-DestroyStyle
-
-   --------------------------------------------------------------------------
-
-   DestroyStyle style
-
-   deletes the style named style. The changes take effect immediately. Note
-   that style is not a wild-carded search string, but rather a case-sensitive
-   string that should exactly match the original Style command.
-
-   Destroying style "*" can be done, but isn't really to be recommended. For
-   example:
-
- DestroyStyle Application*
-
-   This removes all settings for the style named "Application*", NOT all
-   styles starting with "Application".
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'DestroyStyle' style::
++
+Deletes the style named style. The changes take effect immediately. Note
+that style is not a wild-carded search string, but rather a case-sensitive
+string that should exactly match the original Style command.
++
+Destroying style "*" can be done, but isn't really to be recommended. For
+example:
++
+-----
+DestroyStyle Application*
+-----
++
+This removes all settings for the style named "Application*", NOT all
+styles starting with "Application".

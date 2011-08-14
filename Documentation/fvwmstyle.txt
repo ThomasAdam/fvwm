@@ -1,0 +1,35 @@
+fvwmstyle(1)
+============
+:doctype: manpage
+
+NAME
+----
+
+fvwmstyle - commands which affect window behaviour and state.
+
+
+SYNOPSIS
+--------
+
+fvwm *
+
+DESCRIPTION
+-----------
+
+fvwmstyle - describes commands which affect windows directly.
+
+
+COMMANDS
+--------
+
+include::FvwmStyle/DestroyStyle.txt[]
+
+include::FvwmStyle/DestroyWindowStyle.txt[]
+
+include::FvwmStyle/Style.txt[]
+
+include::FvwmStyle/TitleStyle.txt[]
+
+include::FvwmStyle/UpdateStyles.txt[]
+
+include::FvwmStyle/WindowStyle.txt[]
