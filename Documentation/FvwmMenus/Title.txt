@@ -1,13 +1,3 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-Title
-
-   --------------------------------------------------------------------------
-
-   Title
-
-   Does nothing This is used to insert a title line in a popup or menu.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'Title'::
++
+Does nothing.  It is used to insert a title line in a popup or menu.

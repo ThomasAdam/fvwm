@@ -1,0 +1,45 @@
+fvwmmenus(1)
+============
+:doctype: manpage
+
+NAME
+----
+
+fvwmmenus - Commands for creating/manipulating menus.
+
+
+SYNOPSIS
+--------
+
+fvwm *
+
+DESCRIPTION
+-----------
+
+fvwmmenus - describes how to create menus, change them, open them, etc.
+
+
+COMMANDS
+--------
+
+include::FvwmMenus/AddToMenu.txt[]
+
+include::FvwmMenus/ChangeMenuStyle.txt[]
+
+include::FvwmMenus/CopyMenuStyle.txt[]
+
+include::FvwmMenus/DestroyMenu.txt[]
+
+include::FvwmMenus/DestroyMenuStyle.txt[]
+
+include::FvwmMenus/Menu.txt[]
+
+include::FvwmMenus/MenuStyle.txt[]
+
+include::FvwmMenus/Popup.txt[]
+
+include::FvwmMenus/TearMenuOff.txt[]
+
+include::FvwmMenus/Title.txt[]
+
+include::FvwmMenus/WindowList.txt[]
