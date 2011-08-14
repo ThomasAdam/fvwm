@@ -1,13 +1,3 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-DesktopSize
-
-   --------------------------------------------------------------------------
-
-   DesktopSize HorizontalxVertical
-
-   Defines the virtual desktop size in units of the physical screen size.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'DesktopSize' _Horizontal_x_Vertical_::
++
+Defines the virtual desktop size in units of the physical screen size.

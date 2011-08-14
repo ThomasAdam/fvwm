@@ -1,51 +1,49 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-Scroll
-
-   --------------------------------------------------------------------------
-
-   Scroll [ horizonal[p] vertical[p] | reverse ]
-
-   Scrolls the virtual desktop's viewport by horizontal pages in the
-   x-direction and vertical pages in the y-direction or starts interactive
-   scrolling of the viewport. Either or both entries may be negative. Both
-   horizontal and vertical values are expressed in percent of pages, so
-
- Scroll 100 100
-
-   means to scroll down and right by one full page.
-
- Scroll 50 25
-
-   means to scroll right half a page and down a quarter of a page. The Scroll
-   function should not be called from pop-up menus. Normally, scrolling stops
-   at the edge of the desktop.
-
-   If the horizontal and vertical percentages are 100 or more and are
-   multiplied by 1000 then scrolling wraps around at the edge of the desktop.
-   If
-
- Scroll 100000 0
-
-   is executed over and over fvwm moves to the next desktop page on each
-   execution and wraps around at the edge of the desktop, so that every page
-   is hit in turn.
-
-   If the letter 'p' is appended to each coordinate (horizontal and/or
-   vertical), then the scroll amount is measured in pixels.
-
-   Without arguments or if the option reverse is given interactive scrolling
-   takes place. The viewport scrolls as the mouse is moved. With the reverse
-   option scrolling is done in opposite direction of the mouse movement, and
-   without it scrolling in the same direction as the mouse.
-
-   The binding
-
- Mouse 1 A CM Scroll reverse
-
-   gives an effect of grabbing and dragging the viewport with button 1 if
-   Control and Meta is pressed.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'Scroll' [ horizonal[p] vertical[p] | reverse ]::
++
+Scrolls the virtual desktop's viewport by horizontal pages in the
+x-direction and vertical pages in the y-direction or starts interactive
+scrolling of the viewport. Either or both entries may be negative. Both
+horizontal and vertical values are expressed in percent of pages, so
++
+----
+Scroll 100 100
+----
++
+means to scroll down and right by one full page.
++
+----
+Scroll 50 25
+----
++
+means to scroll right half a page and down a quarter of a page. The Scroll
+function should not be called from pop-up menus. Normally, scrolling stops
+at the edge of the desktop.
++
+If the horizontal and vertical percentages are 100 or more and are
+multiplied by 1000 then scrolling wraps around at the edge of the desktop.
+If
++
+----
+Scroll 100000 0
+----
++
+is executed over and over fvwm moves to the next desktop page on each
+execution and wraps around at the edge of the desktop, so that every page
+is hit in turn.
++
+If the letter 'p' is appended to each coordinate (horizontal and/or
+vertical), then the scroll amount is measured in pixels.
++
+Without arguments or if the option reverse is given interactive scrolling
+takes place. The viewport scrolls as the mouse is moved. With the reverse
+option scrolling is done in opposite direction of the mouse movement, and
+without it scrolling in the same direction as the mouse.
++
+The binding
++
+----
+Mouse 1 A CM Scroll reverse
+----
++
+gives an effect of grabbing and dragging the viewport with button 1 if
+Control and Meta is pressed.

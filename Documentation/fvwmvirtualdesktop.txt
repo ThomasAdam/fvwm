@@ -1,0 +1,54 @@
+fvwmvirtualdesktop(1)
+=====================
+:doctype: manpage
+
+NAME
+----
+
+fvwmvirtualdesktop - commands to deal with virtual desks
+
+
+SYNOPSIS
+--------
+
+fvwm *
+
+DESCRIPTION
+-----------
+
+fvwmvirtualdesktop - decribes Xinerama, and commands for changing between
+pages/desks, etc.
+
+
+COMMANDS
+--------
+
+include::FvwmVirtualDesktop/Desk.txt[]
+
+include::FvwmVirtualDesktop/DesktopName.txt[]
+
+include::FvwmVirtualDesktop/DesktopSize.txt[]
+
+include::FvwmVirtualDesktop/EdgeResistance.txt[]
+
+include::FvwmVirtualDesktop/EdgeScroll.txt[]
+
+include::FvwmVirtualDesktop/EdgeThickness.txt[]
+
+include::FvwmVirtualDesktop/GotoDesk.txt[]
+
+include::FvwmVirtualDesktop/GotoDeskAndPage.txt[]
+
+include::FvwmVirtualDesktop/GotoPage.txt[]
+
+include::FvwmVirtualDesktop/Scroll.txt[]
+
+include::FvwmVirtualDesktop/Xinerama.txt[]
+
+include::FvwmVirtualDesktop/XineramaPrimaryScreen.txt[]
+
+include::FvwmVirtualDesktop/XineramaSls.txt[]
+
+include::FvwmVirtualDesktop/XineramaSlsScreens.txt[]
+
+include::FvwmVirtualDesktop/XineramaSlsSize.txt[]

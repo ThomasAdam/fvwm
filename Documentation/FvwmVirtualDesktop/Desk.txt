@@ -1,13 +1,3 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-Desk
-
-   --------------------------------------------------------------------------
-
-   Desk arg1 [arg2] [min max]
-
-   This command has been renamed. Please see GotoDesk command.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'Desk' arg1 [arg2] [min max]::
++
+This command has been renamed. Please see 'GotoDesk' command.

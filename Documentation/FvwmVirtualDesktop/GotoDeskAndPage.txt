@@ -1,15 +1,5 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-GotoDeskAndPage
-
-   --------------------------------------------------------------------------
-
-   GotoDeskAndPage prev | desk xpage ypage
-
-   Switches the current viewport to another desktop and page, similar to the
-   GotoDesk and GotoPage commands. The new desk is desk and the new page is
-   (xpage,ypage).
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'GotoDeskAndPage' prev | desk xpage ypage::
++
+Switches the current viewport to another desktop and page, similar to the
+GotoDesk and GotoPage commands. The new desk is desk and the new page is
+(xpage,ypage).
