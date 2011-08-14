@@ -1,45 +1,37 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-WindowShade
-
-   --------------------------------------------------------------------------
-
-   WindowShade [bool] | [[ShadeAgain] direction ]
-
-   Toggles the window shade feature for titled windows. Windows in the shaded
-   state only display a title-bar. If bool is not given or "toggle", the
-   window shade state is toggled. If bool is "True", the window is forced to
-   the shaded state. If bool is "False", then the window is forced to the
-   non-shaded state. To force shading in a certain direction, the direction
-   argument can be used. Any of the strings "North", "South", "West", "East",
-   "NorthWest", "NorthEast", "SouthWest", "SouthEast" or "Last" can be given.
-   The direction can be abbreviated with the usual one or two letters "N",
-   "NW", etc. Using a direction on a window that was already shaded unshades
-   the window. To shade it in a different direction, use the ShadeAgain
-   option. The direction Last shades the window in the direction it last was
-   shaded. If the window has never been shaded before it is shaded as if no
-   direction had been given. Windows without titles can be shaded too. Please
-   refer also to the options WindowShadeSteps, WindowShadeShrinks,
-   WindowShadeScrolls, WindowShadeLazy, WindowShadeAlwaysLazy and
-   WindowShadeBusy options of the Style command. Examples:
-
- Style * WindowShadeShrinks, WindowShadeSteps 20, \
-         WindowShadeLazy
- Mouse 1 - S WindowShade North
- Mouse 1 [ S WindowShade West
- Mouse 1 ] S WindowShade E
- Mouse 1 _ S WindowShade S
-
-   Note: When a window that has been shaded with a direction argument changes
-   the direction of the window title (see TitleAtTop Style option), the
-   shading direction does not change. This may look very strange. Windows
-   that were shaded without a direction argument stay shaded in the direction
-   of the title bar.
-
-   For backward compatibility, the optional argument may also be 1 to signify
-   "on", and 2 to signify "off". Note that this syntax is obsolete, and will
-   be removed in the future.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'WindowShade' [bool] | [[ShadeAgain] direction ]::
++
+Toggles the window shade feature for titled windows. Windows in the shaded
+state only display a title-bar. If bool is not given or "toggle", the
+window shade state is toggled. If bool is "True", the window is forced to
+the shaded state. If bool is "False", then the window is forced to the
+non-shaded state. To force shading in a certain direction, the direction
+argument can be used. Any of the strings "North", "South", "West", "East",
+"NorthWest", "NorthEast", "SouthWest", "SouthEast" or "Last" can be given.
+The direction can be abbreviated with the usual one or two letters "N",
+"NW", etc. Using a direction on a window that was already shaded unshades
+the window. To shade it in a different direction, use the ShadeAgain
+option. The direction Last shades the window in the direction it last was
+shaded. If the window has never been shaded before it is shaded as if no
+direction had been given. Windows without titles can be shaded too. Please
+refer also to the options WindowShadeSteps, WindowShadeShrinks,
+WindowShadeScrolls, WindowShadeLazy, WindowShadeAlwaysLazy and
+WindowShadeBusy options of the Style command. Examples:
++
+----
+Style * WindowShadeShrinks, WindowShadeSteps 20, \
+     WindowShadeLazy
+Mouse 1 - S WindowShade North
+Mouse 1 [ S WindowShade West
+Mouse 1 ] S WindowShade E
+Mouse 1 _ S WindowShade S
+----
++
+*Note*: When a window that has been shaded with a direction argument changes
+the direction of the window title (see TitleAtTop Style option), the
+shading direction does not change. This may look very strange. Windows
+that were shaded without a direction argument stay shaded in the direction
+of the title bar.
++
+For backward compatibility, the optional argument may also be 1 to signify
+"on", and 2 to signify "off". Note that this syntax is obsolete, and will
+be removed in the future.

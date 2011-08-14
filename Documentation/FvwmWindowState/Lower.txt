@@ -1,18 +1,10 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-Lower
-
-   --------------------------------------------------------------------------
-
-   Lower
-
-   Allows the user to lower a window. Note that this lowers a window only in
-   its layer. To bring a window to the absolute bottom, use
-
- AddToFunc lower-to-bottom
-  + I Layer 0 0
-  + I Lower
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'Lower'::
++
+Allows the user to lower a window. Note that this lowers a window only in
+its layer. To bring a window to the absolute bottom, use
++
+----
+AddToFunc lower-to-bottom
++ I Layer 0 0
++ I Lower
+----

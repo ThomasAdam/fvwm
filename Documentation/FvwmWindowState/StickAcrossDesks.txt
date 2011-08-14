@@ -1,13 +1,3 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-StickAcrossDesks
-
-   --------------------------------------------------------------------------
-
-   StickAcrossDesks [bool]
-
-   Works like Stick but only sticks a window across desks, not across pages.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'StickAcrossDesks' [bool]::
++
+Works like Stick but only sticks a window across desks, not across pages.

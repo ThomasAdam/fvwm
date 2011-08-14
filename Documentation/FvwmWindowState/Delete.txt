@@ -1,14 +1,4 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-Delete
-
-   --------------------------------------------------------------------------
-
-   Delete
-
-   Sends a message to a window asking that it remove itself, frequently
-   causing the application to exit.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'Delete'::
++
+Sends a message to a window asking that it remove itself, frequently
+causing the application to exit.

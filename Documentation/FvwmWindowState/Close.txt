@@ -1,17 +1,7 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-Close
-
-   --------------------------------------------------------------------------
-
-   Close
-
-   If the window accepts the delete window protocol a message is sent to the
-   window asking it to gracefully remove itself. If the window does not
-   understand the delete window protocol then the window is destroyed as with
-   the Destroy command. Note: if the window accepts the delete window
-   protocol but does not close itself in response, the window is not deleted.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'Close'::
++
+If the window accepts the delete window protocol a message is sent to the
+window asking it to gracefully remove itself. If the window does not
+understand the delete window protocol then the window is destroyed as with
+the Destroy command. Note: if the window accepts the delete window
+protocol but does not close itself in response, the window is not deleted.

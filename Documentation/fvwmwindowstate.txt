@@ -1,0 +1,52 @@
+fvwmwindowstate(1)
+================
+:doctype: manpage
+
+NAME
+----
+
+fvwmwindowstate - commands affecting window's persistence.
+
+
+SYNOPSIS
+--------
+
+fvwm *
+
+DESCRIPTION
+-----------
+
+fvwmwindowstate - describes commands for closing windows, iconifying them,
+etc.
+
+
+COMMANDS
+--------
+
+include::FvwmWindowState/Close.txt[]
+
+include::FvwmWindowState/Delete.txt[]
+
+include::FvwmWindowState/Destroy.txt[]
+
+include::FvwmWindowState/Iconify.txt[]
+
+include::FvwmWindowState/Layer.txt[]
+
+include::FvwmWindowState/Lower.txt[]
+
+include::FvwmWindowState/Maximize.txt[]
+
+include::FvwmWindowState/Raise.txt[]
+
+include::FvwmWindowState/RaiseLower.txt[]
+
+include::FvwmWindowState/RestackTransients.txt[]
+
+include::FvwmWindowState/Stick.txt[]
+
+include::FvwmWindowState/StickAcrossDesks.txt[]
+
+include::FvwmWindowState/StickAcrossPages.txt[]
+
+include::FvwmWindowState/WindowShade.txt[]
