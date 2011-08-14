@@ -1,17 +1,7 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-SendToModule
-
-   --------------------------------------------------------------------------
-
-   SendToModule modulename string
-
-   Sends an arbitrary string (no quotes required) to all modules, whose alias
-   or name matching modulename, which may contain wildcards. This only makes
-   sense if the module is set up to understand and deal with these strings
-   though. Can be used for module to module communication, or implementation
-   of more complex commands in modules.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'SendToModule' modulename string::
++
+Sends an arbitrary string (no quotes required) to all modules, whose alias
+or name matching modulename, which may contain wildcards. This only makes
+sense if the module is set up to understand and deal with these strings
+though. Can be used for module to module communication, or implementation
+of more complex commands in modules.

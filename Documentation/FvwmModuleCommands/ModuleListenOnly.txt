@@ -1,17 +1,7 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-ModuleListenOnly
-
-   --------------------------------------------------------------------------
-
-   ModuleListenOnly modulename [moduleparams]
-
-   This command works like the Module command, but fvwm never sends any
-   messages to the module. This may be handy to write a module as a shell
-   script that is triggered by external events without the burden to answer
-   packets sent by fvwm. For example, a module written as a shell script may
-   change labels of the FvwmButtons module to implement a simple clock.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'ModuleListenOnly' modulename [moduleparams]::
++
+This command works like the Module command, but fvwm never sends any
+messages to the module. This may be handy to write a module as a shell
+script that is triggered by external events without the burden to answer
+packets sent by fvwm. For example, a module written as a shell script may
+change labels of the FvwmButtons module to implement a simple clock.

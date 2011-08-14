@@ -1,29 +1,19 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-ModuleSynchronous
-
-   --------------------------------------------------------------------------
-
-   ModuleSynchronous [Expect string] [Timeout secs] modulename
-
-   The ModuleSynchronous command is very similar to Module. Fvwm stops
-   processing any commands and user input until the module sends a string
-   beginning with "NOP FINISHED STARTUP" back to fvwm. If the optional
-   Timeout is given fvwm gives up if the module sent no input back to fvwm
-   for secs seconds. If the Expect option is given, fvwm waits for the given
-   string instead. ModuleSynchronous should only be used during fvwm startup
-   to enforce the order in which modules are started. This command is
-   intended for use with the (currently hypothetical) module that should be
-   in place before other modules are started.
-
-   Warning: It is quite easy to hang fvwm with this command, even if a
-   timeout is given. Be extra careful choosing the string to wait for.
-   Although all modules in the fvwm distribution send back the "NOP FINISHED
-   STARTUP" string once they have properly started up, this may not be the
-   case for third party modules. Moreover, you can try to escape from a
-   locked ModuleSynchronous command by using the key sequence Ctrl-Alt-Escape
-   (see the EscapeFunc).
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'ModuleSynchronous' [Expect string] [Timeout secs] modulename::
++
+The ModuleSynchronous command is very similar to Module. Fvwm stops
+processing any commands and user input until the module sends a string
+beginning with "NOP FINISHED STARTUP" back to fvwm. If the optional
+Timeout is given fvwm gives up if the module sent no input back to fvwm
+for secs seconds. If the Expect option is given, fvwm waits for the given
+string instead. ModuleSynchronous should only be used during fvwm startup
+to enforce the order in which modules are started. This command is
+intended for use with the (currently hypothetical) module that should be
+in place before other modules are started.
++
+*Warning*: It is quite easy to hang fvwm with this command, even if a
+timeout is given. Be extra careful choosing the string to wait for.
+Although all modules in the fvwm distribution send back the "NOP FINISHED
+STARTUP" string once they have properly started up, this may not be the
+case for third party modules. Moreover, you can try to escape from a
+locked ModuleSynchronous command by using the key sequence Ctrl-Alt-Escape
+(see the EscapeFunc).

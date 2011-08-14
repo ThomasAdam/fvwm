@@ -1,21 +1,13 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
+'KillModule' modulename [modulealias]::
++
+Causes the module which was invoked with name modulename to be killed. The
+name may include wildcards. If modulealias is given, only modules started
+with the given alias are killed.
++
+------
+# kill all pagers
+KillModule FvwmPager
 
-KillModule
-
-   --------------------------------------------------------------------------
-
-   KillModule modulename [modulealias]
-
-   Causes the module which was invoked with name modulename to be killed. The
-   name may include wildcards. If modulealias is given, only modules started
-   with the given alias are killed.
-
- # kill all pagers
- KillModule FvwmPager
-
- Module FvwmEvent SoundEvent
- KillModule FvwmEvent SoundEvent
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+Module FvwmEvent SoundEvent
+KillModule FvwmEvent SoundEvent
+------

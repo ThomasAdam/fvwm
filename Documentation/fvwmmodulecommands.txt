@@ -1,0 +1,42 @@
+fvwmmodulecommands(1)
+====================
+:doctype: manpage
+
+NAME
+----
+
+fvwmmodulecommands - Commands affecting modules.
+
+
+SYNOPSIS
+--------
+
+fvwm *
+
+DESCRIPTION
+-----------
+
+fvwmmodulecommands - Details the commands used to manipulate how to start
+external Fvwm modules, how it affects their behaviour, etc.
+
+
+COMMANDS
+--------
+
+include::FvwmModuleCommands/Asterisk.txt[]
+
+include::FvwmModuleCommands/DestroyModuleConfig.txt[]
+
+include::FvwmModuleCommands/KillModule.txt[]
+
+include::FvwmModuleCommands/Module.txt[]
+
+include::FvwmModuleCommands/ModuleListenOnly.txt[]
+
+include::FvwmModuleCommands/ModulePath.txt[]
+
+include::FvwmModuleCommands/ModuleSynchronous.txt[]
+
+include::FvwmModuleCommands/ModuleTimeout.txt[]
+
+include::FvwmModuleCommands/SendToModule.txt[]

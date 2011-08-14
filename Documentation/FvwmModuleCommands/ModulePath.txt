@@ -1,27 +1,19 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-ModulePath
-
-   --------------------------------------------------------------------------
-
-   ModulePath path
-
-   Specifies a colon separated list of directories in which to search for
-   modules. To find a module, fvwm searches each directory in turn and uses
-   the first file found. Directory names on the list do not need trailing
-   slashes.
-
-   The ModulePath may contain environment variables such as $HOME (or
-   ${HOME}). Further, a '+' in the path is expanded to the previous value of
-   the path, allowing easy appending or prepending to the path.
-
-   For example:
-
- ModulePath ${HOME}/lib/fvwm/modules:+
-
-   The directory containing the standard modules is available via the
-   environment variable $FVWM_MODULEDIR.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'ModulePath' path::
++
+Specifies a colon separated list of directories in which to search for
+modules. To find a module, fvwm searches each directory in turn and uses
+the first file found. Directory names on the list do not need trailing
+slashes.
++
+The ModulePath may contain environment variables such as $HOME (or
+${HOME}). Further, a '+' in the path is expanded to the previous value of
+the path, allowing easy appending or prepending to the path.
++
+For example:
++
+----
+ModulePath ${HOME}/lib/fvwm/modules:+
+----
++
+The directory containing the standard modules is available via the
+environment variable $FVWM_MODULEDIR.

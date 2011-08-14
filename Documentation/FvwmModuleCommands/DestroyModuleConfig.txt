@@ -1,25 +1,17 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-DestroyModuleConfig
-
-   --------------------------------------------------------------------------
-
-   DestroyModuleConfig module_config
-
-   Deletes module configuration entries, so that new configuration lines may
-   be entered instead. This also sometimes the only way to turn back some
-   module settings, previously defined. This changes the way a module runs
-   during a fvwm session without restarting. Wildcards can be used for
-   portions of the name as well.
-
-   The new non-conflicting syntax allows a delimiter, a colon and optional
-   spaces between the module name and the rest of the line. In this case a
-   module name (or alias) can't have wildcards.
-
- DestroyModuleConfig FvwmButtons*
- DestroyModuleConfig FvwmForm: Fore
- DestroyModuleConfig FvwmIconBox: Max*
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'DestroyModuleConfig' module_config::
++
+Deletes module configuration entries, so that new configuration lines may
+be entered instead. This also sometimes the only way to turn back some
+module settings, previously defined. This changes the way a module runs
+during a fvwm session without restarting. Wildcards can be used for
+portions of the name as well.
++
+The new non-conflicting syntax allows a delimiter, a colon and optional
+spaces between the module name and the rest of the line. In this case a
+module name (or alias) can't have wildcards.
++
+-----
+DestroyModuleConfig FvwmButtons*
+DestroyModuleConfig FvwmForm: Fore
+DestroyModuleConfig FvwmIconBox: Max*
+-----
