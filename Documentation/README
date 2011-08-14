@@ -62,3 +62,6 @@ See the following template as an example:
 -----
 
 [ XXX: Also explain about "man fvwmall" or somesuch...
+
+*NB* - AsciiDoc really doesn't like title markers under words to *EXCEED*
+the length of the title!
