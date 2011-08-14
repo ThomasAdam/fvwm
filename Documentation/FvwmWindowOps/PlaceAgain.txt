@@ -1,18 +1,8 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-PlaceAgain
-
-   --------------------------------------------------------------------------
-
-   PlaceAgain [Anim] [Icon]
-
-   Causes the current window's position to be re-computed using the initial
-   window placement logic. The window is moved to where it would have been if
-   it were a new window that had just appeared. Most useful with Smart or
-   Clever (ReallySmart) placement. With the optional argument Anim an
-   animated move is used to place the window in its new position. With the
-   additional option Icon, the icon is placed again instead.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'PlaceAgain' [Anim] [Icon]::
++
+Causes the current window's position to be re-computed using the initial
+window placement logic. The window is moved to where it would have been if
+it were a new window that had just appeared. Most useful with Smart or
+Clever (ReallySmart) placement. With the optional argument Anim an
+animated move is used to place the window in its new position. With the
+additional option Icon, the icon is placed again instead.

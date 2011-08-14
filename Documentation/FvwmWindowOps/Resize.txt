@@ -1,68 +1,67 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-Resize
-
-   --------------------------------------------------------------------------
-
-   Resize [[frame] [direction dir [warptoborder]] [fixeddirection] [w]width[
-   p | c ] [w]height[ p | c ] ]
-
-   Allows for resizing a window. If called from somewhere in a window or its
-   border, then that window is resized. If called from the root window then
-   the user is allowed to select the target window.
-
-   The operation can be aborted with Escape or by pressing any mouse button
-   (except button 1 which confirms it).
-
-   If the optional arguments width and height are provided, then the window
-   is resized so that its dimensions are width by height. The units of width
-   and height are percent-of-screen, unless a letter 'p' is appended to one
-   or both coordinates, in which case the location is specified in pixels.
-   With a 'c' suffix the unit defined by the client application (hence the c)
-   is used. So you can say
-
- Resize 80c 24c
-
-   to make a terminal window just big enough for 80x24 characters.
-
-   If the width or height is prefixed with the letter 'w' the size is not
-   taken as an absolute value but added to the current size of the window.
-   Example:
-
- # Enlarge window by one line
- Resize keep w+1c
-
-   Both, width and height can be negative. In this case the new size is the
-   screen size minus the given value. If either value is "keep", the
-   corresponding dimension of the window is left untouched. The new size is
-   the size of the client window, thus
-
- Resize 100 100
-
-   may make the window bigger than the screen. To base the new size on the
-   size of the whole fvwm window, add the frame option after the command. The
-   options fixeddirection, direction and warptoborder are only used in
-   interactive move operations. With fixeddirection the same border is moved
-   even if the pointer moves past the opposite border. The direction option
-   must be followed by a direction name such as "NorthWest", "South" or
-   "East" (you get the idea). Resizing is started immediately, even if the
-   pointer is not on a border. The warptoborder option changes the behaviour
-   of the direction option so that the pointer is automatically warped to the
-   border in the given direction before starting to resize. Also, if resizing
-   is started by clicking on the window border, the pointer is warped to the
-   outer edge of the border.
-
- AddToFunc ResizeSE I Resize Direction SE
- Mouse 3 A M ResizeSE
-
-   Resize [ bottomright | br x y ]
-
-   An alternate syntax is used if the keyword bottomright or in short br
-   follows the command name. In this case, the arguments x and y specify the
-   desired position of the bottom right corner of the window. They are
-   interpreted exactly like the x and y arguments of the Move command.
-   Actually, any of the options accepted by the Move command can be used.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'Resize' [frame] [direction dir [warptoborder]]::
+'Resize' [fixeddirection] [w]width[ p | c ] [w]height[ p | c ]::
++
+Allows for resizing a window. If called from somewhere in a window or its
+border, then that window is resized. If called from the root window then
+the user is allowed to select the target window.
++
+The operation can be aborted with Escape or by pressing any mouse button
+(except button 1 which confirms it).
++
+If the optional arguments width and height are provided, then the window
+is resized so that its dimensions are width by height. The units of width
+and height are percent-of-screen, unless a letter 'p' is appended to one
+or both coordinates, in which case the location is specified in pixels.
+With a 'c' suffix the unit defined by the client application (hence the c)
+is used. So you can say
++
+----
+Resize 80c 24c
+----
++
+to make a terminal window just big enough for 80x24 characters.
++
+If the width or height is prefixed with the letter 'w' the size is not
+taken as an absolute value but added to the current size of the window.
++
+Example:
++
+----
+# Enlarge window by one line
+Resize keep w+1c
+----
++
+Both, width and height can be negative. In this case the new size is the
+screen size minus the given value. If either value is "keep", the
+corresponding dimension of the window is left untouched. The new size is
+the size of the client window, thus
++
+----
+Resize 100 100
+----
++
+may make the window bigger than the screen. To base the new size on the
+size of the whole fvwm window, add the frame option after the command. The
+options fixeddirection, direction and warptoborder are only used in
+interactive move operations. With fixeddirection the same border is moved
+even if the pointer moves past the opposite border. The direction option
+must be followed by a direction name such as "NorthWest", "South" or
+"East" (you get the idea). Resizing is started immediately, even if the
+pointer is not on a border. The warptoborder option changes the behaviour
+of the direction option so that the pointer is automatically warped to the
+border in the given direction before starting to resize. Also, if resizing
+is started by clicking on the window border, the pointer is warped to the
+outer edge of the border.
++
+----
+AddToFunc ResizeSE I Resize Direction SE
+Mouse 3 A M ResizeSE
+----
++
+Resize [ bottomright | br x y ]::
++
+An alternate syntax is used if the keyword bottomright or in short br
+follows the command name. In this case, the arguments x and y specify the
+desired position of the bottom right corner of the window. They are
+interpreted exactly like the x and y arguments of the Move command.
+Actually, any of the options accepted by the Move command can be used.

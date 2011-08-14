@@ -1,16 +1,6 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-MoveToDesk
-
-   --------------------------------------------------------------------------
-
-   MoveToDesk [ prev | arg1 [arg2] [min max] ]
-
-   Moves the selected window to another desktop. The arguments are the same
-   as for the GotoDesk command. Without any arguments, the window is moved to
-   the current desk. MoveToDesk is a replacement for the obsolete WindowsDesk
-   command, which can no longer be used.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'MoveToDesk' [ prev | arg1 [arg2] [min max] ]::
++
+Moves the selected window to another desktop. The arguments are the same
+as for the GotoDesk command. Without any arguments, the window is moved to
+the current desk. MoveToDesk is a replacement for the obsolete WindowsDesk
+command, which can no longer be used.

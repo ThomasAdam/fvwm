@@ -1,16 +1,6 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-HideGeometryWindow
-
-   --------------------------------------------------------------------------
-
-   HideGeometryWindow [ Never | Move | Resize ]
-
-   Hides the position or size window that is usually shown when a window is
-   moved or resized interactively. To switch it off only for move or resize
-   operations the optional parameters Move and Resize can be used
-   respectively. To switch both on again use the Never option.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'HideGeometryWindow' [ Never | Move | Resize ]::
++
+Hides the position or size window that is usually shown when a window is
+moved or resized interactively. To switch it off only for move or resize
+operations the optional parameters Move and Resize can be used
+respectively. To switch both on again use the Never option.

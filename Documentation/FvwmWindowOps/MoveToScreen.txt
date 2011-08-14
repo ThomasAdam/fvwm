@@ -1,17 +1,7 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-MoveToScreen
-
-   --------------------------------------------------------------------------
-
-   MoveToScreen [screen]
-
-   Moves the selected window to another Xinerama screen. The screen argument
-   can be 'p' for the primary screen, 'c' for the current screen (containing
-   the mouse pointer), 'w' for the screen containing the center of +the the
-   context window, 'g' for the global screen or the screen number itself
-   (counting from zero).
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'MoveToScreen' [screen]::
++
+Moves the selected window to another Xinerama screen. The screen argument
+can be 'p' for the primary screen, 'c' for the current screen (containing
+the mouse pointer), 'w' for the screen containing the center of +the the
+context window, 'g' for the global screen or the screen number itself
+(counting from zero).

@@ -1,0 +1,64 @@
+fvwmwindowops(1)
+================
+:doctype: manpage
+
+NAME
+----
+
+fvwmwindowopts - commands affecting windows, such as resizing, moving.
+
+
+SYNOPSIS
+--------
+
+fvwm *
+
+DESCRIPTION
+-----------
+
+fvwmwindowopts - misc commands affecting windows:  resizing, moving,
+refreshing, etc.
+
+
+COMMANDS
+--------
+
+include::FvwmWindowOps/AnimatedMove.txt[]
+
+include::FvwmWindowOps/HideGeometryWindow.txt[]
+
+include::FvwmWindowOps/Move.txt[]
+
+include::FvwmWindowOps/MoveThreshold.txt[]
+
+include::FvwmWindowOps/MoveToDesk.txt[]
+
+include::FvwmWindowOps/MoveToPage.txt[]
+
+include::FvwmWindowOps/MoveToScreen.txt[]
+
+include::FvwmWindowOps/OpaqueMoveSize.txt[]
+
+include::FvwmWindowOps/PlaceAgain.txt[]
+
+include::FvwmWindowOps/Refresh.txt[]
+
+include::FvwmWindowOps/RefreshWindow.txt[]
+
+include::FvwmWindowOps/Resize.txt[]
+
+include::FvwmWindowOps/ResizeMaximize.txt[]
+
+include::FvwmWindowOps/ResizeMove.txt[]
+
+include::FvwmWindowOps/ResizeMoveMaximize.txt[]
+
+include::FvwmWindowOps/SetAnimation.txt[]
+
+include::FvwmWindowOps/SnapAttraction.txt[]
+
+include::FvwmWindowOps/SnapGrid.txt[]
+
+include::FvwmWindowOps/XorPixmap.txt[]
+
+include::FvwmWindowOps/XorValue.txt[]
