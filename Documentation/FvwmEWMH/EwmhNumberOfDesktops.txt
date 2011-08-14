@@ -1,24 +1,14 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-EwmhNumberOfDesktops
-
-   --------------------------------------------------------------------------
-
-   EwmhNumberOfDesktops num [max]
-
-   This command is useful only for an ewmh compliant pager or taskbar (as
-   kpager or kicker taskbar) and not for fvwm modules ( FvwmPager or
-   FvwmIconMan). It causes a compliant application to consider at least num
-   desktops (desktop 0 to desktop num-1). The optional argument max causes a
-   compliant application to never consider more than max desktops. If max is
-   0 (the default) there is no limitation. The actual number of desktops is
-   determined dynamically. It is at least num, but it can be d if there is a
-   window on desktop d-1 (or if the current desktop is desktop d-1) and d is
-   less or equal to max or max is null. Moreover, a compliant pager can ask
-   to change num itself. This is accepted by fvwm only if this number is less
-   than or equal to max or if max is null. Note that negative desktops are
-   not supported by the ewmh specification. The default is 4 0.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'EwmhNumberOfDesktops' num [max]::
++
+This command is useful only for an ewmh compliant pager or taskbar (as
+kpager or kicker taskbar) and not for fvwm modules ( FvwmPager or
+FvwmIconMan). It causes a compliant application to consider at least num
+desktops (desktop 0 to desktop num-1). The optional argument max causes a
+compliant application to never consider more than max desktops. If max is
+0 (the default) there is no limitation. The actual number of desktops is
+determined dynamically. It is at least num, but it can be d if there is a
+window on desktop d-1 (or if the current desktop is desktop d-1) and d is
+less or equal to max or max is null. Moreover, a compliant pager can ask
+to change num itself. This is accepted by fvwm only if this number is less
+than or equal to max or if max is null. Note that negative desktops are
+not supported by the ewmh specification. The default is 4 0.

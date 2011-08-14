@@ -1,14 +1,4 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-GnomeShowDesks
-
-   --------------------------------------------------------------------------
-
-   GnomeShowDesks number
-
-   This command tells GNOME compliant applications the number of desktops
-   that are used by fvwm.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'GnomeShowDesks' number::
++
+This command tells GNOME compliant applications the number of desktops
+that are used by fvwm.

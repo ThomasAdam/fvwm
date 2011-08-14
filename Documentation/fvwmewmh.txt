@@ -1,0 +1,30 @@
+fvwmewmh(1)
+===========
+:doctype: manpage
+
+
+NAME
+----
+
+fvwmewmh - Describes how fvwm interacts/manipulates the EWMH spec
+
+
+SYNOPSIS
+--------
+
+fvwm *
+
+DESCRIPTION
+-----------
+
+fvwmewmh - Commands for working with EWMH-aware applications.
+
+
+COMMANDS
+--------
+
+include::FvwmEWMH/EwmhBaseStruts.txt[]
+
+include::FvwmEWMH/EwmhNumberOfDesktops.txt[]
+
+include::FvwmEWMH/GnomeShowDesks.txt[]
