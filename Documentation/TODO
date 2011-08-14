@@ -7,6 +7,7 @@ ASCIIDOC TODO LIST
   .txt files have been converted.
 * Produce a TOC for top-level includes (c.f. perldoc?)
 * Look at a stylesheet for formats other than Groff
+* FVWM Modules all need converting over to AsciiDoc.
 * Hook this in to the build system.
 * Rip out the old Docbook stuff
 * Work out how this affects fvwm-web
