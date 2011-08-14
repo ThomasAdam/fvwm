@@ -1,21 +1,34 @@
 ASCIIDOC TODO LIST
 ==================
 
-(In no particular order):
+(In a rough order):
 
-* Convert remaining documents over -- only the directories with toplevel
-  .txt files have been converted.
+Immediate Priority
+==================
+
 * Produce a TOC for top-level includes (c.f. perldoc?)
-* Look at a stylesheet for formats other than Groff
+* Each "top-level" .txt file needs a serious overview section for the files
+  it's including.  This might mean further splitting out of sections.
+  That's OK as long as this is documented.
+* Look at a stylesheet for formats other than Groff.
+* There needs to be better formatting/linking within the AsciiDoc structure
+  between files.  Confer, adding single-quotes around CamelCased words in
+  many documents -- this case often signifies FVWM commands, for example.
+  See also the "link:" macro in AsciiDoc.
 * FVWM Modules all need converting over to AsciiDoc.
 * FvwmStyle/* needs a huge overhaul -- the Style.txt section is *HUGE*.
+* FvwmModules/Modules.txt has a list of modules shipped with FVWM.  This
+  information is better off in the top-level fvwmmodules.txt file with
+  appropriate formatting.
+
+Would be nice:
+==============
 
 * Hook this in to the build system.
 * Rip out the old Docbook stuff
 * Work out how this affects fvwm-web
 
-* FvwmModules/Modules.txt has a list of module shipped with FVWM.  This
-  information is better off in the top-level fvwmmodules.txt file with
-  appropriate formatting.
+Sundry:
+=======
 
 * Shed-paint with others (whom?) whether the group commands are sufficient.
