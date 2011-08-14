@@ -1,73 +1,71 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-Restart
-
-   --------------------------------------------------------------------------
-
-   Restart [window_manager [params] ]
-
-   Causes fvwm to restart itself if window_manager is left blank, or to
-   switch to an alternate window manager (or other fvwm version) if
-   window_manager is specified. If the window manager is not in your default
-   search path, then you should use the full path name for window_manager.
-
-   This command should not have a trailing ampersand. The command can have
-   optional parameters with simple shell-like syntax. You can use ~ (is
-   expanded to the user's home directory) and environmental variables $VAR or
-   ${VAR}. Here are several examples:
-
- Key F1 R N Restart
- Key F1 R N Restart fvwm -s
- Key F1 R N Restart ~/bin/fvwm -f $HOME/.fvwm/main
- Key F1 R N Restart fvwm1 -s -f .fvwmrc
- Key F1 R N Restart xterm -n '"X console"' \
-   -T \"X\ console\" -e fvwm1 -s
-
-   If you need a native restart, we suggest only to use Restart command
-   without parameters unless there is a reason not to. If you still use an
-   old command 'Restart fvwm2' that was correct in 2.2.x, all current command
-   line arguments are lost. On a restart without parameters or with
-   --pass-args, they are preserved. Here are some cases when 'Restart fvwm2'
-   or 'Restart fvwm' cause troubles:
-
- * running fvwm under a session manager
- * running fvwm with multi headed displays
- * having command line arguments, like
-   -f themes-rc or -cmd
- * if the first fvwm2 in the $PATH is a
-   different one
-
-   This is why we are issuing a warning on an old usage. If you really want
-   to restart to fvwm with no additional arguments, you may get rid of this
-   warning by using "Restart fvwm -s" or "Restart /full/path/fvwm".
-
-   Note, currently with multi headed displays, restart of fvwms on different
-   screens works independently.
-
-   Restart --pass-args window_manager
-
-   The same as Restart without parameters but the name for the current window
-   manager is replaced with the specified window_manager and original
-   arguments are preserved.
-
-   This command is useful if you use initial arguments like
-
- -cmd FvwmCpp
-
-   and want to switch to another fvwm version without losing the initial
-   arguments.
-
-   Restart --dont-preserve-state [other-params]
-
-   The same as
-
- Restart [other-params]
-
-   but it does not save any window states over the restart.
-
-   Without this option, Restart preserves most per-window state by writing it
-   to a file named .fs-restart-$HOSTDISPLAY in the user's home directory.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'Restart' [window_manager [params] ]::
++
+Causes fvwm to restart itself if window_manager is left blank, or to
+switch to an alternate window manager (or other fvwm version) if
+window_manager is specified. If the window manager is not in your default
+search path, then you should use the full path name for window_manager.
++
+This command should not have a trailing ampersand. The command can have
+optional parameters with simple shell-like syntax. You can use ~ (is
+expanded to the user's home directory) and environmental variables $VAR or
+${VAR}. Here are several examples:
++
+------
+Key F1 R N Restart
+Key F1 R N Restart fvwm -s
+Key F1 R N Restart ~/bin/fvwm -f $HOME/.fvwm/main
+Key F1 R N Restart fvwm1 -s -f .fvwmrc
+Key F1 R N Restart xterm -n '"X console"' \
+    -T \"X\ console\" -e fvwm1 -s
+----
++
+If you need a native restart, we suggest only to use Restart command
+without parameters unless there is a reason not to. If you still use an
+old command 'Restart fvwm2' that was correct in 2.2.x, all current command
+line arguments are lost. On a restart without parameters or with
+--pass-args, they are preserved. Here are some cases when 'Restart fvwm2'
+or 'Restart fvwm' cause troubles:
++
+* running fvwm under a session manager
+* running fvwm with multi headed displays
+* having command line arguments, like -f themes-rc or -cmd
+* if the first fvwm2 in the $PATH is a different one
++
+This is why we are issuing a warning on an old usage. If you really want
+to restart to fvwm with no additional arguments, you may get rid of this
+warning by using "Restart fvwm -s" or "Restart /full/path/fvwm".
++
+Note, currently with multi headed displays, restart of fvwms on different
+screens works independently.
++
+----
+Restart --pass-args window_manager
+----
++
+The same as Restart without parameters but the name for the current window
+manager is replaced with the specified window_manager and original
+arguments are preserved.
++
+This command is useful if you use initial arguments like
++
+-----
+-cmd FvwmCpp
+-----
++
+and want to switch to another fvwm version without losing the initial
+arguments.
++
+-----
+Restart --dont-preserve-state [other-params]
+-----
++
+The same as
++
+-----
+Restart [other-params]
+-----
++
+but it does not save any window states over the restart.
++
+Without this option, Restart preserves most per-window state by writing it
+to a file named .fs-restart-$HOSTDISPLAY in the user's home directory.

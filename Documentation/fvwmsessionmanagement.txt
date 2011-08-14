@@ -1,0 +1,37 @@
+fvwmsessionmanagement(1)
+========================
+:doctype: manpage
+
+NAME
+----
+
+fvwmsessionmanagement - commands dealing with fvwm running under a session
+manager.
+
+
+SYNOPSIS
+--------
+
+fvwm *
+
+DESCRIPTION
+-----------
+
+fvwmsessionmanagement - details the specific commands which can be used to
+coerce certain session managers.
+
+
+COMMANDS
+--------
+
+include::FvwmSessionManagement/Quit.txt[]
+
+include::FvwmSessionManagement/QuitScreen.txt[]
+
+include::FvwmSessionManagement/QuitSession.txt[]
+
+include::FvwmSessionManagement/Restart.txt[]
+
+include::FvwmSessionManagement/SaveQuitSession.txt[]
+
+include::FvwmSessionManagement/SaveSession.txt[]

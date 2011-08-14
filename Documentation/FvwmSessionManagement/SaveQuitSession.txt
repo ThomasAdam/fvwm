@@ -1,15 +1,5 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-SaveQuitSession
-
-   --------------------------------------------------------------------------
-
-   SaveQuitSession
-
-   Causes a session manager (if any) to save and then shutdown the session.
-   This command does not work for xsm, it seems that xsm does not implement
-   this functionality. Use Unix signals to manage xsm remotely.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'SaveQuitSession'::
++
+Causes a session manager (if any) to save and then shutdown the session.
+This command does not work for xsm, it seems that xsm does not implement
+this functionality. Use Unix signals to manage xsm remotely.

@@ -1,13 +1,3 @@
-   [IMG]    Home ⋅ All Commands ⋅ Grouped Commands ⋅ Modules ⋅ FAQ      [IMG]
-
-QuitScreen
-
-   --------------------------------------------------------------------------
-
-   QuitScreen
-
-   Causes fvwm to stop managing the screen on which the command was issued.
-
-   --------------------------------------------------------------------------
-
-   fvwm 2.6.3 (from cvs)
+'QuitScreen'::
++
+Causes fvwm to stop managing the screen on which the command was issued.
