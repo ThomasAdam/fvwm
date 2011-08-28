@@ -188,6 +188,7 @@ static int                 randr_error_base  = -1;
 #endif
 
 static Window blank_w, vert_w, blank2_w, blank3_w;
+static int FindScreenOfXY(int x, int y);
 
 static int FScreenParseScreenBit(char *arg, char default_screen);
 
@@ -768,8 +769,7 @@ void FScreenSetDefaultModuleScreen(char *scr_spec)
 	return;
 }
 
-
-int FindScreenOfXY(int x, int y)
+static int FindScreenOfXY(int x, int y)
 {
 	int i;
 
@@ -844,6 +844,19 @@ static int FindScreen(
 	}
 
 	return screen;
+}
+
+/* Given pointer coordinates, return the screen the pointer is on.
+ *
+ * Perhaps most useful with $[pointer.screen]
+ */
+int FScreenOfPointerXY(int x, int y)
+{
+	int pscreen;
+
+	pscreen = FindScreenOfXY(x, y);
+
+	return (pscreen > 0) ? --pscreen : pscreen;
 }
 
 /* Returns the specified screens geometry rectangle.  screen can be a screen

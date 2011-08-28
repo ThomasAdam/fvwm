@@ -841,9 +841,7 @@ static signed int expand_vars_extended(
 		is_numeric = True;
 		FQueryPointer(dpy, context_w, &JunkRoot, &JunkChild,
 				&JunkX, &JunkY, &x, &y, &JunkMask);
-		val = FindScreenOfXY(x, y);
-		if (val > 0)
-			val--;
+		val = FScreenOfPointerXY(x, y);
 		break;
 
 	case VAR_VERSION_NUM:

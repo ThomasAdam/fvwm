@@ -66,7 +66,7 @@ void FScreenGetResistanceRect(
 Bool FScreenIsRectangleOnScreen(
 	fscreen_scr_arg *arg, fscreen_scr_t screen, rectangle *rec);
 void FScreenSpecToString(char *dest, int space, fscreen_scr_t screen);
-int FindScreenOfXY(int x, int y);
+int FScreenOfPointerXY(int x, int y);
 
 
 /* Clipping/positioning */
