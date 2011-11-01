@@ -10,6 +10,7 @@ available on the internet.
 
 This document assumes use of git 1.7.X onwards.
 
+
 INITIAL SETUP
 =============
 
@@ -31,6 +32,7 @@ Other suggestions include a setting to enable colour output:
 
 This is a one-off operation once the repository has been cloned,
 assuming this information has never been set before.
+
 
 OBTAINING THE SOURCE CODE
 =========================
@@ -68,6 +70,7 @@ As with the INITIAL SETUP section, this is also intended to be a
 one-off operation, and only needs to happen once for each cloned
 instance of the Fvwm repository.
 
+
 UPDATING THE SOURCE TREE
 ========================
 
@@ -92,6 +95,7 @@ pull":
 And again note that this is *not* set to use "--global" as this
 really should not affect any other repositories besides Fvwm's.
 
+
 HACKING ON THE CODE
 ===================
 
@@ -111,6 +115,7 @@ The devel branch is a rolling branch.  It is used to collect
 patches/topic branches intended for the next release of Fvwm,
 hence its history is always subject to change.  But the branch is
 still useful for developers/testers to test pre-releases of Fvwm.
+
 
 RULES OF TOPIC BRANCH USE
 =========================
@@ -159,6 +164,7 @@ And then mark the commit in question as "edit", and fix up the
 commit by removing the whitespace, and following the instructions.
 The git rebase command will help you with this.
 
+
 TOPIC BRANCHES AS DEVELOPMENT
 =============================
 
@@ -196,6 +202,7 @@ should be rebased on top of master first of all:
 Ensuring that any conflicts are resolved in this process, should
 there be any.
 
+
 PUBLISHING TOPIC BRANCHES IN FVWM'S REPOSITORY
 ==============================================
 
@@ -220,6 +227,7 @@ to check that branch out:
 This might be fine for close collaboration on a topic before it
 graduates to the devel branch, for example.
 
+
 DELETING TOPIC BRANCHES IN FVWM'S REPOSITORY
 ============================================
 
@@ -233,6 +241,7 @@ Note that once this has happened, it will no longer be possible to
 recover the state of that branch, but there is usually a grace
 period (one month) before this happens.  Again, communication with
 fvwm-workers@ is helpful here.
+
 
 BUG-FIXING AND CONTRIBUTING PATCHES
 ===================================
@@ -275,6 +284,7 @@ These can then be dealt with with using either "git am" (in the
 case of patches mailed out) or "git remote" in the case of a
 "request-pull".
 
+
 OBTAINING COMMIT ACCESS
 =======================
 
@@ -292,6 +302,7 @@ we welcome new members. There are no required duties, all work is
 strictly voluntary.
 
     [ INSERT HERE GITOSIS INSTRUCTIONS, PUBKEY, ETC. ]
+
 
 REFERENCES / FOOTNOTES
 ======================
