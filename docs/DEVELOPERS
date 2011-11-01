@@ -93,16 +93,13 @@ out, nobody will be able to build the distributed tar file!
 Changing configure.ac
 ---------------------
 
-The most common reason to do this is to change the version string.
-If you're editing it for any other reason, I will assume you know
-what you're doing.
+If you're editing configure.ac it for any reason, please follow
+these steps:
 
-Steps: 1. edit configure.ac, and find the line containing
-          AM_INIT_AUTOMAKE(fvwm, x.y.z) at the top of the file
-       2. change x.y.z to the new version string
-       3. re-run "make" from the top of the build directory
+1. Edit configure.ac.
+2. Re-run "make" from the top of the build directory.
 
-Step 3 will take care of rebuilding the configure script, and
+Step 2 will take care of rebuilding the configure script, and
 usually all the other Makefiles.
 
 
@@ -119,8 +116,8 @@ Preparations:
 
   - Switch to the "devel" branch:
       $ git checkout devel
-  - Set a temporary tag:
-      $ git tag -a prerelease
+  - Set a temporary local tag:
+      $ git tag prerelease
   - Checkout the release branch:
       $ git checkout release
   - Rebase on to the prerelese tag
@@ -197,7 +194,7 @@ Tag the release:
   and the tagged files are identical.
 
   - Tag the git tree (replace x, y and z):
-     $ git tag -a version-x_y_z
+     $ git tag -m version-x_y_z -a version-x_y_z
 
 Build and test the release tarballs:
 
@@ -210,7 +207,7 @@ Build and test the release tarballs:
   But trust me, it will save your bacon in this way some day!
 
   - Run
-     $ make distcheck2
+     $ make -j 1 distcheck2
   - Ensure that you see the messages
       "fvwm-x.y.z.tar.gz is ready for distribution"
     and
@@ -225,6 +222,11 @@ Upload the release:
   - Upload the files fvwm-x.y.z.tar.gz and fvwm-x.y.z.tar.bz2 to
     ftp://ftp.fvwm.org/pub/incoming/fvwm
   - Notify fvwm-owner@fvwm.org of the upload.
+
+Push the release branch and the release tag to the fvwm release
+repository
+
+  !!! Add instructions here !!!
 
 Update fvwm-web:
 
