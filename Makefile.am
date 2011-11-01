@@ -39,10 +39,10 @@ EXTRA_DIST = \
 DISTCHECK_CONFIGURE_FLAGS = --enable-htmldoc
 
 dist2: dist
-	@(git archive --format=tar --prefix=$(distdir) HEAD | \
-		gzip >$(distdir).tar.gz)
-	@(git archive --format=tar --prefix=$(distdir) HEAD | \
-		bzip2 -9 >$(distdir).tar.bz2)
+	git archive --format=tar --prefix=$(distdir) HEAD | \
+		gzip >$(distdir).tar.gz
+	git archive --format=tar --prefix=$(distdir) HEAD | \
+		bzip2 -9 >$(distdir).tar.bz2
 
 distcheck2: distcheck dist2
 	@banner="$(distdir).tar.bz2 - ready for distribution"; \
