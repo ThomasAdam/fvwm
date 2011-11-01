@@ -3,7 +3,7 @@ dnl
 AC_PREREQ(2.60)
 # The shell script echos the version we're running, and the result is
 # captured by the e4_esyscmd macro.
-m4_esyscmd(utils/fvwm-gen-version.sh)
+m4_esyscmd(utils/fvwm_gen_version.sh)
 AC_INIT(fvwm/fvwm.c)
 
 dnl should be "yes" only within the released distribution
