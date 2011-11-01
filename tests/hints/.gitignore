@@ -1,0 +1,9 @@
+Makefile
+Makefile.in
+.deps
+bb.out
+outfile
+TAGS
+.gdb_history
+gmon.out
+hints_test

@@ -1,0 +1,8 @@
+Makefile
+Makefile.in
+FvwmCpp
+.deps
+TAGS
+.gdb_history
+gmon.out
+FvwmCpp.1

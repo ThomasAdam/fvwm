@@ -1,0 +1,7 @@
+Makefile
+Makefile.in
+FvwmProxy
+.deps
+bb.out
+TAGS
+FvwmProxy.1

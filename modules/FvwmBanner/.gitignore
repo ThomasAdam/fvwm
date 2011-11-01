@@ -1,0 +1,8 @@
+Makefile
+Makefile.in
+FvwmBanner
+.deps
+TAGS
+.gdb_history
+gmon.out
+FvwmBanner.1

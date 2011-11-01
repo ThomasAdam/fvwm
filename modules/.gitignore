@@ -1,0 +1,5 @@
+Makefile
+Makefile.in
+TAGS
+.gdb_history
+gmon.out

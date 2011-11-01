@@ -1,0 +1,8 @@
+Makefile
+Makefile.in
+FvwmScroll
+.deps
+TAGS
+.gdb_history
+gmon.out
+FvwmScroll.1
