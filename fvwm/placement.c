@@ -1789,6 +1789,7 @@ static int __place_window(
 	/* I think it would be good to switch to the selected desk
 	 * whenever a new window pops up, except during initialization */
 	/*  RBW - 11/02/1998  --  I dont. */
+#if 0
 	if (!win_opts->flags.do_override_ppos && !DO_NOT_SHOW_ON_MAP(fw))
 	{
 		if (Scr.CurrentDesk != fw->Desk)
@@ -1797,6 +1798,7 @@ static int __place_window(
 		}
 		goto_desk(fw->Desk);
 	}
+#endif
 	/* Don't move viewport if SkipMapping, or if recapturing the window,
 	 * adjust the coordinates later. Otherwise, just switch to the target
 	 * page - it's ever so much simpler. */
