@@ -4527,3 +4527,14 @@ void CMD_State(F_CMD_ARGS)
 
 	return;
 }
+
+void CMD_ShellCmd(F_CMD_ARGS)
+{
+	/*
+	 * Should we prefix the system call with "$exec_shell_name -c"?
+	 * ie. like the Exec command.
+	 */
+
+	if (cond_rc != NULL)
+		cond_rc->rc = (system(action) == 0 ? COND_RC_OK : COND_RC_ERROR);
+}

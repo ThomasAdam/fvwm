@@ -54,6 +54,7 @@
 #include "repeat.h"
 #include "expand.h"
 #include "menus.h"
+#include "if.h"			/* conditionally_execute_function() */
 
 /* ---------------------------- local definitions -------------------------- */
 
@@ -349,7 +350,7 @@ static const func_t *find_builtin_function(char *func)
 	return ret_func;
 }
 
-static void __execute_function(
+void execute_function_with_args(
 	cond_rc_t *cond_rc, const exec_context_t *exc, char *action,
 	FUNC_FLAGS_TYPE exec_flags, char *args[], Bool has_ref_window_moved)
 {
@@ -394,7 +395,7 @@ static void __execute_function(
 	if (func_depth > MAX_FUNCTION_DEPTH)
 	{
 		fvwm_msg(
-			ERR, "__execute_function",
+			ERR, "execute_function_with_args",
 			"Function '%s' called with a depth of %i, "
 			"stopping function execution!",
 			action, func_depth);
@@ -546,7 +547,7 @@ static void __execute_function(
 	    (!bif || !(bif->flags & FUNC_DECOR)))
 	{
 		fvwm_msg(
-			ERR, "__execute_function",
+			ERR, "execute_function_with_args",
 			"Command can not be added to a decor; executing"
 			" command now: '%s'", action);
 	}
@@ -586,7 +587,7 @@ static void __execute_function(
 		if (Scr.cur_decor && Scr.cur_decor != &Scr.DefaultDecor)
 		{
 			fvwm_msg(
-				WARN, "__execute_function",
+				WARN, "execute_function_with_args",
 				"Command can not be added to a decor;"
 				" executing command now: '%s'", expaction);
 		}
@@ -672,7 +673,7 @@ static void __execute_function(
 				    *function != 0 && !set_silent)
 				{
 					fvwm_msg(
-						ERR, "__execute_function",
+						ERR, "execute_function_with_args",
 						"No such command '%s'",
 						function);
 				}
@@ -831,6 +832,9 @@ static void __run_complex_function_items(
 		x0 = y0 = 0;
 	}
 
+	IfState	state;
+	initIfState(&state);
+
 	for (fi = func->first_item; fi != NULL && cond_rc->break_levels == 0; )
 	{
 		/* make lower case */
@@ -841,9 +845,9 @@ static void __run_complex_function_items(
 		}
 		if (c == cond)
 		{
-			__execute_function(
-				cond_rc, exc, fi->action, FUNC_DONT_DEFER,
-				args, has_ref_window_moved);
+			conditionally_execute_function(cond_rc, exc, fi->action,
+				FUNC_DONT_DEFER, args, has_ref_window_moved,
+				&state);
 			if (!has_ref_window_moved && PressedW &&
 			    XTranslateCoordinates(
 				  dpy, PressedW , Scr.Root, 0, 0, &x, &y,
@@ -1279,7 +1283,7 @@ void execute_function(
 	cond_rc_t *cond_rc, const exec_context_t *exc, char *action,
 	FUNC_FLAGS_TYPE exec_flags)
 {
-	__execute_function(cond_rc, exc, action, exec_flags, NULL, False);
+	execute_function_with_args(cond_rc, exc, action, exec_flags, NULL, False);
 
 	return;
 }

@@ -122,6 +122,7 @@ enum
 	F_SET_NOGRAB_MASK,
 	F_SET_SYNC_MASK,
 	F_SHADE_ANIMATE,
+	F_SHELL_CMD,
 	F_SILENT,
 	F_SNAP_ATT,
 	F_SNAP_GRID,
@@ -364,6 +365,7 @@ P(set_nograb_mask);
 P(set_sync_mask);
 P(SetAnimation);
 P(SetEnv);
+P(ShellCmd);
 P(Silent);
 P(SnapAttraction);
 P(SnapGrid);

@@ -76,6 +76,9 @@ Bool functions_is_complex_function(
 void execute_function(
 	cond_rc_t *cond_rc, const exec_context_t *exc, char *action,
 	FUNC_FLAGS_TYPE exec_flags);
+void execute_function_with_args(
+	cond_rc_t *cond_rc, const exec_context_t *exc, char *action,
+	FUNC_FLAGS_TYPE exec_flags, char *args[], Bool has_ref_window_moved);
 void execute_function_override_wcontext(
 	cond_rc_t *cond_rc, const exec_context_t *exc, char *action,
 	FUNC_FLAGS_TYPE exec_flags, int wcontext);

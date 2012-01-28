@@ -51,6 +51,7 @@
 #include "events.h"
 #include "geometry.h"
 #include "libs/fvwmsignal.h"
+#include "if.h"
 #include "decorations.h"
 #include "commands.h"
 

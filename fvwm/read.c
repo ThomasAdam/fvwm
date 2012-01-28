@@ -41,6 +41,7 @@
 #include "events.h"
 #include "misc.h"
 #include "screen.h"
+#include "if.h"		/* conditionally_execute_function() */
 
 #define MAX_READ_DEPTH 40
 static char *curr_read_file = NULL;
@@ -133,6 +134,9 @@ void run_command_stream(
 	 * has now popped down. */
 	handle_all_expose();
 
+	IfState	state;
+	initIfState(&state);
+
 	tline = fgets(line, (sizeof line) - 1, f);
 	while (tline)
 	{
@@ -152,7 +156,7 @@ void run_command_stream(
 		{
 			tline[l - 1] = '\0';
 		}
-		execute_function(cond_rc, exc, tline, 0);
+		conditionally_execute_function(cond_rc, exc, tline, 0, NULL, False, &state);
 		tline = fgets(line, (sizeof line) - 1, f);
 	}
 
@@ -204,6 +208,7 @@ int run_command_file(
 	char *filename, const exec_context_t *exc)
 {
 	char *full_filename;
+	cond_rc_t dummy_rc;
 	FILE* f = NULL;
 
 	/* We attempt to open the filename by doing the following:
@@ -255,7 +260,9 @@ int run_command_file(
 	{
 		return 0;
 	}
-	run_command_stream(NULL, f, exc);
+
+	condrc_init(&dummy_rc);
+	run_command_stream(&dummy_rc, f, exc);
 	fclose(f);
 	pop_read_file();
 

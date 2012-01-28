@@ -563,7 +563,11 @@ const func_t func_table[] =
 	CMD_ENT("setenv", CMD_SetEnv, F_SETENV, 0, 0),
 	/* - Set an environment variable */
 
+	CMD_ENT("shellcmd", CMD_ShellCmd, F_SHELL_CMD, 0, 0),
+	/* - Execute an external command, wait & record its return code */
+
 	CMD_ENT(PRE_SILENT, CMD_Silent, F_SILENT, 0, 0),
+
 	/* Silent - Suppress errors on command, avoid window selection */
 
 	CMD_ENT("snapattraction", CMD_SnapAttraction, F_SNAP_ATT, 0, 0),
