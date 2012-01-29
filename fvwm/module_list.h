@@ -8,6 +8,7 @@
 
 /* for F_CMD_ARGS */
 #include "fvwm/fvwm.h"
+#include "fvwm/if.h"
 
 /* please don't use msg_masks_t and PipeMask outside of module_interface.c.
  * They are only global to allow to access the IS_MESSAGE_SELECTED macro without
@@ -34,6 +35,7 @@ typedef struct fmodule
 	msg_masks_t xSyncMask;
 	char *xname;
 	char *xalias;
+	IfState *ifstate;
 } fmodule;
 
 #define MOD_IS_CMDLINE(m) ((m)->xflags.is_cmdline_module)
@@ -57,6 +59,7 @@ typedef fmodule_store* fmodule_list_itr;
 #define MOD_PIPEMASK(m) ((m)->xPipeMask)
 #define MOD_NAME(m) ((m)->xname)
 #define MOD_ALIAS(m) ((m)->xalias)
+#define MOD_IFSTATE(m) ((m)->ifstate)
 
 /* this is a bit long winded to allow MAX_MESSAGE to be 32 and not get an
  * integer overflow with (1 << MAX_MESSAGES) and even with

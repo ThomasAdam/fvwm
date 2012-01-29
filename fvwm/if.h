@@ -40,7 +40,7 @@ typedef struct
 {
 	unsigned char	a[MAX_NESTED_IF_STATEMENTS];
 	unsigned char	n;
-}Stack;
+} Stack;
 
 void initStack (Stack *s);
 

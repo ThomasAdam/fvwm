@@ -51,7 +51,6 @@
 #include "events.h"
 #include "geometry.h"
 #include "libs/fvwmsignal.h"
-#include "if.h"
 #include "decorations.h"
 #include "commands.h"
 
@@ -658,6 +657,7 @@ void module_input_execute(struct fmodule_input *input)
 	XEvent e;
 	const exec_context_t *exc;
 	exec_context_changes_t ecc;
+	cond_rc_t dummy_rc;
 
 	memset(&e, 0, sizeof(e));
 	if (XFindContext(dpy, input->window, FvwmContext,
@@ -709,7 +709,9 @@ void module_input_execute(struct fmodule_input *input)
 	exc = exc_create_context(
 		&ecc, ECC_TYPE | ECC_ETRIGGER | ECC_FW | ECC_W | ECC_WCONTEXT |
 		ECC_MODULE);
-	execute_function(NULL, exc, input->command, 0);
+	condrc_init(&dummy_rc);
+	conditionally_execute_function(&dummy_rc, exc, input->command, 0,
+			NULL, False, MOD_IFSTATE(input->module));
 	exc_destroy_context(exc);
 	module_input_discard(input);
 

@@ -66,6 +66,7 @@
 
 #define MOD_NOGRABMASK(m) ((m)->xNoGrabMask)
 #define MOD_SYNCMASK(m) ((m)->xSyncMask)
+#define MOD_IFSTATE(m) ((m)->ifstate)
 
 typedef struct
 {
@@ -124,6 +125,8 @@ static fmodule *module_alloc(void)
 	msg_mask_set(&MOD_SYNCMASK(module), 0, 0);
 	MOD_NAME(module) = NULL;
 	MOD_ALIAS(module) = NULL;
+	MOD_IFSTATE(module) = (IfState *)safemalloc(sizeof(IfState));
+	initIfState(MOD_IFSTATE(module));
 
 	return module;
 }
