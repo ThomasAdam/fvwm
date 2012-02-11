@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <X11/keysym.h>
@@ -93,6 +94,8 @@ extern int cmsDelayDefault;
 /* ---------------------------- local types -------------------------------- */
 typedef enum {FakeMouseEvent, FakeKeyEvent} FakeEventType;
 /* ---------------------------- forward declarations ----------------------- */
+
+static int __exec_cmd(const char *);
 
 /* ---------------------------- local variables ---------------------------- */
 
@@ -2428,9 +2431,91 @@ void CMD_ExecUseShell(F_CMD_ARGS)
 	}
 }
 
+static int __exec_cmd(const char *cmd)
+{
+	pid_t pid;
+	int status;
+	int fd;
+
+	/* Use to grab the pointer here, but the fork guarantees that
+	 * we wont be held up waiting for the function to finish,
+	 * so the pointer-gram just caused needless delay and flashing
+	 * on the screen */
+	/* Thought I'd try vfork and _exit() instead of regular fork().
+	 * The man page says that its better. */
+	/* Not everyone has vfork! */
+	/* According to the man page, vfork should never be used at all.
+	 */
+
+	pid = fork();
+
+	switch (pid)
+	{
+	case 0:
+		/* This is for fixing a problem with rox filer */
+
+		fvmm_deinstall_signals();
+		fd = open("/dev/null", O_RDONLY, 0);
+		dup2(fd,STDIN_FILENO);
+
+		if (fd != STDIN_FILENO)
+			close(fd);
+
+		if (fvwm_setpgrp() == -1)
+		{
+			fvwm_msg(ERR, "exec_function", "setpgrp failed (%s)",
+				 strerror(errno));
+			exit(100);
+		}
+
+		/* TA:  exec() the command here, but do not explicitly check
+		 * the return value from execl() here -- let the parent do
+		 * that.
+		 */
+		if (execl(exec_shell_name, exec_shell_name, "-c", cmd, NULL)
+			== -1)
+		{
+			fvwm_msg(ERR, "__exec_cmd", "execl() failed: %s",
+				strerror(errno));
+		}
+	case -1:
+		fvwm_msg(ERR, "__exec_cmd", "fork() failed (%s)",
+			strerror(errno));
+		break;
+	}
+
+	/* TA:  We're the parent process -- call waitpid() on the
+	 * child.
+	 *
+	 * FIXME -- I think this is broken for applications generating SIGCHLD
+	 * now, because in the parent, we've just removed signal handlers via
+	 * fvwm_deinstall_signals().
+	 *
+	 * This means FVWM will block here indefinitely waiting for a signal
+	 * which never came.
+	 */
+	if (waitpid(-1, &status, 0) > 0)
+	{
+		if (WIFEXITED(status))
+		{
+			return WEXITSTATUS(status);
+		}
+		else
+		{
+			/* execl() failed. */
+			fvwm_msg(ERR, "exec_function", "execl failed (%s)",
+				 strerror(errno));
+			exit(100);
+		}
+	}
+
+	return -1;
+
+}
+
 void CMD_Exec(F_CMD_ARGS)
 {
-	char *cmd=NULL;
+	char *cmd = NULL;
 
 	/* if it doesn't already have an 'exec' as the first word, add that
 	 * to keep down number of procs started */
@@ -2452,43 +2537,11 @@ void CMD_Exec(F_CMD_ARGS)
 	{
 		return;
 	}
-	/* Use to grab the pointer here, but the fork guarantees that
-	 * we wont be held up waiting for the function to finish,
-	 * so the pointer-gram just caused needless delay and flashing
-	 * on the screen */
-	/* Thought I'd try vfork and _exit() instead of regular fork().
-	 * The man page says that its better. */
-	/* Not everyone has vfork! */
-	/* According to the man page, vfork should never be used at all.
-	 */
 
-	if (!(fork())) /* child process */
-	{
-		/* This is for fixing a problem with rox filer */
-		int fd;
+	int r = __exec_cmd(cmd);
+	fvwm_msg(INFO, "CMD_Exec", "Returned: %d", r);
 
-		fvmm_deinstall_signals();
-		fd = open("/dev/null", O_RDONLY, 0);
-		dup2(fd,STDIN_FILENO);
-
-		if (fd != STDIN_FILENO)
-			close(fd);
-
-		if (fvwm_setpgrp() == -1)
-		{
-			fvwm_msg(ERR, "exec_function", "setpgrp failed (%s)",
-				 strerror(errno));
-			exit(100);
-		}
-		if (execl(exec_shell_name, exec_shell_name, "-c", cmd, NULL) ==
-		    -1)
-		{
-			fvwm_msg(ERR, "exec_function", "execl failed (%s)",
-				 strerror(errno));
-			exit(100);
-		}
-	}
-	free(cmd);
+	free (cmd);
 
 	return;
 }
@@ -4530,11 +4583,10 @@ void CMD_State(F_CMD_ARGS)
 
 void CMD_ShellCmd(F_CMD_ARGS)
 {
-	/*
-	 * Should we prefix the system call with "$exec_shell_name -c"?
-	 * ie. like the Exec command.
-	 */
+	if (!action)
+		return;
 
 	if (cond_rc != NULL)
-		cond_rc->rc = (system(action) == 0 ? COND_RC_OK : COND_RC_ERROR);
+		cond_rc->rc = ((__exec_cmd(action) == 0) ?
+				COND_RC_OK : COND_RC_ERROR);
 }
