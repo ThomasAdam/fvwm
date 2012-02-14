@@ -42,6 +42,7 @@
 #include "screen.h"
 #include "update.h"
 #include "style.h"
+#include "style-opt.h"
 #include "colorset.h"
 #include "ewmh.h"
 #include "gnome.h"
@@ -2077,6 +2078,8 @@ static Bool style_parse_one_style_option(
 	window_style *ps, icon_boxes **cur_ib)
 {
 	window_style *add_style;
+	struct style_args sa;
+
 	/* work area for button number */
 	int num;
 	int i;
@@ -2108,9 +2111,18 @@ static Bool style_parse_one_style_option(
 			token = token_l;
 		}
 	}
+
+	sa.style_name = token;
+	sa.options = NULL;
+	sa.ps = ps;
+	sa.is_negated = on;
+
 	switch (tolower(token[0]))
 	{
 	case 'a':
+		parse_style_opt_a(&sa);
+#if 0
+
 		if (StrEquals(token, "ACTIVEPLACEMENT"))
 		{
 			ps->flags.placement_mode &= (~PLACE_RANDOM);
@@ -2150,6 +2162,7 @@ static Bool style_parse_one_style_option(
 		{
 			found = False;
 		}
+#endif
 		break;
 
 	case 'b':

@@ -18,7 +18,7 @@ fvwm_SOURCES = \
 	modconf.h module_interface.h module_list.h move_resize.h \
 	placement.h read.h repeat.h execcontext.h schedule.h screen.h \
 	session.h stack.h style.h update.h virtual.h window_flags.h frame.h \
-	infostore.h \
+	infostore.h style-opt.h \
 	\
 	menus.c style.c borders.c events.c move_resize.c builtins.c \
 	add_window.c icons.c fvwm.c frame.c placement.c virtual.c \
@@ -28,7 +28,9 @@ fvwm_SOURCES = \
 	menubindings.c decorations.c ewmh_icons.c update.c bindings.c misc.c \
 	cursor.c colormaps.c modconf.c  ewmh_conf.c read.c schedule.c \
 	menucmd.c ewmh_names.c icccm2.c windowshade.c focus_policy.c repeat.c \
-	execcontext.c menugeometry.c menudim.c condrc.c infostore.c
+	execcontext.c menugeometry.c menudim.c condrc.c infostore.c style-opt.c \
+	style-opt-a.c
+
 
 fvwm_DEPENDENCIES = $(top_builddir)/libs/libfvwm.a
 
