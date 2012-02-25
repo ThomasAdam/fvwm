@@ -59,7 +59,7 @@ again when something is selected.
 INVOCATION
 ----------
 
-*FvwmButtons* is spawned by 'fvwm', so command line invocation will not work.
+*FvwmButtons* is spawned by fvwm, so command line invocation will not work.
 
 *FvwmButtons* can be invoked by inserting the line \'+Module FvwmButtons 
 OptionalName+' in the .fvwm2rc file. This should be placed in the 
@@ -135,7 +135,7 @@ Specifies that the configuration for this button is found in the file
 'fvwm'\'s startup  directory. The configuration file is in the same 
 format as fvwm's configuration file, but each line is read as if 
 prefixed by "+*FvwmButtons+". Comments are given by starting a line with 
-"#". Line continuation is done by ending a line with a "\".
+"+#+". Line continuation is done by ending a line with a "+\+".
 
 *FvwmButtons: Font 'font'::
 +
@@ -372,8 +372,8 @@ image specified by Icon is displayed (if there is one).
 +
 Id 'id'::::
 +
-The id to be used to identify this button. The first character of the id 
-should be alphabetic. See also the *DYNAMICAL ACTIONS* section.
+The 'id' to be used to identify this button. The first character of the 
+'id' should be alphabetic. See also the *DYNAMICAL ACTIONS* section.
 +
 Left::::
 +
@@ -619,12 +619,12 @@ The title is justified to the left side.
 +
 The title is justified to the right side.
 +
-Side;;
+'Side';;
 +
 Causes the title to appear on the right hand side of any icon or swallowed 
 window, instead of below which is the default. If you use small icons, 
 and combine this  with the 'Left' or 'Right' option, you can get a look 
-similar to 'fvwm'\'s menus.
+similar to fvwm's menus.
 +
 ActiveTitle 'name'::::
 Specifies the title to be written on the button when the mouse is hovering 
@@ -695,7 +695,7 @@ and back quote:
 ------
 +
 The back quoting is unusual but used on purpose, if you use a preprocessor 
-like 'FvwmCpp' and want it to get into your commands, like this:
+like *FvwmCpp* and want it to get into your commands, like this:
 +
 ------
 #define BG gray60
@@ -736,7 +736,7 @@ button. Essentially you need nothing more than the Panel option:
 This works like the 'Swallow' option. The difference is that the application 
 is not put into the button when it starts up but instead hidden from view. 
 When you press the button for the panel the window slides into view. 
-The \'-g -30000-30000' option tells the application that it should be 
+The \'+-g -30000-30000+' option tells the application that it should be 
 created somewhere very far to the top and left of your visible screen. 
 Otherwise you  would  see it flashing for a moment when *FvwmButtons* 
 starts up. Some applications do not work well with this kind of syntax 
@@ -795,7 +795,7 @@ panels in your main FvwmButtons configuration:
 
 After the last configuration line for the main panel the configuration 
 of the first panel followed, introduced with a line beginning with 
-\*FvwmButtonsPanel:
+*FvwmButtonsPanel:
 
 ------
 *FvwmButtonsPanel WinOps
@@ -826,7 +826,7 @@ new instance of *FvwmButtons* a different name.
  "Module FvwmButtons Tools")
 ------
 
-If you used something like \'Panel-d' you now have to use button was 
+If you used something like \'+Panel-d+' you now have to use button was 
 selected start *FvwmButtons* with the '-transientpanel' option:
 
 ------
@@ -1074,7 +1074,7 @@ The final line is even more magic. Note the combination of 'UseOld' and
 'NoKill', which will try to swallow an existing window with the name 
 "xload15" when starting up (if failing: starting one with the specified 
 command), which is un-swallowed when ending *FvwmButtons*. The swallowed 
-application is started with "-geometry -3000-3000" so that it will not 
+application is started with "+-geometry -3000-3000+" so that it will not 
 be visible until its swallowed.
 
 The other panels are specified after the root panel:

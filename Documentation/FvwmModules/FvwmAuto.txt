@@ -1,4 +1,4 @@
-FvwmAuto(1)
+qFvwmAuto(1)
 ===========
 :doctype: manpage
 
@@ -20,7 +20,7 @@ DESCRIPTION
 The *FvwmAuto* module is most often used to automatically raise focused 
 windows.
 
-*FvwmAuto* can only be invoked by 'fvwm'. Command line invocation of the 
+*FvwmAuto* can only be invoked by fvwm. Command line invocation of the 
 *FvwmAuto* will not work.
 
 
@@ -30,8 +30,7 @@ INVOCATION
 The correct syntax is:
 
 ------
-Module FvwmAuto Timeout [-passid] [-menter|-menterleave|-mfocus] 
-[EnterCommand [LeaveCommand]]
+Module FvwmAuto Timeout [-passid] [-menter|-menterleave|-mfocus] [EnterCommand [LeaveCommand]]
 ------
 
 Example:
@@ -64,23 +63,21 @@ a new window. The latter two modes of operation are useful with windows
 that do not accept the focus.
 
 [NOTE]
-===============================
 '-menterleave' mode can interfere with popup windows of some applications. 
 One example is the zoom menu of Ghostview. Please do not complain about 
 this to us - it is a bug in Ghostview.
-===============================
 
 'EnterCommand' and 'LeaveCommand' are optional. 'EnterCommand' is executed 
 Timeout milliseconds after a window gets the input focus, 'LeaveCommand' 
 is executed Timeout milliseconds after the window has lost focus. Note 
-that you always should use the \'Silent' keyword before the command 
-itself. *FvwmAuto* prepends "Silent " to the command string on its own 
-if yor forget this. Without this prefix 'fvwm' would ask you for a window 
+that you always should use the \'+Silent+' keyword before the command 
+itself. *FvwmAuto* prepends "+Silent+" to the command string on its own 
+if yor forget this. Without this prefix fvwm would ask you for a window 
 to act on if the window has died before the command sent by *FvwmAuto* 
-has been processed by 'fvwm'.  This can for example happen with popup menus.
+has been processed by fvwm.  This can for example happen with popup menus.
 
-"Silent  Raise" is the default for 'EnterCommand', but any fvwm function 
-is allowed. I would not use "Close" or "Destroy" with a low timeout, 
+"Silent Raise" is the default for 'EnterCommand', but any fvwm function 
+is allowed. I would not use "+Close+" or "+Destroy+" with a low timeout, 
 though. The 'LeaveCommand' can be handy for a tidy desktop.
 
 Experiment with:
@@ -142,7 +139,7 @@ auto-raising or auto-lowering. This improvement includes locking  on
 +M_RAISE_WINDOW+ and +M_LOWER_WINDOW+ packets and not raising/lowering 
 explicitly raised windows. The special Raise/Lower support is enabled 
 only when either 'EnterCommand' or 'LeaveCommand' contain substring 
-"Raise" or "Lower". You can use this fact to enable/disable any special 
+"+Raise+" or "+Lower+". You can use this fact to enable/disable any special 
 support by renaming these commands, if *FvwmAuto* does not automatically 
 do want you expect it to do.
 
