@@ -1,0 +1,35 @@
+List of not converted Fvwm modules:
+
+FvwmCommand *in work*
+FvwmConsole
+FvwmConsoleC.pl
+FvwmCpp
+FvwmDragWell
+FvwmEvent
+FvwmForm
+FvwmGtk (deprecated?)
+FvwmGtkDebug (deprecated?)
+FvwmIconBox (deprecated?)
+FvwmIconMan
+FvwmIdent
+FvwmM4
+FvwmPager
+FvwmPerl
+FvwmProxy
+FvwmRearrange
+FvwmSave (deprecated?)
+FvwmSaveDesk (deprecated?)
+FvwmScript
+FvwmScroll
+FvwmTabs
+FvwmTaskBar
+FvwmTheme
+FvwmWharf
+FvwmWindowMenu
+FvwmWinList
+fvwm-bug
+fvwm-config
+fvwm-convert-2.2
+fvwm-convert-2.4
+fvwm-convert-2.6
+fvwm-root 
