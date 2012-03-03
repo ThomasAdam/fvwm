@@ -4,12 +4,9 @@ FvwmDragWell
 FvwmGtk (deprecated?)
 FvwmGtkDebug (deprecated?)
 FvwmIconBox (deprecated?)
-FvwmIconMan
-FvwmPerl
 FvwmProxy
 FvwmSave (deprecated?)
 FvwmSaveDesk (deprecated?)
-FvwmScript
 FvwmTabs
 FvwmTaskBar
 FvwmWharf
