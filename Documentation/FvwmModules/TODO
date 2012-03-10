@@ -6,16 +6,9 @@ FvwmGtkDebug (deprecated? **)
 FvwmIconBox (deprecated? *)
 FvwmSave (deprecated? *)
 FvwmSaveDesk (deprecated? *)
-FvwmTabs
 FvwmTaskBar (deprecated? *)
 FvwmWharf (deprecated? *)
-FvwmWindowMenu
 FvwmWinList (deprecated? *)
-fvwm-config
-fvwm-convert-2.2
-fvwm-convert-2.4
-fvwm-convert-2.6
-fvwm-root 
 
 * discussion on the mailing list "Deprecating certain Fvwm* modules".
 ** based on Gtk1.0 which isn't used in normal distributions.
