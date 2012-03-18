@@ -1,26 +1,17 @@
-FvwmProxy(1)
-============
-:doctype: manpage
-
-
-NAME
-----
-
-FvwmProxy - the fvwm proxy module
-
-
-SYNOPSIS
---------
-
-FvwmProxy is spawned by fvwm, so no command line invocation will work.
-
-
-DESCRIPTION
------------
+FvwmProxy
+---------
 
 The *FvwmProxy* allows the user to locate and control windows obscured by other 
 windows by using small non-overlapping proxy windows. The default capabilites 
 include raising and lowering the proxied windows.
+
+FvwmProxy is spawned by fvwm, so no command line invocation will work.
+
+To run this module, place this command somewhere in the configuration:
+
+------
+Module FvwmProxy
+------
 
 Using the sample configuration, pressing Alt-Tab cycles through the windows and 
 allows the use of assignable click actions on the proxies. Releasing the Alt 
@@ -35,7 +26,7 @@ to prevent them from overlapping.
 
 
 COPYRIGHTS
-----------
+~~~~~~~~~~
 
 The *FvwmProxy* program is original work by Jason Weber.
 
@@ -44,7 +35,7 @@ provided or implied in any way whatsoever. Use this program at your own risk.
 
 
 INVOCATION
-----------
+~~~~~~~~~~
 
 *FvwmProxy* can be invoked by inserting the line "+Module FvwmProxy+" in the 
 .fvwm2rc file. This can be placed on a line by itself, if *FvwmProxy* is to 
@@ -54,7 +45,7 @@ in the ModulePath configuration option to attempt to locate *FvwmProxy*.
 
 
 CONFIGURATION OPTIONS
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 *FvwmProxy: Colorset 'n'::
 +
@@ -300,7 +291,7 @@ back you can undo. The default is 8.
 
 
 COMMANDS
---------
+~~~~~~~~
 
 SendToModule FvwmProxy Show::
 +
@@ -394,7 +385,7 @@ the previous undo, the redo buffer will be cleared.
 
 
 SAMPLE CONFIGURATION
---------------------
+~~~~~~~~~~~~~~~~~~~~
 
 The following are excerpts from a .fvwm2rc file which describe *FvwmProxy* 
 initialization commands:
@@ -534,6 +525,6 @@ inclusion under just 'AutoInclude'.
 
 
 AUTHOR
-------
+~~~~~~
 
 Jason Weber

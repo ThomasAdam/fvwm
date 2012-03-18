@@ -1,41 +1,32 @@
-FvwmBanner(1)
-=============
-:doctype: manpage
-
-NAME
-----
-
-FvwmBanner - the Fvwm Banner module
-
-
-SYNOPSIS
---------
-
-Module FvwmBanner
-
-
-DESCRIPTION
------------
+FvwmBanner
+----------
 
 *FvwmBanner* displays an Fvwm Logo in the center of the screen for 3 seconds.
 
 *FvwmBanner* can only be invoked by fvwm. Command line invocation of the 
 *FvwmBanner* module will not work.
 
+From within the .fvwm2rc file, *FvwmBanner* is spawned as follows:
+
+------
+Module FvwmBanner
+------
+
+
 COPYRIGHTS
-----------
+~~~~~~~~~~
 
 None.
 
 
 INITIALIZATION
---------------
+~~~~~~~~~~~~~~
 
 Nothing interesting.
 
 
 INVOCATION
-----------
+~~~~~~~~~~
 
 *FvwmBanner* can be invoked by the command \'+Module FvwmBanner+'. This 
 can be bound to a menu or key-stroke in the .fvwm2rc file, but more 
@@ -52,7 +43,7 @@ ImagePath to find the image, or you can use the full path to the image.
 
 
 CONFIGURATION OPTIONS
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 *FvwmBanner: NoDecor::
 +
@@ -69,6 +60,6 @@ Tells *FvwmBanner* to display for sec seconds instead of default of 3 seconds.
 
 
 AUTHOR
-------
+~~~~~~
 
 Robert Nation

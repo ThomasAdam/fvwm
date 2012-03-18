@@ -1,33 +1,17 @@
-FvwmTheme(1)
-============
-:doctype: manpage
-
-NAME
-----
-
-FvwmTheme - an fvwm module for managing the appearance of fvwm and its modules
-
- 
-SYNOPSIS
---------
-
-ModuleSynchronous Timeout 5 FvwmTheme
-
-*FvwmTheme* can only be invoked by fvwm. Command line invocation of the 
-*FvwmTheme* module will not work.
-
- 
-DESCRIPTION
------------
+FvwmTheme
+---------
 
 *FvwmTheme* creates appearance resources that may be shared by fvwm and other 
 modules. It reads an initial configuration and also reacts to configuration 
 commands and messages sent from fvwm so that the resources can be dynamically 
 changed.
 
+*FvwmTheme* can only be invoked by fvwm. Command line invocation of the 
+*FvwmTheme* module will not work.
+
  
 INVOCATION
-----------
+~~~~~~~~~~
 
 Starting with 2.5.1, *FvwmTheme* is obsolete, please read fvwm man page about 
 the built-in colorsets solution. However, all options are still the same, so 
@@ -38,7 +22,12 @@ this man page defines the exact Colorset syntax.
 It is highly suggested that *FvwmTheme* is invoked before any other modules 
 that use the colorsets provided by *FvwmTheme*. Thus *FvwmTheme* has to be 
 invoked with the 'ModuleSynchronous' command by inserting the line 
-"+ModuleSynchronous Timeout 5 FvwmTheme+" in the .fvwm2rc file right after 
+
+------
+ModuleSynchronous Timeout 5 FvwmTheme
+------
+
+in the .fvwm2rc file right after 
 the ImagePath has been defined. Invoking *FvwmTheme* from the *InitFunction*, 
 *StartFunction* or *RestartFunction* or later can cause excessive redrawing 
 of already running modules. It is highly suggested that the configuration 
@@ -49,7 +38,7 @@ provision for using an alias name.
 
  
 CONFIGURATION OPTIONS
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 *FvwmTheme* supports some configuration options.
 
@@ -328,7 +317,7 @@ background pixmap or gradient.
 
  
 COMMANDS
---------
+~~~~~~~~
 
 The following fvwm command may be executed at any time to alter the colorsets. 
 It may be bound to a menu item or typed into a module such as FvwmConsole.
@@ -341,7 +330,7 @@ The syntax is the same as the configuration option.
 
  
 EXAMPLES
---------
+~~~~~~~~
 
 ------
 *FvwmTheme: Colorset 3 fg wheat, bg navy
@@ -400,7 +389,7 @@ example below for a description.
 
  
 SAMPLE FVWM CONFIGURATION
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Below you can find a fvwm configuration file that demonstrates the use of the 
 *FvwmTheme* module. The order in which *FvwmTheme* and the other modules are 
@@ -511,7 +500,7 @@ http://fvwm-themes.sourceforge.net/doc/colorsets
 
  
 BUGS
-----
+~~~~
 
 Initialization of fvwm, *FvwmTheme* and the other modules is tricky. Please 
 pay close attention to the text in the *INVOCATION* section. The example above 
@@ -519,13 +508,13 @@ demonstrates the proper way to get a *FvwmTheme* setup running.
 
  
 AUTHOR
-------
+~~~~~~
 
 Prefers to remain anonymous. With help from Brad Giaccio and Dominik Vogt.
 
  
 COPYRIGHT
----------
+~~~~~~~~~
 
 Copyright (C) 1999 Joey Shutup. No guarantees or warranties or anything are 
 provided or implied in any way whatsoever. Use this program at your own risk. 

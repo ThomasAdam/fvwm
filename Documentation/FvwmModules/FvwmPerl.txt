@@ -1,17 +1,8 @@
-FvwmPerl(1)
-===========
-:doctype: manpage
-
-NAME
-----
-
-FvwmPerl - the fvwm perl manipulator and preprocessor  
-
-
-SYNOPSIS
+FvwmPerl
 --------
 
-*FvwmPerl* should be spawned by *fvwm*(1) for normal functionality.
+*FvwmPerl* is the perl manipulator and preprocessor of fvwm. It should be 
+spawned by *fvwm*(1) for normal functionality.
 
 To run this module, place this command somewhere in the configuration:
 
@@ -29,7 +20,7 @@ if you want to immediately start to send commands to *FvwmPerl*.
 
 
 DESCRIPTION
------------
+~~~~~~~~~~~
 
 This module is intended to extend fvwm commands with the perl scripting power. 
 It enables to embed perl expressions in the fvwm config files and construct 
@@ -37,7 +28,7 @@ fvwm commands.
 
 
 INVOCATION
-----------
+~~~~~~~~~~
 
 If you want to invoke the unique and persistent instanse of *FvwmPerl*, it is 
 suggested to do this from the StartFunction. Calling it from the top is also 
@@ -118,7 +109,7 @@ Module returns immediately regardless of this option.
 
 
 USING ALIAS
------------
+~~~~~~~~~~~
 
 Aliases allow to have several module invocations and work separately with all 
 invocations, here is an example:
@@ -132,7 +123,7 @@ KillModule FvwmPerl FvwmPerl-JustTest
 
  
 PREPROCESSING EXAMPLE
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 One of the effective proprocessing solutions is to pass the whole fvwm 
 configuration with embeded perl code to "+FvwmPerl --preprocess+". An 
@@ -171,7 +162,7 @@ Next (MyWindow) . Move \
 
  
 ACTIONS
--------
+~~~~~~~
 
 There are several actions that *FvwmPerl* may perform:
 
@@ -317,7 +308,7 @@ short-lived unless '--stay' or '--export' is also given)
 
 
 FUNCTIONS
----------
+~~~~~~~~~
 
 There are several functions that perl code may call:
 
@@ -397,7 +388,7 @@ See FVWM::Module::Toolkit::show_message for more information.
 
  
 VARIABLES
----------
+~~~~~~~~~
 
 There are several global variables in the main namespace that may be used in 
 the perl code:
@@ -429,7 +420,7 @@ There may be a configuration option to turn strictness on and off.
 
 
 MESSAGES
---------
+~~~~~~~~
 
 *FvwmPerl* may receive messages using the fvwm command *SendToModule*. The 
 names, meanings and parameters of the messages are the same as the 
@@ -442,7 +433,7 @@ the *ACTIONS* section.
 
 
 EXAMPLES
---------
+~~~~~~~~
 
 A simple test:
 
@@ -480,7 +471,7 @@ PerlEval cmd("AddToFunc \
 
  
 ESCAPING
---------
+~~~~~~~~
 
 *SendToModule* just like any other fvwm commands expands several dollar 
 prefixed variables. This may clash with the dollars perl uses. You may avoid 
@@ -523,7 +514,7 @@ file instead.
 
 
 CAVEATS
--------
+~~~~~~~
 
 *FvwmPerl* being written in perl and dealing with perl, follows the famous 
 perl motto: "There's more than one way to do it", so the choice is yours.
@@ -545,7 +536,7 @@ own fvwm module in perl instead.
 
 
 SEE ALSO
---------
+~~~~~~~~
 
 The *fvwm*(1) man page describes all available commands.
 
@@ -555,6 +546,6 @@ perl library installed with fvwm, see the man pages of perl packages
 
 
 AUTHOR
-------
+~~~~~~
 
 Mikhael Goikhman <migo@homemail.com>. 

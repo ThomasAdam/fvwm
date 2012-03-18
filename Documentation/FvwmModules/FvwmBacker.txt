@@ -1,22 +1,5 @@
-FvwmBacker(1)
-=============
-:doctype: manpage
-
-
-NAME
-----
-
-FvwmBacker - the fvwm background changer module
-
-
-SYNOPSIS
---------
-
-Module FvwmBacker
-
-
-DESCRIPTION
------------
+FvwmBacker
+----------
 
 The *FvwmBacker* module provides functionality to change the background 
 when changing desktops. Any command can be executed to change the 
@@ -27,9 +10,15 @@ colors, etc.
 *FvwmBacker* can only be invoked by fvwm. Command line invocation of the 
 *FvwmBacker* module will not work.
 
+From within the .fvwm2rc file, *FvwmBacker* is spawned as follows:
+
+------
+Module FvwmBacker
+------
+
 
 COPYRIGHTS
-----------
+~~~~~~~~~~
 The *FvwmBacker* module is the original work of Mike Finger.
 
 Copyright (C) 1994, Mike Finger. The author makes no guarantees or warranties 
@@ -39,7 +28,7 @@ long as the copyright is kept intact.
 
 
 INITIALIZATION
---------------
+~~~~~~~~~~~~~~
 
 During initialization, *FvwmBacker* gets config info from fvwm\'s module 
 configuration database (see *fvwm*(1), section *MODULE COMMANDS*). 
@@ -47,7 +36,7 @@ Available options are discussed in a later section.
 
 
 INVOCATION
-----------
+~~~~~~~~~~
 
 *FvwmBacker* can be invoked by fvwm during initialization by inserting 
 the line
@@ -67,7 +56,7 @@ option of fvwm for it to be executed by fvwm.
 
 
 CONFIGURATION OPTIONS
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 The following options can be placed in the .fvwm2rc file
 
@@ -122,7 +111,7 @@ Cancels the effect of the previous option. This is the default.
 
 
 RUN-TIME CONFIGURATION
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 It it possible to replace *FvwmBacker*'s configuration at run-time, 
 although it is not yet possible to remove existing configuration lines. 
@@ -140,7 +129,7 @@ DestroyModuleConfig FvwmBacker*
 
 
 OLD-STYLE OPTIONS
------------------
+~~~~~~~~~~~~~~~~~
 
 There is continued support for the now deprecated option:
 
@@ -154,7 +143,7 @@ It is functionally equivalent to omitting the page coordinates with '*FvwmBacker
 
 
 SAMPLE CONFIGURATION
---------------------
+~~~~~~~~~~~~~~~~~~~~
 
 The following are excerpts from an .fvwm2rc file which describe *FvwmBacker* initialization commands:
 
@@ -173,7 +162,7 @@ The following are excerpts from an .fvwm2rc file which describe *FvwmBacker* ini
 
 
 AUTHOR
-------
+~~~~~~
 
 Mike Finger <mfinger@mermaid.micro.umn.edu>, <Mike_Finger@atk.com>, 
            doodman on IRC, check the #linux channel

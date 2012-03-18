@@ -1,22 +1,5 @@
-FvwmScript(1)
-=============
-:doctype: manpage
-
-
-NAME
-----
-
-FvwmScript - module to build graphic user interface
-
-
-SYNOPSIS
---------
-
-*FvwmScript* must be spawned by Fvwm.  It will not work from the command line.
-
-
-DESCRIPTION
------------
+FvwmScript
+----------
 
 *FvwmScript* is a module which allows you to build many graphical applications 
 such as desktop accessories, button panel with pop up menus, modal dialogs... At 
@@ -29,9 +12,16 @@ circulates around the widgets, Return simulates a mouse click, the arrows move
 the cursor or change the values of the widget and Escape "cancels" for Menu and 
 PopupMenu.
 
+*FvwmScript* must be spawned by Fvwm. It will not work from the command line.
+
+From within the .fvwm2rc file, *FvwmScript* is spawned as follows:
+
+------
+Module FvwmScript [ ModuleAlias ]
+------
 
 INVOCATION
-----------
+~~~~~~~~~~
 
 *FvwmScript* can be invoked by inserting the line "+Module FvwmScript name_of_script+" 
 in the .fvwm2rc file. The file "name_of_script" can start with a slash, in which 
@@ -48,7 +38,7 @@ a menu or mouse button or keystroke to invoke it later.
 
 
 CONFIGURATION OPTIONS
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 The following commands can be used in the config file (see *fvwm*(1), section 
 *MODULE COMMANDS* for details). They are used only if the corresponding script 
@@ -92,7 +82,7 @@ the FvwmTheme man page for details about colorsets.
 
 
 ANATOMY OF A SCRIPT
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 *FvwmScript* uses a particular programming language. A script is composed of 
 five parts. 'Heading' contains general characteristics of the window and default 
@@ -106,7 +96,7 @@ scrollbars, rectangles, pop up menus, swallowexecs and mini scrollbars.
 
 
 HEADING OF A SCRIPT
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 The syntax is as follows:
 
@@ -174,7 +164,7 @@ UseGettext.
 
 
 INITIALISATION
---------------
+~~~~~~~~~~~~~~
 
 This part contains instructions which will be executed at the startup. For 
 example:
@@ -193,7 +183,7 @@ to initialize $ToDo to "Restart" at every startup.
 
 
 PERIODIC TASKS
---------------
+~~~~~~~~~~~~~~
 
 This part of the script contains instructions that are executed every second. 
 For example:
@@ -210,7 +200,7 @@ This example shows how to launch xcalc every 10 seconds.
 
 
 THE QUIT FUNCTION
------------------
+~~~~~~~~~~~~~~~~~
 
 This part of the script contains instructions that are executed when the script 
 exits (after the Quit instruction or if you close the window with the Close, 
@@ -231,7 +221,7 @@ section.
 
 
 MAIN OF A SCRIPT
-----------------
+~~~~~~~~~~~~~~~~
 
 The second part of the script contains the description for every widget in the 
 script. Each widget description has two parts. The first part describes initial 
@@ -298,7 +288,7 @@ End
 
 
 LIST OF WIDGETS
----------------
+~~~~~~~~~~~~~~~
 
 There is fifteen types of widgets.
 
@@ -615,7 +605,7 @@ height of 48.
 
 
 INSTRUCTIONS
-------------
+~~~~~~~~~~~~
 
 Here is the description of all instructions.
 
@@ -754,7 +744,7 @@ the fvwm 'Key' command.
 
 
 ARGUMENTS
----------
+~~~~~~~~~
 
 Most of commands use arguments. There are two kinds of arguments: numbers and 
 strings. A numerical argument is a value which is between -32000 and +32000. A 
@@ -763,7 +753,7 @@ character "$" and can contain both numbers and strings.
 
 
 FUNCTIONS
----------
+~~~~~~~~~
 
 All functions use 'arguments'. Functions can return both a string and a number. 
 The syntax is:
@@ -940,7 +930,7 @@ instruction (respectively, to the command).
 
 
 CONDITIONAL LOOPS
------------------
+~~~~~~~~~~~~~~~~~
 
 There are three kinds of conditional loops. The instruction "If-Then-Else" has 
 the following syntax:
@@ -978,7 +968,7 @@ End
 
 
 COMMANDS
---------
+~~~~~~~~
 
 The following fvwm command may be executed at any time
 
@@ -1060,7 +1050,7 @@ command would have changed to HDA1 the name of both instances of 'FvwmStorageSen
 
 
 EXAMPLES
---------
+~~~~~~~~
 
 You will find examples of scripts in the fvwm configuration directory.
 
@@ -1095,7 +1085,7 @@ example script. See the next section for *FvwmScript-ComExample*.
 
 
 A COMMUNICATION PROTOCOL
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 *FvwmScript* is a weak (but simple) programming language. If you need to deal 
 with a lot of data and/or you need to use complex algorithms you should use an 
@@ -1147,19 +1137,19 @@ reason? \... etc.
 
 
 BUGS
-----
+~~~~
 
 *FvwmScript* crashes if widgets are accessed that have not been defined.
 
 
 AUTHOR
-------
+~~~~~~
 
 Frederic Cordier <cordie97@cui.unige.ch> or <f-cord96@univ-lyon1.fr>
 
 
 CONTRIBUTOR
------------
+~~~~~~~~~~~
 
 Eddy J. Gurney <eddy@gizmo.aa.ans.net>
 

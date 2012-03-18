@@ -1,21 +1,5 @@
-FvwmScroll(1)
-=============
-:doctype: manpage
-
-NAME
-----
-
-FvwmScroll - the fvwm scroll-bar module  
-
-
-SYNOPSIS
---------
-
-*FvwmScroll* is spawned by fvwm, so no command line invocation will work.
-
- 
-DESCRIPTION
------------
+FvwmScroll
+----------
 
 The *FvwmScroll* module prompts the user to select a target window, if the module 
 was not launched from within a window context in Fvwm. After that, it adds 
@@ -26,9 +10,17 @@ by the window.
 nor should it be used with windows which set the +WM_COLORMAP_WINDOWS+ property. 
 Operation is fine with windows that have a private colormap.
 
+*FvwmScroll* is spawned by fvwm, so no command line invocation will work.
+
+From within the .fvwm2rc file, *FvwmScroll* is spawned as follows:
+
+------
+Module FvwmScroll
+------
+
  
 COPYRIGHTS
-----------
+~~~~~~~~~~
 
 The *FvwmScroll* program, and the concept for interfacing this module to the 
 Window Manager, are all original work by Robert Nation.
@@ -40,7 +32,7 @@ copyright is kept intact.
 
  
 INITIALIZATION
---------------
+~~~~~~~~~~~~~~
 
 During initialization, *FvwmScroll* gets config info from fvwm's module 
 configuration database (see *fvwm*(1), section *MODULE COMMANDS*) to determine 
@@ -53,7 +45,7 @@ keyword 'FvwmScroll' to 'MoreScroll'.
 
  
 INVOCATION
-----------
+~~~~~~~~~~
 
 *FvwmScroll* can be invoked by binding the action "+Module FvwmScroll x y+" to 
 a menu or key-stroke in the .fvwm2rc file. The parameter x and y are either 
@@ -68,7 +60,7 @@ probably don't want to.
 
  
 CONFIGURATION OPTIONS
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 ------
 *FvwmScroll: Colorset n
@@ -80,13 +72,13 @@ CONFIGURATION OPTIONS
 
  
 BUGS
-----
+~~~~
 
 When the scroll bars are removed by clicking on the button in the lower right 
 corner, the window does not restore its location correctly.
 
  
 AUTHOR
-------
+~~~~~~
 
 Robert Nation 

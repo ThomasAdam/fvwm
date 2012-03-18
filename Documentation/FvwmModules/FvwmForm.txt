@@ -1,25 +1,5 @@
-FvwmForm(1)
-===========
-:doctype: manpage
-
-
-NAME
-----
-
-FvwmForm - input form module for Fvwm
-
-
-SYNOPSIS
+FvwmForm
 --------
-
-Module FvwmForm [ Alias ]
-
-
-DESCRIPTION
------------
-
-*FvwmForm* must be spawned by Fvwm. If invoked from the command line, 
-*FvwmForm* prints its version number and exits.
 
 *FvwmForm* provides a mechanism to get user input and act accordingly. 
 This is achieved by means of a form that the user can fill out, and from 
@@ -57,9 +37,18 @@ form.
 
 The 'action buttons' can be activated thru keyboard or mouse.
 
+*FvwmForm* must be spawned by Fvwm. If invoked from the command line, 
+*FvwmForm* prints its version number and exits.
+
+From within the .fvwm2rc file, *FvwmForm* is spawned as follows:
+
+------
+Module FvwmForm [ Alias ]
+------
+
 
 INITIALIZATION
---------------
+~~~~~~~~~~~~~~
 
 *FvwmForm* invoked without an alias uses configuration commands starting 
 with "+*FvwmForm+".
@@ -102,7 +91,7 @@ the form defined by the commands.
 
 
 DEFAULTS
---------
+~~~~~~~~
 
 *FvwmForm* creates a built-in form named "FvwmForm-Form" that creates a 
 file called ".FvwmForm". This file contains saved default form colors 
@@ -157,7 +146,7 @@ the command "+\*FvwmFormDefault:  Read  x+".  With "x" set to "y" or "n".
 
 
 VARIABLE SUBSTITUTION
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 If you supply variables and values on the command line used to start 
 *FvwmForm* (like this):
@@ -187,7 +176,7 @@ Using this facility should make it possible for one form to be used for
 different sets of input data.
 
 CONFIGURATION
--------------
+~~~~~~~~~~~~~
 
 The following commands can be set in the .fvwm2rc file or thru any of 
 the other ways that fvwm can accept commands. The simplest technique is 
@@ -431,7 +420,7 @@ single;; The selections are mutually exclusive.
 +
 multiple;; This is a multiple-choice selection.
 
-*FvwmForm: Choice 'name' 'value' *on* | *off* 'string'::
+*FvwmForm: Choice 'name' 'value' on|off 'string'::
 +
 Specifies a choice for a proceeding selection. The choice item has a 
 'name' and a 'value' these are used in commands. See "+*FvwmForm: 
@@ -579,7 +568,7 @@ value gets updated every second as the timer counts down. There can
 only be one timeout field per form.
 
 EXAMPLES
---------
+~~~~~~~~
 
 All of the following "examples" are installed in the read-only 
 architecture-independent data directory, [PREFIX/share/fvwm], during 
@@ -597,7 +586,7 @@ AddToMenu Forms "&T. Talk"       Module FvwmForm FvwmForm-Talk
 
 
 EXAMPLE 1 - Quit Verify
-~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^
 
 This example simulates the mwm way of confirming logout. Return does 
 the logout, Escape cancels logout. It times out after 20 seconds and 
@@ -622,7 +611,7 @@ DestroyModuleConfig  FvwmForm-QuitVerify: *
 
 
 EXAMPLE 2 - Remote Login
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 This example lets the user type in a host name, an optional user name, 
 and opens an xterm window from the remote host.
@@ -662,7 +651,7 @@ DestroyModuleConfig  FvwmForm-Rlogin: *
 
 
 EXAMPLE 3 - Capture Window
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This example provides a front-end to xwd, xwud, and xpr.
 
@@ -699,7 +688,7 @@ DestroyModuleConfig  FvwmForm-Capture: *
 
 
 EXAMPLE 4 - Talk Form
-~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^
 
 This  example provides a replacement for the module FvwmTalk. There are 
 2 forms, "FvwmForm-Talk." which executes commands, or sends commands to 
@@ -766,7 +755,7 @@ DestroyModuleConfig  FvwmForm-TalkHelp: *
 
 
 BUGS AND LIMITATIONS
---------------------
+~~~~~~~~~~~~~~~~~~~~
 
 *FvwmForm* is a fairly simple method of providing input. There is no 
 input validation facility. *FvwmForm* has no way of dealing with lists.
@@ -775,7 +764,7 @@ Report bugs to the fvwm-workers list.
 
 
 COPYRIGHTS
-----------
+~~~~~~~~~~
 
 *FvwmForm* is original work of Thomas Zuwei Feng <ztfeng@math.princeton.edu>.
 
@@ -786,7 +775,7 @@ hereby given, provided that this copyright is kept intact.
 
 
 CHANGES
--------
+~~~~~~~
 
 During the fall of 1998, Dan Espen removed all form size limits, added 
 unlimited font and color changing, form spacing control, configuration 

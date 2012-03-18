@@ -1,29 +1,5 @@
-FvwmWindowMenu(1)
-=================
-:doctype: manpage
-
-
-NAME
-----
-
-FvwmWindowMenu - open configurable fvwm menu listing current windows
-
-
-SYNOPSIS
---------
-
-*FvwmWindowMenu* should be spawned by fvwm(1) for normal functionality.
-
-Run this module from your *StartFunction*:
-
-------
-AddToFunc StartFunction
-+ I Module FvwmWindowMenu
-------
-
-
-DESCRIPTION
------------
+FvwmWindowMenu
+--------------
 
 A substitute for fvwm builtin WindowList, but written in Perl and easy to 
 customize. Unlike *FvwmIconMan* or *FvwmWinList* the module does not draw its 
@@ -39,9 +15,18 @@ the menu.
 Any windows not matching an instance of the include or exclude list will be 
 placed in the last section of the menu.
 
+*FvwmWindowMenu* should be spawned by fvwm(1) for normal functionality.
+
+Run this module from your *StartFunction*:
+
+------
+AddToFunc StartFunction
++ I Module FvwmWindowMenu
+------
+
 
 USAGE
------
+~~~~~
 
 Run the module, supposedly from *StartFunction* in .fvwm2rc:
 
@@ -112,7 +97,7 @@ will cause the menu to ignore windows with name beginning with Fvwm or class
 gkrellm.
 
 Other options
-~~~~~~~~~~~~~
+^^^^^^^^^^^^^
 
 *FvwmWindowMenu: 'OnlyIconified' {on|off}::
 +
@@ -188,7 +173,7 @@ Desk %d".
 
 
 MORE EXAMPLES
--------------
+~~~~~~~~~~~~~
 
 Fancy binding of the window menu to the right windows key on some keyboards. 
 Hold this button while navigating using cursor keys, then release it.
@@ -207,8 +192,9 @@ AddToFunc StartFunction I Module FvwmWindowMenu
 Key Super_R A A SendToModule FvwmWindowMenu Post Root c c WarpTitle
 ------
 
+
 AUTHORS
--------
+~~~~~~~
 
 Richard Lister <ric+lister@cns.georgetown.edu>.
 

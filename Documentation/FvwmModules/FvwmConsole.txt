@@ -1,20 +1,4 @@
-FvwmConsole(1)
-==============
-:doctype: manpage
-
-NAME
-----
-
-FvwmConsole - an fvwm command input interface
-
-
-SYNOPSIS
---------
-
-Module FvwmConsole [options]
-
-
-DESCRIPTION
+FvwmConsole
 -----------
 
 *FvwmConsole* allows the user to type fvwm configuration commands interactively, 
@@ -24,9 +8,15 @@ new configuration ideas, or for implementing temporary changes to your environme
 *FvwmConsole* can only be invoked by fvwm. Command line invocation of the 
 *FvwmConsole* module will not work.
 
+Syntax:
+
+------
+Module FvwmConsole [options]
+------
+
 
 INVOCATION
-----------
+~~~~~~~~~~
 
 *FvwmConsole* must be spawned as a module by fvwm. *FvwmConsole* takes all 
 *xterm*(1) options.
@@ -38,7 +28,7 @@ or keystroke to invoke it later.
 
 
 CONFIGURATION OPTIONS
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 *FvwmConsole* uses *xterm*(1). All resources set for xterm are inherited unless 
 overridden by command line options.
@@ -74,7 +64,7 @@ FvwmConsole*font: 7x14
 
 
 COMMAND EDITING
----------------
+~~~~~~~~~~~~~~~
 
 There are a few options. If the GNU readline library is available, it can be used.
 
@@ -113,7 +103,7 @@ Esc >   - end of history
 
 
 EXITING
--------
+~~~~~~~
 
 *FvwmConsole* can be stopped by entering the EOF character (usually CTRL-D).
 
@@ -123,12 +113,12 @@ Do not use the "+quit+" command, as this is an fvwm builtin: typing
 
 
 SEE ALSO
---------
+~~~~~~~~
 
 *xterm*(1), *FvwmConsoleC.pl*(1), GNU Readline library
 
 
 AUTHOR
-------
+~~~~~~
 
 *FvwmConsole* is the original work of Toshi Isogai.

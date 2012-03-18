@@ -1,20 +1,4 @@
-FvwmIconMan(1)
-==============
-:doctype: manpage
-
-NAME
-----
-
-FvwmIconMan - an fvwm icon manager
-
-
-SYNOPSIS
---------
-
-*FvwmIconMan* is spawned by fvwm, so no command line invocation will work.
-
-
-DESCRIPTION
+FvwmIconMan
 -----------
 
 *FvwmIconMan*  is an icon manager modeled after the TWM icon manager. The 
@@ -40,9 +24,17 @@ window without the mouse.
 focus, and by binding the select event (see below) to the fvwm Focus 
 function, you can emulate the TWM icon manager's behavior.
 
+*FvwmIconMan* is spawned by fvwm, so no command line invocation will work.
+
+From within the .fvwm2rc file, *FvwmIconMan* is spawned as follows:
+
+------
+Module FvwmIconMan [ Alias ]
+------
+
 
 INITIALIZATION
---------------
+~~~~~~~~~~~~~~
 
 During initialization, *FvwmIconMan* searches though the fvwm configuration 
 file for the options which are described below. It is highly recommended 
@@ -54,7 +46,7 @@ at all by fvwm.
 
 
 INVOCATION
-----------
+~~~~~~~~~~
 
 *FvwmIconMan* can be invoked by inserting the line 'Module FvwmIconMan' 
 in the .fvwm2rc file. If *FvwmIconMan* is to be spawned during fvwm's 
@@ -78,7 +70,7 @@ manager id 'transient' to specify options for this manager window.
 
 
 CONFIGURATION OPTIONS REFERENCE CHART
--------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 *FvwmIconMan* has acquired quite a few options. I assume others share my 
 dislike of paging though a long man page, so here is a terse reference 
@@ -142,7 +134,7 @@ UseWinList              honor WinListSkip?            true
 
 
 CONFIGURATION OPTIONS
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 With the exception of the nummanagers option, all of the options may be 
 defined on a per-manager basis. So, for example, the user may have his 
@@ -516,7 +508,7 @@ where 'placementoffset' and 'justoffset' are offsets in pixels for the
 
 
 ACTIONS
--------
+~~~~~~~
 
 Actions are commands which may be bound to an event of the type: a key press, a 
 mouse click, or the mouse entering a window manager button - denoted by the 
@@ -673,7 +665,7 @@ warp::
 Warps cursor to current button, if any.
 
 Examples
-~~~~~~~~
+^^^^^^^^
 
 ------
 gotobutton select, gotobutton Down, select
@@ -746,7 +738,7 @@ quote *FvwmIconMan* either.
 
 
 SAMPLE CONFIGURATIONS
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 This first example is of a the simplest invocation of *FvwmIconMan*, which only 
 has one manager, and handles all windows:
@@ -848,7 +840,7 @@ Key F9 A N SendToModule FvwmIconMan bif select Select, bif focus Focus, \
 
 
 UNFINISHED BUSINESS
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 There is one bug that I know of. A honest to goodness solution to this would 
 be appreciated. When an icon manager is set to grow upwards or leftwards, on 
@@ -858,13 +850,13 @@ It doesn't handle windows without resource names as gracefully as it should.
 
 
 AUTHOR
-------
+~~~~~~
 
 Brady Montz <bradym@cs.arizona.edu>.
 
 
 THANKS
-------
+~~~~~~
 
 Thanks to:
 

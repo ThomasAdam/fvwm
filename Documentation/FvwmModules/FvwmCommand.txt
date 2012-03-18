@@ -1,25 +1,15 @@
-FvwmCommand(1)
-==============
-:doctype: manpage
-
-NAME
-----
-
-FvwmCommand - fvwm command external interface
-
-
-SYNOPSIS
---------
-
-FvwmCommand [-cmrvw] [-S name] [-i level] [-f name] [-F level] [command...]
-
-
-DESCRIPTION
+FvwmCommand
 -----------
 
 *FvwmCommand* lets you monitor fvwm transaction and issue fvwm command 
-from a shell command line or scripts. *FvwmCommand* takes each argument 
-as a fvwm command. Quotes can be used to send commands including spaces.
+from a shell command line or scripts. The syntax is:
+
+------
+FvwmCommand [-cmrvw] [-S name] [-i level] [-f name] [-F level] [command...]
+------
+
+*FvwmCommand* takes each argument as a fvwm command. Quotes can be used to send 
+commands including spaces.
 
 ------
 FvwmCommand 'FvwmPager 0 1'
@@ -27,7 +17,7 @@ FvwmCommand 'FvwmPager 0 1'
 
 
 INVOCATION
-----------
+~~~~~~~~~~
 *FvwmCommandS* should be spawned once by fvwm, either in .fvwm2rc file, 
 from menu, or from *FvwmConsole*. From then on, *FvwmCommand* can be 
 called from a shell or script to execute fvwm commands.
@@ -52,7 +42,7 @@ FvwmCommand  'popup Utilities'
 
 
 OPTIONS
--------
+~~~~~~~
 
 '-c'::
 +
@@ -293,7 +283,7 @@ this default value.
 
 
 WRAPPER
--------
+~~~~~~~
 
 *FvwmCommand.sh* has bourne shell function definitions to keep the syntax 
 similar to fvwm configuration file. This file is to be sourced:
@@ -320,7 +310,7 @@ functions defined in *FvwmCommand.sh* and *FvwmCommand.pl* are case sensitive.
 
 
 ERRORS
-------
+~~~~~~
 
 If the following error message show up, it is most likely that 
 *FvwmCommandS* is not running:
@@ -338,7 +328,7 @@ from Fvwm2 from processes which are not Fvwm modules.
 
 
 EXAMPLES
---------
+~~~~~~~~
 
 'test1.pl'  -  takes 1 argument::
 +
@@ -423,12 +413,12 @@ push-away.pl up 'Fvwm Pager'
 
 
 SEE ALSO
---------
+~~~~~~~~
 
 *fvwm*
 
 
 AUTHOR
-------
+~~~~~~
 
 *FvwmCommand* is the original work of Toshi Isogai.

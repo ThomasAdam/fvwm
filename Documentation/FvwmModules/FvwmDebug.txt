@@ -1,14 +1,9 @@
-FvwmDebug(1)
-============
-:doctype: manpage
+FvwmDebug
+---------
 
-NAME
-----
-
-FvwmDebug - the fvwm module debugger
-
-SYNOPSIS
---------
+This module persistently dumps all fvwm event details and optionally some other 
+information into the standard error stream or a file, good for debugging purposes. 
+The output may be optionally redirected to 'xconsole' or similar window.
 
 *FvwmDebug* should be spawned by *fvwm*(1) for normal functionality.
 
@@ -24,15 +19,9 @@ To stop this module, execute:
 KillModule FvwmDebug
 ------
 
-DESCRIPTION
------------
-
-This module persistently dumps all fvwm event details and optionally some other 
-information into the standard error stream or a file, good for debugging purposes. 
-The output may be optionally redirected to 'xconsole' or similar window.
 
 INVOCATION
-----------
+~~~~~~~~~~
 
 There are several command line switches:
 
@@ -114,12 +103,14 @@ events received.
 send 'Send_WindowList' command to fvwm on startup, this results in a lot of 
 events received.
 
+
 SEE ALSO
---------
+~~~~~~~~
 
 *FvwmGtkDebug*
 
+
 AUTHOR
-------
+~~~~~~
 
 Mikhael Goikhman <migo@homemail.com>.

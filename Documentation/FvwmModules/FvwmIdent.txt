@@ -1,29 +1,21 @@
-FvwmIdent(1)
-============
-:doctype: manpage
-
-NAME
-----
-
-FvwmIdent - the Fvwm identify-window module  
-
-
-SYNOPSIS
---------
-
-*FvwmIdent* is spawned by fvwm, so no command line invocation will work.
-
- 
-DESCRIPTION
------------
+FvwmIdent
+---------
 
 The *FvwmIdent* module prompts the user to select a target window, if the module 
 was not launched from within a window context in Fvwm. After that, it pops up a 
 window with information about the window which was selected.
 
+*FvwmIdent* is spawned by fvwm, so no command line invocation will work.
+
+From within the .fvwm2rc file, *FvwmIdent* is spawned as follows:
+
+------
+Module FvwmIdent
+------
+
  
 COPYRIGHTS
-----------
+~~~~~~~~~~
 
 The *FvwmIdent* program, and the concept for interfacing this module to the 
 Window Manager, are all original work by Robert Nation and Nobutaka Suzuki.
@@ -35,7 +27,7 @@ as the copyright is kept intact.
 
  
 INITIALIZATION
---------------
+~~~~~~~~~~~~~~
 
 During initialization, *FvwmIdent* gets config info from fvwm's module 
 configuration database (see *fvwm*(1), section *MODULE COMMANDS*) to determine 
@@ -49,7 +41,7 @@ can be used.
 
  
 INVOCATION
-----------
+~~~~~~~~~~
 
 *FvwmIdent* can be invoked by binding the action \'+Module FvwmIdent+' to a menu 
 or key-stroke in the .fvwm2rc file. Fvwm will search directory specified in the 
@@ -61,6 +53,8 @@ focus closes *FvwmIdent*. Pressing mouse button 2 in the window restarts
 
  
 CONFIGURATION OPTIONS
+~~~~~~~~~~~~~~~~~~~~~
+
 *FvwmIdent* reads the same .fvwm2rc file as fvwm reads when it starts up, and 
 looks for lines as listed below:
 
@@ -93,6 +87,6 @@ above it.
 
  
 AUTHOR
-------
+~~~~~~
 
 Robert Nation and Nobutaka Suzuki <nobuta-s@is.aist-nara.ac.jp>. 

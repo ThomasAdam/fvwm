@@ -1,21 +1,5 @@
-qFvwmAuto(1)
-===========
-:doctype: manpage
-
-NAME
-----
-
-FvwmAuto - the fvwm auto-raise module
-
-
-SYNOPSIS
+FvwmAuto
 --------
-
-Module FvwmAuto Timeout [-passid] [-menter|-menterleave|-mfocus] [EnterCommand [LeaveCommand]]
-
-
-DESCRIPTION
------------
 
 The *FvwmAuto* module is most often used to automatically raise focused 
 windows.
@@ -25,7 +9,7 @@ windows.
 
 
 INVOCATION
-----------
+~~~~~~~~~~
 
 The correct syntax is:
 
@@ -131,7 +115,7 @@ Module FvwmAuto   0 RegisterFocus RegisterUnfocus
 
 
 NOTES
------
+~~~~~
        
 There is a special Raise/Lower support in *FvwmAuto*. It was added to 
 improve Raise/Lower callbacks, since most of *FvwmAuto* usages is 
@@ -148,7 +132,7 @@ powerful. There is a short example in the fvwm man page.
 
 
 AUTHOR
-------
+~~~~~~
 
 *FvwmAuto* just appeared one day, nobody knows how.
 

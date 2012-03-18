@@ -1,38 +1,27 @@
-FvwmConsoleC.pl(1)
-==================
-:doctype: manpage
+FvwmConsoleC.pl
+---------------
 
+*FvwmConsoleC.pl* offers editing capabilities while the user is entering the line. 
+By default, the line editing commands are similar to those of emacs. It also offers 
+substitution , which replaces a pattern to a string before it sends the command.
 
-NAME
-----
+Start the editor:
 
-FvwmConsoleC.pl - Command editor for fvwm command input interface  
-
-
-SYNOPSIS
---------
-
+------
 FvwmConsole -e /usr/X11/lib/fvwm/FvwmConsoleC.pl
+------
 
  
 COPYRIGHT
----------
+~~~~~~~~~
 
 Copyright (C) 1996, Toshi Isogai. No guarantees or warranties are provided. Use this 
 program at your own risk. Permission to use this program for any purpose is given, 
 as long as the copyright is kept intact.
 
  
-DESCRIPTION
------------
-
-*FvwmConsoleC.pl* offers editing capabilities while the user is entering the line. 
-By default, the line editing commands are similar to those of emacs. It also offers 
-substitution , which replaces a pattern to a string before it sends the command.
-
- 
 FUNCTIONS
----------
+~~~~~~~~~
 
 Functions are bound to a key or key combination to be invoked. The followings are 
 functions available and their default key bindings.
@@ -222,7 +211,7 @@ not nested and performed in the order that they are defined.
 
  
 CONFIGURATION
--------------
+~~~~~~~~~~~~~
 
 The key binding can be overridden or defined in fvwm module configuration.
 
@@ -262,19 +251,19 @@ Entering \'g4' or \'g 4' will jump to desk 0 page 0 4 and focus.
 
  
 INVOCATION
-----------
+~~~~~~~~~~
 
 *FvwmConsoleC.pl* should be invoked by *FvwmConsole*.
 
  
 SEE ALSO
---------
+~~~~~~~~
 
 *FvwmConsole*(1x), *perlre*(1)
 
  
 AUTHOR
-------
+~~~~~~
 
 Toshi Isogai
 

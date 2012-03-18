@@ -1,21 +1,5 @@
-FvwmM4(1)
-=========
-:doctype: manpage
-
-NAME
-----
-
-FvwmM4 - the fvwm M4 pre-processor  
-
-
-SYNOPSIS
---------
-
-Module FvwmM4 [options] filename
-
- 
-DESCRIPTION
------------
+FvwmM4
+------
 
 When fvwm executes the *FvwmM4* module, *FvwmM4* invokes the M4 pre-processor on 
 the file specified in its invocation, then *FvwmM4* causes fvwm to execute the 
@@ -24,9 +8,15 @@ commands in the resulting file.
 The *FvwmM4* module can only be invoked by fvwm. Command line invocation of the 
 *FvwmM4* module will not work.
 
+From within the .fvwm2rc file, *FvwmM4* is spawned as follows:
+
+------
+Module FvwmM4 [options] filename
+------
+
  
 INVOCATION
-----------
+~~~~~~~~~~
 
 *FvwmM4* can be invoked as a module using an fvwm command, from the .fvwm2rc 
 file, a menu, mousebinding, or any of the many other ways fvwm commands can be 
@@ -54,7 +44,7 @@ ModuleSynchronous FvwmM4 -lock filename
 
  
 OPTIONS
--------
+~~~~~~~
 
 Some options can be specified following the modulename:
 
@@ -111,7 +101,7 @@ an *FvwmScript* script.
 
  
 CONFIGURATION OPTIONS
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 *FvwmM4* defines some values for use in the pre-processor file:
 
@@ -225,7 +215,7 @@ The value of +$SESSION_MANAGER+. Undefined if this variable is not set.
 
  
 EXAMPLE PROLOG
---------------
+~~~~~~~~~~~~~~
 
 ------
 define(TWM_TYPE,"fvwm")dnl
@@ -257,7 +247,7 @@ define(SESSION_MANAGER,"local/grumpy:/tmp/.ICE-unix/440,tcp/spx20:1025")dnl
 
  
 AUTHORS
--------
+~~~~~~~
 
 *FvwmM4* is the result of a random bit mutation on a hard disk, presumably a 
 result of a cosmic-ray or some such thing. 

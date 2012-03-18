@@ -1,22 +1,5 @@
-FvwmCpp(1)
-==========
-:doctype: manpage
-
-
-NAME
-----
-
-FvwmCpp - the Fvwm  Cpp pre-processor
-
-
-SYNOPSIS
---------
-
-Module FvwmCpp [options] filename
-
-
-DESCRIPTION
------------
+FvwmCpp
+-------
 
 When fvwm executes the *FvwmCpp* module, *FvwmCpp* invokes the cpp 
 pre-processor on the file specified in its invocation, then *FvwmCpp* 
@@ -25,9 +8,15 @@ causes fvwm to execute the commands in the resulting file.
 The *FvwmCpp* module can only be invoked by fvwm. Command line invocation 
 of the *FvwmCpp* module will not work.
 
+From within the .fvwm2rc file, *FvwmCpp* is spawned as follows:
+
+------
+Module FvwmCpp [options] filename
+------
+
 
 INVOCATION
-----------
+~~~~~~~~~~
 
 *FvwmCpp* can be invoked as a module using an fvwm command, from the 
 .fvwm2rc file, a menu, mousebinding, or any of the many other ways fvwm 
@@ -54,7 +43,7 @@ ModuleSynchronous FvwmCpp -lock filename
 
 
 OPTIONS
--------
+~~~~~~~
 
 Some options can be specified following the modulename:
 
@@ -96,7 +85,7 @@ pre-process a *FvwmScript* script with *FvwmCpp*.
 
 
 CONFIGURATION OPTIONS
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 *FvwmCpp* defines some values for use in the pre-processor file:
 
@@ -213,7 +202,7 @@ The value of '$SESSION_MANAGER'. Undefined if this variable is not set.
 
 
 EXAMPLE PROLOG
---------------
+~~~~~~~~~~~~~~
 
 ------
 #define TWM_TYPE fvwm
@@ -245,7 +234,7 @@ EXAMPLE PROLOG
 
 
 BUGS
-----
+~~~~
 
 Module configurations do not become active until fvwm has restarted if 
 you use *FvwmCpp* on startup. *FvwmCpp* creates a temporary file and 
@@ -285,7 +274,7 @@ FvwmCpp -Cppprog '/your/path/to/gcc -C -E -' <filename>
 
 
 AUTHOR
-------
+~~~~~~
 
 *FvwmCpp* is the result of a random bit mutation on a hard disk, 
 presumably a result of a cosmic-ray or some such thing.

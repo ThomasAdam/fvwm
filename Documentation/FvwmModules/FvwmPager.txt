@@ -1,19 +1,13 @@
-FvwmPager(1)
-============
-:doctype: manpage
-
-NAME
-----
-
-FvwmPager - the Fvwm Pager module  
-
-
-SYNOPSIS
+FvwmPager
 --------
 
-FvwmPager [ -transient ] [ name ] [ first desk [ last desk ] ] +
-
 *FvwmPager* is spawned by fvwm, so no command line invocation will work.
+
+From within the .fvwm2rc file, *FvwmM4* is spawned as follows:
+
+------
+Module FvwmPager [ -transient ] [ name ] [ first desk [ last desk ] ] +
+------
 
 All desks with desk numbers between first desk and last desk are displayed. If 
 last desk is omitted only the first desk is shown. If both desk numbers are 
@@ -71,7 +65,7 @@ the pager pops up under the mouse and while the viewport moves with the mouse.
 
  
 DESCRIPTION
------------
+~~~~~~~~~~~
 
 The *FvwmPager* module shows a miniature view of the Fvwm desktops which are 
 specified in the command line. This is a useful reminder of where your active 
@@ -113,7 +107,7 @@ in their .fvwm2rc files.
 
  
 COPYRIGHTS
-----------
+~~~~~~~~~~
 
 The *FvwmPager* program, and the concept for interfacing this module to the 
 Window Manager, are all original work by Robert Nation.
@@ -125,7 +119,7 @@ copyright is kept intact.
 
  
 INITIALIZATION
---------------
+~~~~~~~~~~~~~~
 
 During initialization, *FvwmPager* gets config info from fvwm's module 
 configuration database (see *fvwm*(1), section *MODULE COMMANDS*).
@@ -148,7 +142,7 @@ This may work, but this method is not supported.
 
  
 KEYBOARD FOCUS CONTROL
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 You can direct the keyboard focus to any window on the current desktop by 
 clicking with button 2 on its image in the pager. The window does not need to 
@@ -156,13 +150,13 @@ be visible, but it does need to be on the current page.
 
  
 INVOCATION
-----------
+~~~~~~~~~~
 
 The invocation method was shown in the synopsis section
 
  
 CONFIGURATION OPTIONS
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 *FvwmPager: Geometry 'geometry'::
 +
@@ -440,7 +434,7 @@ Tells *FvwmPager* to not show the windows that are using the WindowListSkip styl
 
  
 AUTHOR
-------
+~~~~~~
 
 Robert Nation
 DeskColor patch contributed by Alan Wild

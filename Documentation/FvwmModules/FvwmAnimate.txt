@@ -1,20 +1,4 @@
-FvwmAnimate(1)
-================
-:doctype: manpage
-
-NAME
-----
-
-FvwmAnimate - the fvwm animate module
-
-
-SYNOPSIS
---------
-
-Module FvwmAnimate [ModuleAlias]
-
-
-DESCRIPTION
+FvwmAnimate
 -----------
 
 The *FvwmAnimate* module animates iconification and de-iconification or 
@@ -26,7 +10,7 @@ the *FvwmAnimate* module will not work.
 From within the .fvwm2rc file, *FvwmAnimate* is spawned as follows:
 
 ------
-Module FvwmAnimate
+Module FvwmAnimate [ModuleAlias]
 ------
 
 or from within an fvwm pop-up menu:
@@ -39,7 +23,7 @@ AddToMenu   Module-Popup "Modules" Title
 
 
 INVOCATION
-----------
+~~~~~~~~~~
 *FvwmAnimate* must be invoked by the fvwm window manager. When invoked 
 with the 'OptionalName' argument, the 'ModuleAlias' is used to find 
 configuration commands, configuration files, and name the internally 
@@ -60,7 +44,7 @@ AddToMenu "Module-Popup" "Control Animation" Popup MenuFvwmAnimate
 
 
 CONFIGURATION OPTIONS
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 Since the pop up menu "+MenuFvwmAnimate+" allows complete control of the 
 *FvwmAnimate* module, you don't really have to know what any of the 
 configuration commands are. This section describes them anyway.
@@ -141,7 +125,7 @@ automatically by *FvwmAnimate* during startup.
 
 
 COMMANDS
---------
+~~~~~~~~
 *FvwmAnimate* can be asked to produce an animation thru the *SendToModule* 
 command.  The format of the command is:
 
@@ -185,9 +169,8 @@ SendToModule FvwmAnimate pop
 ------
 
 
-
 ORIGIN
-------
+~~~~~~
 
 *FvwmAnimate* is based on the Animate module from Afterstep 1.5pre6. 
 Porting to fvwm and lots of other changes were done by Dan Espen 
@@ -195,13 +178,13 @@ Porting to fvwm and lots of other changes were done by Dan Espen
 
 
 AUTHOR
-------
+~~~~~~
 
 Alfredo Kengi Kojima <kojima@inf.ufrgs.br>
 
 
 ACKNOWLEDGMENTS
----------------
+~~~~~~~~~~~~~~~
 
 These people have contributed to *FvwmAnimate*:
 

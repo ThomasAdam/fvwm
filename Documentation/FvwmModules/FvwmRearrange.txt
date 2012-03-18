@@ -1,21 +1,5 @@
-FvwmRearrange(1)
-================
-:doctype: manpage
-
-NAME
-----
-
-FvwmRearrange - rearrange fvwm windows  
-
-
-SYNOPSIS
---------
-
-*FvwmRearrange* is spawned by fvwm, so no command line invocation will work.
-
- 
-DESCRIPTION
------------
+FvwmRearrange
+-------------
 
 This module can be called to tile or cascade windows.
 
@@ -29,9 +13,17 @@ When cascading the module attempts to cascade windows on the current screen
 subject to certain constraints. Layering is performed so consecutive windows 
 will have their window titles visible underneath the previous.
 
+*FvwmRearrange* is spawned by fvwm, so no command line invocation will work.
+
+From within the .fvwm2rc file, *FvwmRearrange* is spawned as follows:
+
+------
+Module FvwmRearrange [ Options ]
+------
+
  
 INVOCATION
-----------
+~~~~~~~~~~
 
 *FvwmRearrange* is best invoked from a menu, pop up or button. There are a 
 number of command line options which can be used to constrain the layering, 
@@ -60,6 +52,10 @@ given constrained width and height.
 *FvwmRearrange* can be called as *FvwmTile* or *FvwmCascade*. This is 
 equivalent to providing the '-tile' or '-cascade' option. This form is obsolete 
 and supplied for backwards compatibility only.
+
+
+COMMAND-LINE ARGUMENTS
+~~~~~~~~~~~~~~~~~~~~~~
 
 Command-line arguments passed to *FvwmRearrange* are described here.
 
@@ -199,13 +195,13 @@ any parameter is equivalent to not specifying it.
 
  
 BUGS
-----
+~~~~
 
 It is probably not a good idea to delete windows while windows are being rearranged.
 
  
 AUTHORS
--------
+~~~~~~~
 
 Andrew Veliath (original *FvwmTile* and *FvwmCascade* modules) Dominik Vogt 
 (merged *FvwmTile* and *FvwmCascade* to *FvwmRearrange*) 

@@ -1,21 +1,4 @@
-FvwmButtons(1)
-==============
-:doctype: manpage
-
-
-NAME
-----
-
-FvwmButtons - the fvwm buttonbox module
-
-
-SYNOPSIS
---------
-
-Module FvwmButtons [-g geometry] [-transient | -transientpanel] [name[configfile]]
-
-
-DESCRIPTION
+FvwmButtons
 -----------
 
 The *FvwmButtons* module provides a window of buttons which sits on the 
@@ -24,6 +7,12 @@ and trigger invocation of a user-specified command by the window manager.
 
 *FvwmButtons* can only be invoked by fvwm. Command line invocation of 
 the *FvwmButtons* module will not work.
+
+From within the .fvwm2rc file, *FvwmButtons* is spawned as follows:
+
+------
+Module FvwmButtons [-g geometry] [-transient | -transientpanel] [name[configfile]]
+------
 
 The buttonbox can be of any configuration or geometry, and can have 
 monochrome or color icons to represent the actions which would be invoked. 
@@ -34,7 +23,7 @@ section for details.
 
 
 OPTIONS
--------
+~~~~~~~
 
 The '-g' option specifies the geometry of the main window. The command 
 line option takes precedence over any other geometry settings in the 
@@ -57,7 +46,7 @@ again when something is selected.
 
 
 INVOCATION
-----------
+~~~~~~~~~~
 
 *FvwmButtons* is spawned by fvwm, so command line invocation will not work.
 
@@ -79,7 +68,7 @@ instead of the default "+*FvwmButtons+".
 
 
 CONFIGURATION OPTIONS
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 The following commands are understood by *FvwmButtons*:
 
@@ -706,7 +695,7 @@ Any single character can be quoted with a preceding backslash \'\'.
 
 
 CREATING PANELS
----------------
+~~~~~~~~~~~~~~~
 
 Former versions of *FvwmButtons* (fvwm 2.0.46 to 2.3.6) had a different 
 way of handling panels. You can not use your old panel configuration with 
@@ -715,7 +704,7 @@ more information.
 
 
 HOW TO CREATE NEW PANELS
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 Any program that can be launched from within fvwm and that has a window 
 can be used as a panel. A terminal window could be your panel, or some 
@@ -780,7 +769,7 @@ to the description of the Panel option for further details.
 
 
 CONVERTING OLD PANEL CONFIGURATIONS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This section describes how to convert a pretty old syntax used in 2.2.x 
 versions. You may skip it if your syntax is more recent.
@@ -853,7 +842,7 @@ parts of this documentation for details.
 
 
 WHY WAS THE PANEL FEATURE REWRITTEN?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There  are  several reasons. The most important one is that the program 
 code implementing the panels was very disruptive and caused a lot of 
@@ -870,7 +859,7 @@ the 'Swallow' option works.
 
 
 ARRANGEMENT ALGORITHM
-~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^
 
 *FvwmButtons* tries to arrange its buttons as best it can, by using 
 recursively, on each container including the buttonbox itself, the 
@@ -950,7 +939,7 @@ pixels inside the relief and padding.
 
 
 DYNAMICAL ACTIONS
------------------
+~~~~~~~~~~~~~~~~~
 
 A running FvwmButtons instance may receive some dynamical actions. 
 This is achived using the fvwm command
@@ -1001,7 +990,7 @@ SendToModule FvwmButtons Silent \
 
 
 SAMPLE CONFIGURATION
---------------------
+~~~~~~~~~~~~~~~~~~~~
 
 The following are excerpts from a .fvwm2rc file which describe 
 *FvwmButtons* initialization commands:
@@ -1164,14 +1153,14 @@ DestroyModuleConfig FvwmButtons: *
 
 
 BUGS
-----
+~~~~
 
 The action part of the 'Swallow' option must be quoted if it contains 
 any whitespace character.
 
 
 COPYRIGHTS
-----------
+~~~~~~~~~~
 
 The *FvwmButtons* program, and the concept for interfacing this module 
 to the Window Manager, are all original work by Robert Nation.
@@ -1186,7 +1175,7 @@ The statement above still applies.
 
 
 AUTHOR
-------
+~~~~~~
 
 Robert Nation.  Somewhat enhanced by Jarl Totland, Jui-Hsuan Joshua Feng, 
 Scott Smedley.

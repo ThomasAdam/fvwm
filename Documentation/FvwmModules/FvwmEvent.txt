@@ -1,16 +1,5 @@
-FvwmEvent(1)
-============
-:doctype: manpage
-
-
-NAME
-----
-
-FvwmEvent - the fvwm event module
-
-
-SYNOPSIS
---------
+FvwmEvent
+---------
 
 *FvwmEvent* is a more versatile replacement for *FvwmAudio*. It can in 
 general be used to hook any fvwm function or program to any window 
@@ -41,7 +30,7 @@ AddToMenu Module-Popup "Modules" Title
 
 
 DESCRIPTION
------------
+~~~~~~~~~~~
 
 The *FvwmEvent* module communicates with the fvwm window manager to bind 
 'actions' to window manager 'events'. Different actions may be assigned 
@@ -55,7 +44,7 @@ to distinct window manager events.
 
 
 INVOCATION
-----------
+~~~~~~~~~~
 
 The invocation method was shown in the *SYNOPSIS* section. No command 
 line invocation is possible. *FvwmEvent* must be invoked by the fvwm 
@@ -75,7 +64,7 @@ a symlink) enables *FvwmAudio* compatibility mode.
 
 
 CONFIGURATION OPTIONS
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 *FvwmEvent* gets config info from fvwm's module configuration database 
 (see *fvwm*(1), section *MODULE COMMANDS*), and looks for certain 
@@ -246,7 +235,7 @@ and restarts using an audio player. The default delay is 0.
 
 
 RPLAY OPTIONS
--------------
+~~~~~~~~~~~~~
 
 The following options are only valid with builtin rplay support. i.e: 
 when *FvwmEvent* was compiled with +HAVE_RPLAY+ defined. They are used 
@@ -266,8 +255,9 @@ are played.
 +
 Specifies what volume will be assigned to the sounds when they are played.
 
+
 FvwmAudio Compatibility Mode
-----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When invoked in *FvwmAudio* compatibility mode (see above), *FvwmEvent* 
 accepts the following options to provide backwards compatibility for 
@@ -287,14 +277,14 @@ ignored when rplay is used.
 
 
 BUGS
-----
+~~~~
 
 It's REALLY noisy when fvwm starts and restarts using an audio player. 
 You can use "+FvwmEvent: StartDelay+" to fix this problem.
 
 
 COPYRIGHTS
-----------
+~~~~~~~~~~
 
 This module has evolved of *FvwmAudio*, which in term is heavily based 
 on a similar Fvwm module called *FvwmSound* by Mark Boyns. *FvwmAudio* 
@@ -315,7 +305,7 @@ long as the copyright is kept intact.
 
 
 AUTHORS
--------
+~~~~~~~
 
 1994  FvwmSound  Mark Boyns <boyns@sdsu.edu>
 

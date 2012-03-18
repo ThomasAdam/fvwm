@@ -1,22 +1,5 @@
-FvwmTabs(1)
-===========
-:doctype: manpage
-
-
-NAME
-----
-
-FvwmTabs - a generic tabbing module for the fvwm window manager.
-
-
-SYNOPSIS
+FvwmTabs
 --------
-
-*FvwmTabs* is spawned by fvwm, so no command line invocation is possible.
-
-
-DESCRIPTION
------------
 
 The *FvwmTabs* module is capable of swallowing any fvwm window & treating it as 
 a tab in a tab-manager window. A tab-manager is sometimes called a tabber.
@@ -26,9 +9,17 @@ number of tab-managers is limited only by system resources. Tab-managers can
 even be nested/swallowed within other tab-managers. (ie. a tab-manager can be 
 added as an individual tab to another tab-manager.)
 
+*FvwmTabs* is spawned by fvwm, so no command line invocation is possible.
+
+From within the .fvwm2rc file, *FvwmTabs* is spawned as follows:
+
+------
+Module FvwmTabs
+------
+
 
 INVOCATION
-----------
+~~~~~~~~~~
 
 *FvwmTabs* can be invoked by inserting the line "Module FvwmTabs" in your 
 .fvwmrc file. This can be placed on a line by itself, if *FvwmTabs* is to be 
@@ -37,7 +28,7 @@ or keystroke to invoke it later.
 
 
 INSTALLING DEPENDENCIES
------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 *FvwmTabs* requires 2 CPAN modules (that are NOT distributed with fvwm) to be 
 installed on your system. They are Tk and X11::Protocol.
@@ -57,7 +48,7 @@ tar zxvf $name.tar.gz ; cd $name ; perl Makefile.PL ; make install
 
 
 CONFIGURATION OPTIONS
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 *FvwmTabs* reads the same config file as fvwm when it starts up.
 
@@ -209,7 +200,7 @@ the tab-buttons.) Default value is true.
 +
 Specify the icon to display when performing a drag-&-drop operation to reorder 
 the tab-buttons. *FvwmTabs* will search the ImagePath for this image unless an 
-absolute filename (ie. filename begins with \'/') is specified. The default 
+absolute filename (ie. filename begins with \'/\') is specified. The default 
 value is 'none'. If 'none' (or an invalid file) is specified a * is used.
 
 *FvwmTabs: bBuggyFocus 'bool'::
@@ -271,7 +262,7 @@ Image to use on menu toolbar button. Default is none.
 
 
 FVWM FUNCTIONS FOR KEY BINDINGS
--------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A number of fvwm functions are available once the *FvwmTabs* module is started.
 
@@ -358,7 +349,7 @@ Swallow windows that (are moved to) overlap a tabber.
 
 
 KEY BINDINGS
-------------
+~~~~~~~~~~~~
 
 By default, *FvwmTabs* reads a default user configuration file 
 FvwmTabs-DefaultSetup which defines several useful key-bindings for *FvwmTabs*. 
@@ -436,10 +427,10 @@ SwapRight
 
 
 MOUSE BINDINGS
---------------
+~~~~~~~~~~~~~~
 
 Mouse bindings on Tab Buttons
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 'Mouse-1' on a tab-button displays the window associated with the tab.
 
@@ -454,7 +445,7 @@ The tab-buttons can be reordered with a drag-&-drop operation initiated with
 is dropped.
 
 Mouse bindings on Toolbar Icons
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 'Mouse-1' on the "menu" button will bring up a menu of options. See *MENU 
 BINDINGS*.
@@ -482,8 +473,9 @@ window itself.
 
 'Mouse-3' on the "kill" button will Kill the selected window.
 
+
 MENU BINDINGS
--------------
+~~~~~~~~~~~~~
 
 'Mouse-1' on the "menu" button will bring up a menu of options:
 
@@ -539,7 +531,7 @@ will close the *FvwmTabs* window, invoking Release All in the process.
 
 
 BUGS
-----
+~~~~
 
 - Tab-managers don't take focus when iconified.
 
@@ -555,7 +547,7 @@ somewhere in the subject line.
 
 
 TODO
-----
+~~~~
 
 Features to be added to *FvwmTabs* in the future (in no particular order):
 
@@ -570,14 +562,14 @@ if it doesn't already exist. (default behaviour is not to swallow it)
 
 
 FVWMTABS HOMEPAGE
------------------
+~~~~~~~~~~~~~~~~~
 
 There is some useful information about *FvwmTabs*, including a short tutorial, 
 on the authors website: http://members.optusnet.com.au/~scottsmedley/fvwmtabs/
 
 
 LICENSING
----------
+~~~~~~~~~
 
 *FvwmTabs* is GPL software.
 
@@ -585,6 +577,6 @@ See http://www.gnu.org/licenses/gpl.html
 
 
 AUTHOR
-------
+~~~~~~
 
 Scott Smedley <ss@aao.gov.au>
