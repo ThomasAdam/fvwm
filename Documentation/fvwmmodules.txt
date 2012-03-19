@@ -1,4 +1,4 @@
-FvwmModules(1)
+fvwmmodules(1)
 ==============
 :doctype: manpage
 
@@ -6,7 +6,7 @@ FvwmModules(1)
 NAME
 ----
 
-FvwmModules - the Fvwm modules meta-man page.
+fvwmmodules - the Fvwm modules meta-man page.
 
 
 SYNOPSIS
