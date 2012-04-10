@@ -1,0 +1,14 @@
+List of not converted Fvwm modules:
+
+FvwmDragWell (deprecated? *)
+FvwmGtk (deprecated? **)
+FvwmGtkDebug (deprecated? **)
+FvwmIconBox (deprecated? *)
+FvwmSave (deprecated? *)
+FvwmSaveDesk (deprecated? *)
+FvwmTaskBar (deprecated? *)
+FvwmWharf (deprecated? *)
+FvwmWinList (deprecated? *)
+
+* discussion on the mailing list "Deprecating certain Fvwm* modules".
+** based on Gtk1.0 which isn't used in normal distributions.

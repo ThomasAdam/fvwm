@@ -1,0 +1,28 @@
+manpage conventions
+
+For a consistent look the following convention should be used in the 
+asciidoc formated manpages:
+
+fvwm commands:                bold with *<command>*
+
+parameters/arguments:         underlined with '<parameter>'
+
+Constants:                    fixed size with +<constant>+
+
+Notes:                        [NOTE]
+                              <text>
+
+Examples:                     ------
+                              <example
+                              ------
+
+Captions inside text:         bold with *<caption>*
+
+emails:                       <email>
+
+manpage references:           bold with *<manpage>*(1)
+
+commands or commandstrings
+inside text:                  fixed size wthin apostrophes like 
+                              \'+<commandstring>+'
+

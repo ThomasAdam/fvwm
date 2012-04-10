@@ -1,0 +1,132 @@
+fvwmmodules(1)
+==============
+:doctype: manpage
+
+
+NAME
+----
+
+fvwmmodules - the Fvwm modules meta-man page.
+
+
+SYNOPSIS
+--------
+
+Module [FvwmModule] [ModuleAlias]
+
+
+DESCRIPTION
+-----------
+
+A Fvwm module is a separate program which runs as a separate Unix process but 
+transmits commands to fvwm to execute. Users can write their own modules to do 
+any weird or bizarre manipulations without bloating or affecting the integrity 
+of fvwm itself.
+
+Modules must be spawned by fvwm so that it can set up two pipes for fvwm and 
+the module to communicate with. The pipes are already open for the module when 
+it starts and the file descriptors for the pipes are provided as command line 
+arguments.
+
+Modules can be spawned by fvwm at any time during the X session by use of the 
+Module command. Modules can exist for the duration of the X session, or can 
+perform a single task and exit. If the module is still active when fvwm is told 
+to quit, then fvwm closes the communication pipes and waits to receive a 
++SIGCHLD+ from the module, indicating that it has detected the pipe closure and 
+has exited. If modules fail to detect the pipe closure fvwm exits after 
+approximately 30 seconds anyway. The number of simultaneously executing modules 
+is limited by the operating system's maximum number of simultaneously open 
+files, usually between 60 and 256.
+
+Modules simply transmit commands to the fvwm command engine. Commands are 
+formatted just as in the case of a mouse binding in the config setup file. 
+Certain auxiliary information is also transmitted.
+
+Please refer to the *Module Commands* section in *fvwm*(1) for common details.
+
+OVERVIEW
+--------
+
+In this meta-man page all modules shipped with Fvwm are described short in 
+alphabetical order and followed afterwards in detail.
+
+* *FvwmAnimate* - animates iconification and de-iconification or on command.
+* *FvwmAuto* - automatically raise focused windows.
+* *FvwmBacker* - provides functionality to change the background when changing 
+desktops.
+* *FvwmBanner* - displays an fvwm Logo in the center of the screen.
+* *FvwmButtons* - provides a window of buttons which sits on the X terminal's 
+root window.
+* *FvwmCommand* - monitor fvwm transaction and issue fvwm command from a shell 
+command line or scripts.
+* *FvwmConsole* - an fvwm command input interface.
+* *FvwmConsoleC.pl* - Command editor for fvwm command input interface  .
+* *FvwmCpp* - the fvwm Cpp pre-processor.
+* *FvwmDebug* - the fvwm module debugger.
+* *FvwmEvent* - the fvwm event module.
+* *FvwmForm* - input form module for fvwm. 
+* *FvwmIconMan* - icon manager modeled after the TWM icon manager.
+* *FvwmIdent* - the fvwm identify-window module  
+* *FvwmM4* - the fvwm M4 pre-processor  
+* *FvwmPager* - the fvwm Pager module  
+* *FvwmPerl* - the fvwm perl manipulator and preprocessor  
+* *FvwmProxy* - allows to locate and control windows obscured by other windows 
+by using small non-overlapping proxy windows.
+* *FvwmRearrange* - rearrange or tile windows
+* *FvwmScript* - module to build graphic user interface
+* *FvwmScroll* - the fvwm scroll-bar module  
+* *FvwmTabs* - a generic tabbing module for the fvwm window manager.
+* *FvwmTheme* - a fvwm module for managing the appearance of fvwm and its modules
+                (since fvwm 2.5.1, *FvwmTheme* is obsolete but it defines the 
+                exact Colorset syntax)
+* *FvwmWindowMenu* - open configurable fvwm menu listing current windows
+
+
+include::FvwmModules/FvwmAnimate.txt[]
+
+include::FvwmModules/FvwmAuto.txt[]
+
+include::FvwmModules/FvwmBacker.txt[]
+
+include::FvwmModules/FvwmBanner.txt[]
+
+include::FvwmModules/FvwmButtons.txt[]
+
+include::FvwmModules/FvwmCommand.txt[]
+
+include::FvwmModules/FvwmConsole.txt[]
+
+include::FvwmModules/FvwmConsoleC.txt[]
+
+include::FvwmModules/FvwmCpp.txt[]
+
+include::FvwmModules/FvwmDebug.txt[]
+
+include::FvwmModules/FvwmEvent.txt[]
+
+include::FvwmModules/FvwmForm.txt[]
+
+include::FvwmModules/FvwmIconMan.txt[]
+
+include::FvwmModules/FvwmIdent.txt[]
+
+include::FvwmModules/FvwmM4.txt[]
+
+include::FvwmModules/FvwmPager.txt[]
+
+include::FvwmModules/FvwmPerl.txt[]
+
+include::FvwmModules/FvwmProxy.txt[]
+
+include::FvwmModules/FvwmRearrange.txt[]
+
+include::FvwmModules/FvwmScript.txt[]
+
+include::FvwmModules/FvwmScroll.txt[]
+
+include::FvwmModules/FvwmTabs.txt[]
+
+include::FvwmModules/FvwmTheme.txt[]
+
+include::FvwmModules/FvwmWindowMenu.txt[]
+

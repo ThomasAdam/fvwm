@@ -1,0 +1,203 @@
+FvwmWindowMenu
+--------------
+
+A substitute for fvwm builtin WindowList, but written in Perl and easy to 
+customize. Unlike *FvwmIconMan* or *FvwmWinList* the module does not draw its 
+own window, but instead creates an fvwm menu and asks fvwm to pop it up.
+
+By defining a set of regular expressions, windows may be sorted into sections 
+based on a regexp matching the window name, class or resource and included in 
+the menu.
+
+Similarly, another set of regular expressions can be used to exclude items from 
+the menu.
+
+Any windows not matching an instance of the include or exclude list will be 
+placed in the last section of the menu.
+
+*FvwmWindowMenu* should be spawned by fvwm(1) for normal functionality.
+
+Run this module from your *StartFunction*:
+
+------
+AddToFunc StartFunction
++ I Module FvwmWindowMenu
+------
+
+
+USAGE
+~~~~~
+
+Run the module, supposedly from *StartFunction* in .fvwm2rc:
+
+------
+Module FvwmWindowMenu
+------
+
+To actually invoke the menu add something like:
+
+------
+Key Menu A N SendToModule FvwmWindowMenu \
+  Post Root c c SelectOnRelease Menu
+------
+
+or:
+
+------
+Mouse 2 A N SendToModule FvwmWindowMenu Popup
+------
+
+The additional parameters are any valid 'Menu' command parameters without a menu 
+name, see fvwm.
+
+Recognized actions are Post (or its alias 'Menu') and 'Popup', they create fvwm 
+menus and invoke them using the corresponding commands 'Menu' and 'Popup'. If the 
+module was started with "-g" switch, it additionally supports 'PostBar' (not 
+implemented yet).
+
+Set module options for windows to include (Show) or exclude (DontShow). The 
+syntax is:
+
+------
+*FvwmWindowMenu: ShowName pattern
+*FvwmWindowMenu: ShowClass pattern
+*FvwmWindowMenu: ShowResource pattern
+*FvwmWindowMenu: DontShowName pattern
+*FvwmWindowMenu: DontShowClass pattern
+*FvwmWindowMenu: DontShowResource pattern
+------
+
+Pattern is a perl regular expression that will be evaluated in m// context. See 
+perlre(1).
+
+For example:
+
+------
+*FvwmWindowMenu: ShowResource ^gvim
+*FvwmWindowMenu: ShowName Galeon|Navigator|mozilla-bin|Firefox
+------
+
+will define two sections containing respectively browsers, and GVim. A third 
+section will contain all other windows.
+
+To only include matching windows, add:
+
+------
+*FvwmWindowMenu: DontShowName .*
+------
+
+Similarly:
+
+------
+*FvwmWindowMenu: DontShowName ^Fvwm
+*FvwmWindowMenu: DontShowClass Gkrellm
+------
+
+will cause the menu to ignore windows with name beginning with Fvwm or class 
+gkrellm.
+
+Other options
+^^^^^^^^^^^^^
+
+*FvwmWindowMenu: 'OnlyIconified' {on|off}::
++
+show only iconified windows
+
+*FvwmWindowMenu: 'AllDesks' {on|off}::
++
+show windows from all desks
+
+*FvwmWindowMenu: 'AllPages' {on|off}::
++
+show windows from all pages
+
+*FvwmWindowMenu: 'MaxLen' 32::
++
+max length in chars of entry
+
+*FvwmWindowMenu: 'MenuName' MyMenu::
++
+name of menu to popup
+
+*FvwmWindowMenu: 'MenuStyle' MyMenuStyle
+name of MenuStyle to apply
+
+*FvwmWindowMenu: 'Debug' {0,1,2,3}::
++
+level of debug info output, 0 means no debug
+
+*FvwmWindowMenu: 'Function' MyWindowListFunc::
++
+function to invoke on menu entries; defaults to WindowListFunc
+
+*FvwmWindowMenu: ItemFormat formatstring::
++
+how to format menu entries; substitutions are made as follows:
++
+--
+%n, %i, %c, %r::
++
+the window name, icon name, class or resource
+
+%x, %y::
++
+the window x or y coordinates w.r.t. the page the window is on.
+
+%X, %Y::
++
+the window x or y coordinates w.r.t. the desk the window is on.
+
+%d::
++
+the window desk number
+
+%m::
++
+the window's mini-icon
+
+%M::
++
+the window's mini-icon only for iconified windows, otherwise empty
+
+%t::
++
+a tab
+
+%%::
++
+a literal %
+--
++
+The format string must be quoted. The default string is "%m%n%t%t(\+%x+%y) - 
+Desk %d".
+
+
+MORE EXAMPLES
+~~~~~~~~~~~~~
+
+Fancy binding of the window menu to the right windows key on some keyboards. 
+Hold this button while navigating using cursor keys, then release it.
+
+------
+CopyMenuStyle * WindowMenu
+MenuStyle WindowMenu SelectOnRelease Super_R
+*FvwmWindowMenu: MenuStyle WindowMenu
+------
+
+------
+AddToFunc StartFunction I Module FvwmWindowMenu
+------
+
+------
+Key Super_R A A SendToModule FvwmWindowMenu Post Root c c WarpTitle
+------
+
+
+AUTHORS
+~~~~~~~
+
+Richard Lister <ric+lister@cns.georgetown.edu>.
+
+Scott Smedley <ss@aao.gov.au>.
+
+Mikhael Goikhman <migo@homemail.com>.
