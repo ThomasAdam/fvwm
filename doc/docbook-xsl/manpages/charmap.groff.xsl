@@ -5,7 +5,7 @@
                 exclude-result-prefixes="u">
 
 <!-- ********************************************************************
-     $Id: charmap.groff.xsl,v 1.2 2007/11/17 11:47:56 domivogt Exp $
+     $Id$
      ********************************************************************
 
      This file is part of the XSL DocBook Stylesheet distribution.

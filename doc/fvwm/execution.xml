@@ -6,7 +6,7 @@
 %myents;
 ]>
 
-<!-- $Id: execution.xml,v 1.2 2007/06/07 20:09:52 griph Exp $ -->
+<!-- $Id$ -->
 
 <section id='command_execution'>
 <title>Command Execution</title>

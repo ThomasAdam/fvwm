@@ -6,7 +6,7 @@
 %myents;
 ]>
 
-<!-- $Id: builtinBindings.xml,v 1.2 2007/06/07 20:09:52 griph Exp $ -->
+<!-- $Id$ -->
 
 <section id='builtin_key_and_mouse_bindings'>
 <title>Builtin Key and Mouse Bindings</title>

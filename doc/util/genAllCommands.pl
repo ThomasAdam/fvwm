@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: genAllCommands.pl,v 1.1 2007/03/10 05:16:02 scott Exp $
+# $Id$
 #
 # This script is used to generate HTML for the "allCommands.html" page.
 # ./genAllCommands.pl cmds.txt

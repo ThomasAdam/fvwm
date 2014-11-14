@@ -6,7 +6,7 @@
 %myents;
 ]>
 
-<!-- $Id: userFunctions.xml,v 1.3.6.1 2011/12/26 00:54:20 tadam Exp $ -->
+<!-- $Id$ -->
 
 <section id='user_functions_and_shell_commands'>
 <title>User Functions and Shell Commands</title>

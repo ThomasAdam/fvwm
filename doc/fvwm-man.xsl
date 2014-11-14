@@ -19,7 +19,7 @@
               encoding="UTF-8"
               indent="no"/>
   <!-- ********************************************************************
-       $Id: fvwm-man.xsl,v 1.12 2007/08/17 17:02:03 griph Exp $
+       $Id$
        ********************************************************************
 
        This file is part of the XSL DocBook Stylesheet distribution.

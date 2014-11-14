@@ -1,6 +1,6 @@
 <?xml version='1.0'?>
 <!--
-	$Id: fvwm.xsl,v 1.4 2007/09/01 19:09:53 griph Exp $
+	$Id$
 
 	Author: Scott Smedley
 -->

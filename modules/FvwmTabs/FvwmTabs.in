@@ -1,6 +1,6 @@
 #!@PERL@ -w
 
-# $Id: FvwmTabs.in,v 3.16 2009/12/04 23:35:25 tadam Exp $
+# $Id$
 
 # 	FvwmTabs
 #	Copyright (C) 2002-2006 Scott Smedley ss@aao.gov.au

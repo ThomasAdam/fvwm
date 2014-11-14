@@ -6,7 +6,7 @@
 %myents;
 ]>
 
-<!-- $Id: m4.xml,v 1.1 2007/03/10 05:15:34 scott Exp $ -->
+<!-- $Id$ -->
 
 <section id='m4_preprocessing'>
 <title>M4 Preprocessing</title>

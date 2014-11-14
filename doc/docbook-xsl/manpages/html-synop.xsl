@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
 <!-- ********************************************************************
-     $Id: html-synop.xsl,v 1.1 2007/03/10 05:15:34 scott Exp $
+     $Id$
      ********************************************************************
 
      This file is part of the XSL DocBook Stylesheet distribution.
