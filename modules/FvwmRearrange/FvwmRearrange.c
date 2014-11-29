@@ -1,4 +1,5 @@
 /* -*-c-*- */
+/* vim: set ts=8 shiftwidth=8: */
 /*
  * FvwmRearrange.c -- fvwm module to arrange windows
  *
@@ -51,7 +52,7 @@
 
 typedef struct window_item {
 	Window frame;
-	int th, bw;
+	int th, bw, vtitle;
 	unsigned long width, height;
 	struct window_item *prev, *next;
 } window_item, *window_list;
@@ -189,6 +190,8 @@ int get_window(void)
       if (is_suitable_window(packet->body)) {
 	window_item *wi =
 	  (window_item*)safemalloc(sizeof( window_item ));
+	wi->vtitle = HAS_TITLE_DIR(cfgpacket, DIR_S) ||
+		     HAS_TITLE_DIR(cfgpacket, DIR_N);
 	wi->frame = cfgpacket->frame;
 	wi->th = cfgpacket->title_height;
 	wi->bw = cfgpacket->border_width;
@@ -284,6 +287,7 @@ void move_resize_raise_window(
 
 void tile_windows(void)
 {
+  int nw, nh;
   int cur_x = ofsx, cur_y = ofsy;
   int final_w = -1, final_h = -1;
   int wdiv, hdiv, i, j, count = 1;
@@ -302,8 +306,15 @@ void tile_windows(void)
 
     for (i = 0; w && (i < count); ++i)  {
       for (j = 0; w && (j < maxnum); ++j) {
-	int nw = wdiv - w->bw * 2;
-	int nh = hdiv - w->bw * 2 - w->th;
+	if (w->vtitle) {
+		nw = wdiv - w->bw * 2;
+		nh = hdiv - w->bw * 2 - w->th;
+	}
+	else
+	{
+		nw = wdiv - w->bw * 2 - w->th;
+		nh = hdiv - w->bw * 2;
+	}
 
 	if (resize) {
 	  if (nostretch) {
@@ -336,8 +347,15 @@ void tile_windows(void)
 
     for (i = 0; w && (i < count); ++i)  {
       for (j = 0; w && (j < maxnum); ++j) {
-	int nw = wdiv - w->bw * 2;
-	int nh = hdiv - w->bw * 2 - w->th;
+	if (w->vtitle) {
+		nw = wdiv - w->bw * 2;
+		nh = hdiv - w->bw * 2 - w->th;
+	}
+	else
+	{
+		nw = wdiv - w->bw * 2 - w->th;
+		nh = hdiv - w->bw * 2;
+	}
 
 	if (resize) {
 	  if (nostretch) {
@@ -388,10 +406,10 @@ void cascade_windows(void)
     move_resize_raise_window(w, cur_x, cur_y, final_w, final_h);
 
     if (!flatx)
-      cur_x += w->bw;
+      cur_x += w->vtitle ? w->bw + w->th : w->bw;
     cur_x += incx;
     if (!flaty)
-      cur_y += w->bw + w->th;
+      cur_y += w->vtitle ? w->bw + w->th: w->bw;
     cur_y += incy;
     w = reversed ? w->prev : w->next;
   }
